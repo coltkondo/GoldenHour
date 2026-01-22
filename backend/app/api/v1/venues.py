@@ -1,0 +1,3 @@
+'''
+Venue CRUD module
+'''
