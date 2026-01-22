@@ -1,3 +1,112 @@
-'''
-Deals CRUD
-'''
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
+from sqlalchemy import and_, func
+from typing import List, Optional
+from uuid import UUID
+from datetime import datetime, time
+
+from app.core.database import get_db
+from app.models.deal import Deal
+from app.models.venue import Venue
+from app.models.happy_hour import HappyHourSchedule
+from app.schemas.deal import DealResponse, DealCreate
+from geoalchemy2 import WKTElement
+
+router = APIRouter(prefix="/deals", tags=["deals"])
+
+@router.get("/active", response_model=List[DealResponse])
+async def get_active_deals(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=100),
+    category: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    """
+    Get all currently active deals.
+    """
+    query = db.query(Deal).filter(Deal.active == True)
+    
+    if category:
+        query = query.filter(Deal.category == category)
+    
+    deals = query.offset(skip).limit(limit).all()
+    return deals
+
+@router.get("/nearby", response_model=List[DealResponse])
+async def get_nearby_deals(
+    latitude: float = Query(..., ge=-90, le=90),
+    longitude: float = Query(..., ge=-180, le=180),
+    radius_meters: int = Query(1000, ge=100, le=10000),
+    active_now: bool = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Find deals near a location.
+    If active_now=true, only returns deals available at current time.
+    """
+    point = WKTElement(f'POINT({longitude} {latitude})', srid=4326)
+    
+    # Join deals with venues to filter by location
+    query = db.query(Deal).join(Venue).filter(
+        and_(
+            Deal.active == True,
+            Venue.active == True,
+            func.ST_DWithin(Venue.location, point, radius_meters)
+        )
+    )
+    
+    if active_now:
+        # Get current day and time
+        now = datetime.now()
+        current_day = now.weekday()  # 0=Monday
+        current_time = now.time()
+        
+        # Join with happy hour schedules
+        query = query.join(
+            HappyHourSchedule,
+            and_(
+                HappyHourSchedule.venue_id == Venue.id,
+                HappyHourSchedule.day_of_week == current_day,
+                HappyHourSchedule.start_time <= current_time,
+                HappyHourSchedule.end_time >= current_time,
+                HappyHourSchedule.active == True
+            )
+        )
+    
+    deals = query.all()
+    return deals
+
+@router.get("/{deal_id}", response_model=DealResponse)
+async def get_deal(
+    deal_id: UUID,
+    db: Session = Depends(get_db)
+):
+    """
+    Get a specific deal by ID.
+    """
+    deal = db.query(Deal).filter(Deal.id == deal_id).first()
+    
+    if not deal:
+        raise HTTPException(status_code=404, detail="Deal not found")
+    
+    return deal
+
+@router.post("/", response_model=DealResponse, status_code=201)
+async def create_deal(
+    deal: DealCreate,
+    db: Session = Depends(get_db)
+):
+    """
+    Create a new deal.
+    """
+    # Verify venue exists
+    venue = db.query(Venue).filter(Venue.id == deal.venue_id).first()
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue not found")
+    
+    db_deal = Deal(**deal.model_dump())
+    db.add(db_deal)
+    db.commit()
+    db.refresh(db_deal)
+    
+    return db_deal

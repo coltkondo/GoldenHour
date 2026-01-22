@@ -1,0 +1,53 @@
+# =======================
+# Python cache & bytecode
+# =======================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# =======================
+# Virtual environments
+# =======================
+venv/
+env/
+.env/   # don't track your virtual environment
+
+# =======================
+# Environment variables
+# =======================
+.env
+.env.local
+.env.*.local
+/backend/.env
+# =======================
+# Database / Alembic
+# =======================
+*.db
+*.sqlite3
+alembic/versions/*.pyc  # compiled migration files
+*.log
+
+# =======================
+# Redis / cache / temp
+# =======================
+*.rdb
+*.dump
+
+# =======================
+# IDE / editor-specific
+# =======================
+.vscode/
+.idea/
+.DS_Store
+
+# =======================
+# Docker / container files
+# =======================
+*.dockerignore
+docker-compose.override.yml
+
+# =======================
+# Railway-specific
+# =======================
+# Ignore local Railway config files if you have them
+.railway/
