@@ -13,7 +13,7 @@ from app.core.database import SessionLocal
 from app.models.venue import Venue
 from app.models.deal import Deal
 from app.models.happy_hour import HappyHourSchedule
-from geoalchemy2 import WKTElement
+
 from datetime import time
 
 def seed_venues_and_deals():
@@ -150,12 +150,8 @@ def seed_venues_and_deals():
             deals_data = venue_data.pop("deals", [])
             
             # Create venue
-            location = WKTElement(
-                f'POINT({venue_data["longitude"]} {venue_data["latitude"]})',
-                srid=4326
-            )
             
-            venue = Venue(**venue_data, location=location, verified=True)
+            venue = Venue(**venue_data,  verified=True)
             db.add(venue)
             db.flush()  # Get venue ID without committing
             

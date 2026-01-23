@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, Float, Boolean, Text
 from sqlalchemy.dialects.postgresql import UUID
-from geoalchemy2 import Geography
+
 import uuid
 from .base import Base, TimestampMixin
 
@@ -12,9 +12,8 @@ class Venue(Base, TimestampMixin):
     address = Column(String(500), nullable=False)
     
     # Geographic data
-    latitude = Column(Float, nullable=False)
-    longitude = Column(Float, nullable=False)
-    location = Column(Geography(geometry_type='POINT', srid=4326))
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
     
     # Contact & details
     phone = Column(String(20))

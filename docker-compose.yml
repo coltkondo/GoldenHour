@@ -46,6 +46,21 @@ services:
       redis:
         condition: service_healthy
 
+  # Image-backed backend (no host bind-mount). Use this for migrations/seeds
+  # so the container runs the code baked into the image rather than the host
+  # filesystem. This avoids sync issues on Windows/Docker Desktop.
+  backend_image:
+    build: ./backend
+    container_name: golden-hour-backend-image
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/goldenhour
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
 volumes:
   postgres_data:
   redis_data:
