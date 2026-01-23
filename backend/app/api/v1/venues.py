@@ -1,14 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import func, and_
 from typing import List, Optional
 from uuid import UUID
 
 from app.core.database import get_db
 from app.models.venue import Venue
 from app.schemas.venue import VenueResponse, VenueCreate, VenueWithDeals
-from geoalchemy2.functions import ST_DWithin, ST_MakePoint
-from geoalchemy2 import WKTElement
+from app.services.search import bounding_box, haversine_distance
+
 
 router = APIRouter(prefix="/venues", tags=["venues"])
 
@@ -46,22 +45,26 @@ async def get_nearby_venues(
     Find venues within a radius of a given location.
     Radius is in meters (default 1km, max 10km).
     """
-    # Create point from lat/lng
-    point = WKTElement(f'POINT({longitude} {latitude})', srid=4326)
-    
-    # Query venues within radius
-    venues = db.query(Venue).filter(
-        and_(
-            Venue.active == True,
-            func.ST_DWithin(
-                Venue.location,
-                point,
-                radius_meters
-            )
-        )
-    ).limit(limit).all()
-    
-    return venues
+    # Compute rough bounding box then filter and compute exact distances in Python
+    min_lat, max_lat, min_lng, max_lng = bounding_box(latitude, longitude, radius_meters)
+
+    candidates = db.query(Venue).filter(
+        Venue.active == True,
+        Venue.latitude >= min_lat,
+        Venue.latitude <= max_lat,
+        Venue.longitude >= min_lng,
+        Venue.longitude <= max_lng,
+    ).all()
+
+    # compute distances and filter
+    nearby = []
+    for v in candidates:
+        dist = haversine_distance(latitude, longitude, v.latitude, v.longitude)
+        if dist <= radius_meters:
+            nearby.append((v, dist))
+
+    nearby.sort(key=lambda t: t[1])
+    return [t[0] for t in nearby[:limit]]
 
 @router.get("/{venue_id}", response_model=VenueResponse)
 async def get_venue(
@@ -86,13 +89,7 @@ async def create_venue(
     """
     Create a new venue.
     """
-    # Create WKT point from lat/lng for PostGIS
-    location = WKTElement(f'POINT({venue.longitude} {venue.latitude})', srid=4326)
-    
-    db_venue = Venue(
-        **venue.model_dump(),
-        location=location
-    )
+    db_venue = Venue(**venue.model_dump())
     
     db.add(db_venue)
     db.commit()
@@ -106,10 +103,8 @@ async def list_neighborhoods(db: Session = Depends(get_db)):
     Get list of all neighborhoods with active venues.
     """
     neighborhoods = db.query(Venue.neighborhood).filter(
-        and_(
-            Venue.active == True,
-            Venue.neighborhood.isnot(None)
-        )
+        Venue.active == True,
+        Venue.neighborhood.isnot(None)
     ).distinct().all()
     
     return [n[0] for n in neighborhoods]

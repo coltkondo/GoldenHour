@@ -24,8 +24,11 @@ def upgrade():
 
     # Venues indexes
     v_indexes = {idx['name'] for idx in inspector.get_indexes('venues')} if 'venues' in inspector.get_table_names() else set()
-    if 'idx_venues_location' not in v_indexes:
-        op.create_index('idx_venues_location', 'venues', ['location'], unique=False, postgresql_using='gist')
+    # replace PostGIS GIST location index with btree indexes on latitude/longitude
+    if 'idx_venues_latitude' not in v_indexes:
+        op.execute("CREATE INDEX idx_venues_latitude ON venues(latitude);")
+    if 'idx_venues_longitude' not in v_indexes:
+        op.execute("CREATE INDEX idx_venues_longitude ON venues(longitude);")
     if 'idx_venues_neighborhood' not in v_indexes:
         op.execute("CREATE INDEX idx_venues_neighborhood ON venues(neighborhood);")
     if 'idx_venues_active' not in v_indexes:
@@ -46,7 +49,8 @@ def upgrade():
         op.execute("CREATE INDEX idx_happy_hour_day ON happy_hour_schedules(day_of_week);")
 
 def downgrade():
-    op.execute("DROP INDEX IF EXISTS idx_venues_location;")
+    op.execute("DROP INDEX IF EXISTS idx_venues_latitude;")
+    op.execute("DROP INDEX IF EXISTS idx_venues_longitude;")
     op.execute("DROP INDEX IF EXISTS idx_venues_neighborhood;")
     op.execute("DROP INDEX IF EXISTS idx_venues_active;")
     op.execute("DROP INDEX IF EXISTS idx_deals_venue_id;")

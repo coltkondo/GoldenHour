@@ -10,7 +10,6 @@ from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
-import geoalchemy2
 
 # revision identifiers, used by Alembic.
 revision: str = '4da5183dc371'
@@ -25,7 +24,6 @@ def upgrade() -> None:
     conn = op.get_bind()
     inspector = sa.inspect(conn)
     existing_tables = inspector.get_table_names()
-    op.execute('CREATE EXTENSION IF NOT EXISTS postgis;')
 
     if 'venues' not in existing_tables:
         op.create_table('venues',
@@ -34,7 +32,6 @@ def upgrade() -> None:
             sa.Column('address', sa.String(length=500), nullable=False),
             sa.Column('latitude', sa.Float(), nullable=False),
             sa.Column('longitude', sa.Float(), nullable=False),
-            sa.Column('location', geoalchemy2.types.Geography(geometry_type='POINT', srid=4326, dimension=2, from_text='ST_GeogFromText', name='geography'), nullable=True),
             sa.Column('phone', sa.String(length=20), nullable=True),
             sa.Column('website', sa.String(length=500), nullable=True),
             sa.Column('neighborhood', sa.String(length=100), nullable=True),
@@ -50,8 +47,6 @@ def upgrade() -> None:
     # create indexes if missing
     if 'venues' in existing_tables:
         existing_indexes = [idx['name'] for idx in inspector.get_indexes('venues')]
-        if 'idx_venues_location' not in existing_indexes:
-            op.create_index('idx_venues_location', 'venues', ['location'], unique=False, postgresql_using='gist')
         if 'ix_venues_name' not in existing_indexes:
             op.create_index(op.f('ix_venues_name'), 'venues', ['name'], unique=False)
         if 'ix_venues_neighborhood' not in existing_indexes:
@@ -105,6 +100,5 @@ def downgrade() -> None:
     op.drop_table('deals')
     op.drop_index(op.f('ix_venues_neighborhood'), table_name='venues')
     op.drop_index(op.f('ix_venues_name'), table_name='venues')
-    op.drop_index('idx_venues_location', table_name='venues', postgresql_using='gist')
     op.drop_table('venues')
     # ### end Alembic commands ###

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
-from sqlalchemy import and_, func
+from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import and_
 from typing import List, Optional
 from uuid import UUID
 from datetime import datetime, time
@@ -10,7 +10,8 @@ from app.models.deal import Deal
 from app.models.venue import Venue
 from app.models.happy_hour import HappyHourSchedule
 from app.schemas.deal import DealResponse, DealCreate
-from geoalchemy2 import WKTElement
+from app.services.search import bounding_box, haversine_distance
+
 
 router = APIRouter(prefix="/deals", tags=["deals"])
 
@@ -44,15 +45,16 @@ async def get_nearby_deals(
     Find deals near a location.
     If active_now=true, only returns deals available at current time.
     """
-    point = WKTElement(f'POINT({longitude} {latitude})', srid=4326)
-    
-    # Join deals with venues to filter by location
-    query = db.query(Deal).join(Venue).filter(
-        and_(
-            Deal.active == True,
-            Venue.active == True,
-            func.ST_DWithin(Venue.location, point, radius_meters)
-        )
+    min_lat, max_lat, min_lng, max_lng = bounding_box(latitude, longitude, radius_meters)
+
+    # Join deals with venues to filter by location (bounding box first)
+    query = db.query(Deal).options(joinedload(Deal.venue)).join(Venue).filter(
+        Deal.active == True,
+        Venue.active == True,
+        Venue.latitude >= min_lat,
+        Venue.latitude <= max_lat,
+        Venue.longitude >= min_lng,
+        Venue.longitude <= max_lng,
     )
     
     if active_now:
@@ -73,8 +75,20 @@ async def get_nearby_deals(
             )
         )
     
-    deals = query.all()
-    return deals
+    candidates = query.all()
+
+    # compute distance per deal (using joined venue) and filter
+    nearby = []
+    for d in candidates:
+        v = d.venue
+        if not v or v.latitude is None or v.longitude is None:
+            continue
+        dist = haversine_distance(latitude, longitude, v.latitude, v.longitude)
+        if dist <= radius_meters:
+            nearby.append((d, dist))
+
+    nearby.sort(key=lambda t: t[1])
+    return [t[0] for t in nearby]
 
 @router.get("/{deal_id}", response_model=DealResponse)
 async def get_deal(
