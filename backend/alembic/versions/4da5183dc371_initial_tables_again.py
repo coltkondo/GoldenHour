@@ -25,6 +25,7 @@ def upgrade() -> None:
     conn = op.get_bind()
     inspector = sa.inspect(conn)
     existing_tables = inspector.get_table_names()
+    op.execute('CREATE EXTENSION IF NOT EXISTS postgis;')
 
     if 'venues' not in existing_tables:
         op.create_table('venues',
