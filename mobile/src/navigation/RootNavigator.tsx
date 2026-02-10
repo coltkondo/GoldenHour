@@ -1,28 +1,22 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { MapScreen } from '../screens/MapScreen';
+import { TabNavigator } from './TabNavigator';
+import { HappyHourScreen } from '../screens/HappyHourScreen';
 
 const Stack = createNativeStackNavigator();
 
 export const RootNavigator = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator
-        screenOptions={{
-          headerStyle: {
-            backgroundColor: '#FF6B35',
-          },
-          headerTintColor: '#fff',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
-        }}
-      >
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Main" component={TabNavigator} />
         <Stack.Screen
-          name="Map"
-          component={MapScreen}
-          options={{ title: 'Golden Hour' }}
+          name="HappyHour"
+          component={HappyHourScreen}
+          options={{
+            animation: 'slide_from_right',
+          }}
         />
       </Stack.Navigator>
     </NavigationContainer>
