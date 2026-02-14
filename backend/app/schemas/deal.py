@@ -15,6 +15,7 @@ class DealBase(BaseModel):
 
 class DealCreate(DealBase):
     venue_id: UUID
+    source: Optional[str] = "manual"
 
 class DealUpdate(BaseModel):
     title: Optional[str] = None
@@ -23,16 +24,22 @@ class DealUpdate(BaseModel):
     deal_type: Optional[str] = None
     original_price: Optional[float] = None
     deal_price: Optional[float] = None
+    discount_percentage: Optional[float] = Field(None, ge=0, le=100)
     items: Optional[List[str]] = None
     active: Optional[bool] = None
+    verified: Optional[bool] = None
 
 class DealResponse(DealBase):
     id: UUID
     venue_id: UUID
     active: bool
     verified: bool
+    source: Optional[str] = "manual"
     created_at: datetime
     updated_at: datetime
-    
+
     class Config:
         from_attributes = True
+
+class DealWithVenue(DealResponse):
+    venue_name: Optional[str] = None

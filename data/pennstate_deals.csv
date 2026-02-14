@@ -1,0 +1,98 @@
+deal_id,venue_id,deal_name,description,category,deal_price,original_price,is_food,is_drink,is_active
+D001,SC001,Monday Truly,$3 Truly,Seltzer,$3.00,$5.00,FALSE,TRUE,TRUE
+D002,SC001,Monday Wings,$0.50 wings,Food,$0.50,$1.00,TRUE,FALSE,TRUE
+D003,SC001,Babe Tuesday,$4 Babe rosé,Wine,$4.00,$7.00,FALSE,TRUE,TRUE
+D004,SC001,Dollar Nachos,$1 nachos at 9pm,Food,$1.00,$5.00,TRUE,FALSE,TRUE
+D005,SC001,Fat Tire Wednesday,$3 Fat Tires,Beer,$3.00,$6.00,FALSE,TRUE,TRUE
+D006,SC001,Mozzarella Sticks,$1 mozzarella sticks,Food,$1.00,$5.00,TRUE,FALSE,TRUE
+D007,SC001,DVSN,$1 vodka sodas,Well Cocktails,$1.00,$5.00,FALSE,TRUE,TRUE
+D008,SC001,DVSN Double,$2 Double Vodka Soda,Well Cocktails,$2.00,$5.00,FALSE,TRUE,TRUE
+D009,SC001,DVSN Sprite,$2 Dirty Sprite,Cocktails,$2.00,$5.00,FALSE,TRUE,TRUE
+D010,SC001,DVSN Green Tea Shot,$2 Green Tea Shot,Shots,$2.00,$5.00,FALSE,TRUE,TRUE
+D011,SC001,DDVSN Bucket,$40 Buckets,Buckets,$40.00,$60.00,FALSE,TRUE,TRUE
+D012,SC001,DVSN Beer,$1 IC Lights,Beer,$1.00,$5.00,FALSE,TRUE,TRUE
+D013,SC001,Boneless Wings,$5 boneless wings,Food,$5.00,$10.00,TRUE,FALSE,TRUE
+D014,SC001,Margarita Friday,$5 margaritas & Villa One shots,Cocktails,$5.00,$10.00,FALSE,TRUE,TRUE
+D015,SC001,Sunday Brunch Special,$3 mimosas,Mixed,$3.00,$8.00,FALSE,TRUE,TRUE
+D016,SC001,Sunday Brunch Special,$3 Brunchboxes,Food,$3.00,$8.00,TRUE,FALSE,TRUE
+D017,SC001,Sunday Brunch Special,$4 Revitalyte Bombs,Shots,$4.00,$8.00,FALSE,TRUE,TRUE
+D018,SC002,Tea Pitcher Special,Tea Pitchers $5,Cocktails,$5.00,$10.00,FALSE,TRUE,TRUE
+D019,SC002,Bacardi Pitcher,Bacardi Pitchers $7,Cocktails,$7.00,$12.00,FALSE,TRUE,TRUE
+D020,SC002,Vodka Pitcher,Well Vodka Pitchers $7,Cocktails,$7.00,$12.00,FALSE,TRUE,TRUE
+D021,SC002,Happy Hour,Happy Hour specials,Mixed,Varies,,FALSE,TRUE,TRUE
+D022,SC003,Bud Light Bucket,$10 Bud Light bucket,Beer/Seltzer,$10.00,$15.00,FALSE,TRUE,TRUE
+D023,SC003,Well Drinks,Well drinks,Cocktails,$3.00,$7.00,FALSE,TRUE,TRUE
+D024,SC003,Bacardi Punch,Bacardi punches,Cocktails,$4.00,$8.00,FALSE,TRUE,TRUE
+D025,SC003,Paddy Irish Mules,$4 Paddy Irish mules,Cocktails,$4.00,$8.00,FALSE,TRUE,TRUE
+D026,SC003,Irish Car Bombs,$4 Irish car bombs,Shots,$4.00,$8.00,FALSE,TRUE,TRUE
+D027,SC003,Paddy's & Ginger,$3 Paddy's & ginger,Cocktails,$3.00,$7.00,FALSE,TRUE,TRUE
+D028,SC003,Guinness Draft,$3 Guinness drafts,Beer/Seltzer,$3.00,$6.00,FALSE,TRUE,TRUE
+D029,SC003,Smirnoff Pink Lemonade,$3 Smirnoff pink lemonade,Cocktails,$3.00,$6.00,FALSE,TRUE,TRUE
+D030,SC003,Long Island Special,$3 Long Islands,Cocktails,$3.00,$8.00,FALSE,TRUE,TRUE
+D031,SC003,Miller Lite Pitcher,$5 Miller Lite pitchers,Beer/Seltzer,$5.00,$10.00,FALSE,TRUE,TRUE
+D032,SC003,Bud Light Seltzer Pitcher,$8 Bud Light Seltzer pitchers,Beer/Seltzer,$8.00,$12.00,FALSE,TRUE,TRUE
+D033,SC003,Lynchburg Lemonades,$3 Lynchburg lemonades,Cocktails,$3.00,$7.00,FALSE,TRUE,TRUE
+D034,SC003,Yuengling Draft Special,$2 Yuengling drafts,Beer/Seltzer,$2.00,$5.00,FALSE,TRUE,TRUE
+D035,SC003,Bomb Friday,$5 bombs,Shots,$5.00,$8.00,FALSE,TRUE,TRUE
+D036,SC003,Crown Royal & Cola,$4 Crown Royal & Colas,Cocktails,$4.00,$8.00,FALSE,TRUE,TRUE
+D037,SC003,Yuengling Pitcher,$5 Yuengling pitchers,Beer/Seltzer,$5.00,$10.00,FALSE,TRUE,TRUE
+D038,SC003,Michelob Pitcher,$5 Michelob pitchers,Beer/Seltzer,$5.00,$10.00,FALSE,TRUE,TRUE
+D039,SC003,Smirnoff Green Apple Mule,$4 Smirnoff green apple mules,Cocktails,$4.00,$8.00,FALSE,TRUE,TRUE
+D040,SC003,Jager Bomb Sunday,$5 Jager bombs,Shots,$5.00,$8.00,FALSE,TRUE,TRUE
+D041,SC004,Toki Highball,$5 Toki highballs,Cocktails,$5.00,$10.00,FALSE,TRUE,TRUE
+D042,SC004,Moscow Mule,$6 Moscow mules,Cocktails,$6.00,$10.00,FALSE,TRUE,TRUE
+D043,SC004,Yuengling Draft,$2 Yuengling drafts,Beer/Seltzer,$2.00,$5.00,FALSE,TRUE,TRUE
+D044,SC004,Kentucky Mule,$6 Kentucky mules,Cocktails,$6.00,$10.00,FALSE,TRUE,TRUE
+D045,SC004,Kronenbourg Draft,$3 Kronenbourg drafts,Beer/Seltzer,$3.00,$6.00,FALSE,TRUE,TRUE
+D046,SC004,Manhattan,$6 Manhattans,Cocktails,$6.00,$10.00,FALSE,TRUE,TRUE
+D047,SC004,Stone IPA Draft,1/2 off Stone IPA drafts,Beer/Seltzer,$3.50,$7.00,FALSE,TRUE,TRUE
+D048,SC004,Miller Lite Draft,$2 Miller Lite drafts,Beer/Seltzer,$2.00,$5.00,FALSE,TRUE,TRUE
+D049,SC004,Peach Mule,$6 Peach mules w/ Jim Beam Peach,Cocktails,$6.00,$10.00,FALSE,TRUE,TRUE
+D050,SC004,Sunday Brunch Drinks,$6 Mimosa,Cocktails,$6.00,$10.00,FALSE,TRUE,TRUE
+D051,SC004,Sunday Brunch Drinks,$6 Irish Coffee,Cocktails,$6.00,$10.00,FALSE,TRUE,TRUE
+D052,SC004,Sunday Brunch Drinks,$6 Bloody Mary,Cocktails,$6.00,$10.00,FALSE,TRUE,TRUE
+D053,SC005,Captain Morgan Monday,$4 Captain Morgan (12oz),Spirits,$4.00,$8.00,FALSE,TRUE,TRUE
+D054,SC005,Happy Hour Package,$3 White Claw,Mixed,$3.00,$5.00,FALSE,TRUE,TRUE
+D055,SC005,Happy Hour Package,$2.50 Well Drinks,Well Cocktails,$2.50,$6.00,FALSE,TRUE,TRUE
+D056,SC005,Happy Hour Package,$2.50 Green Tea Shot,Shots,$2.50,$5.00,FALSE,TRUE,TRUE
+D057,SC005,Happy Hour Package,$3 Fireball Shot,Shots,$3.00,$6.00,FALSE,TRUE,TRUE
+D058,SC005,Happy Hour Package,$3 2 slices pizza,Food,$3.00,$7.00,TRUE,FALSE,TRUE
+D059,SC005,Happy Hour Package,$3 Garlic Knots,Food,$3.00,$7.00,TRUE,FALSE,TRUE
+D060,SC005,Domestic Beer Tuesday,$4 domestic beer (24oz),Beer/Seltzer,$4.00,$7.00,FALSE,TRUE,TRUE
+D061,SC005,Jameson Wednesday,$6 Jameson (12oz),Spirits,$6.00,$10.00,FALSE,TRUE,TRUE
+D062,SC005,Bacardi Thursday,$4 Bacardi (12oz),Spirits,$4.00,$8.00,FALSE,TRUE,TRUE
+D063,SC005,Smirnoff Friday,$4 Smirnoff (12oz),Spirits,$4.00,$8.00,FALSE,TRUE,TRUE
+D064,SC005,IPA Saturday,$4 IPAs (16oz),Beer/Seltzer,$4.00,$7.00,FALSE,TRUE,TRUE
+D065,SC005,Bloody Mary Sunday,$5 Bloody Mary (12oz),Cocktails,$5.00,$9.00,FALSE,TRUE,TRUE
+D066,SC006,Manhattan Monday,$6 Manhattans,Cocktails,$6.00,$10.00,FALSE,TRUE,TRUE
+D067,SC006,Happy Hour Package,$2.50 well cocktails,Cocktails,$2.50,$6.00,FALSE,TRUE,TRUE
+D068,SC006,Happy Hour Package,$3 Green Tea Shots,Shots,$3.00,$6.00,FALSE,TRUE,TRUE
+D069,SC006,Happy Hour Package,$4 Vegas/Jager Bombs,Shots,$4.00,$8.00,FALSE,TRUE,TRUE
+D070,SC006,Old Fashioned Sunday,$6 Old Fashioneds,Cocktails,$6.00,$10.00,FALSE,TRUE,TRUE
+D071,SC007,Wing Special,$0.79 per wing,Food,$0.79,$1.50,TRUE,FALSE,TRUE
+D072,SC008,Flatbread Tuesday,$5 flatbreads,Food,$5.00,$10.00,TRUE,FALSE,TRUE
+D073,SC008,LIT Half Off,1/2 off Long Island Iced Tea,Cocktails,$5.00,$10.00,FALSE,TRUE,TRUE
+D074,SC008,Truly Half Off,1/2 off Truly,Beer/Seltzer,$3.00,$6.00,FALSE,TRUE,TRUE
+D075,SC008,Wine Wednesday,1/2 off wine,Wine,$5.00,$10.00,FALSE,TRUE,TRUE
+D076,SC008,Burger Wednesday,1/2 off burgers,Food,$6.00,$12.00,TRUE,FALSE,TRUE
+D077,SC008,Blue Moon Pint,$3 Blue Moon pints,Beer/Seltzer,$3.00,$6.00,FALSE,TRUE,TRUE
+D078,SC008,Boneless Wings Thursday,1/2 off boneless wings,Food,$5.00,$10.00,TRUE,FALSE,TRUE
+D079,SC008,Bud Light Pint,1/2 off Bud Light pints,Beer/Seltzer,$2.50,$5.00,FALSE,TRUE,TRUE
+D080,SC008,All Alcohol Half Off,1/2 off all alcohol,Mixed,1/2 off,Varies,FALSE,TRUE,TRUE
+D081,SC008,Fireball Friday,$3 Fireball shots,Shots,$3.00,$6.00,FALSE,TRUE,TRUE
+D082,SC008,White Claw Saturday,$3 White Claws all day,Beer/Seltzer,$3.00,$6.00,FALSE,TRUE,TRUE
+D083,SC008,Saturday Night Package,1/2 off well drinks,Mixed,$3.00,$6.00,FALSE,TRUE,TRUE
+D084,SC008,Saturday Night Package,1/2 off Draft Pints,Beer,$3.00,$6.00,FALSE,TRUE,TRUE
+D085,SC009,Happy Hour Package,$4 tallboys,Mixed,$4.00,$7.00,FALSE,TRUE,TRUE
+D086,SC009,Happy Hour Package,$8 Liquor Pitchers,Cocktails,$8.00,$12.00,FALSE,TRUE,TRUE
+D087,SC009,Jolly Rancher Shot,$3 Jolly Rancher shots,Shots,$3.00,$6.00,FALSE,TRUE,TRUE
+D088,SC009,Michelob Bottle,$3 Michelob bottles,Beer/Seltzer,$3.00,$6.00,FALSE,TRUE,TRUE
+D089,SC009,Well Drinks Half Off,1/2 off well drinks,Cocktails,$3.50,$7.00,FALSE,TRUE,TRUE
+D090,SC009,Truly/White Claw Friday,$4 Truly/White Claw,Beer/Seltzer,$4.00,$6.00,FALSE,TRUE,TRUE
+D091,SC009,Bomb Friday,$4 bombs,Shots,$4.00,$7.00,FALSE,TRUE,TRUE
+D092,SC009,Green Tea Shot Saturday,$3 green tea shots,Shots,$3.00,$6.00,FALSE,TRUE,TRUE
+D093,SC009,Tequila Shot Saturday,$3 tequila shots,Shots,$3.00,$6.00,FALSE,TRUE,TRUE
+D094,SC009,Corona Bottle,$3 Corona bottles,Beer/Seltzer,$3.00,$6.00,FALSE,TRUE,TRUE
+D095,SC010,Margarita Wednesday,$5 margaritas,Cocktails,$5.00,$9.00,FALSE,TRUE,TRUE
+D096,SC010,Fish Taco,$10 fish tacos,Food+Drink,$10.00,$15.00,FALSE,TRUE,TRUE
+D097,SC010,Modelo,$3 Modelos,Beer,$3.00,$6.00,FALSE,TRUE,TRUE

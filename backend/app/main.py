@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.api.v1 import venues, deals
+from app.api.admin import router as admin_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -21,6 +22,7 @@ app.add_middleware(
 # Include routers
 app.include_router(venues.router, prefix=settings.API_V1_PREFIX)
 app.include_router(deals.router, prefix=settings.API_V1_PREFIX)
+app.include_router(admin_router, prefix=settings.API_V1_PREFIX)
 
 @app.get("/")
 async def root():

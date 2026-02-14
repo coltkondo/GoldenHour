@@ -29,6 +29,9 @@ class Deal(Base, TimestampMixin):
     # Status
     active = Column(Boolean, default=True)
     verified = Column(Boolean, default=False)
+
+    # Tracking
+    source = Column(String(50), default="manual")  # "manual", "import", "user"
     
     # Relationships
     venue = relationship("Venue", backref="deals")
