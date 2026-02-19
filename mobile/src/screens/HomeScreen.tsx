@@ -86,14 +86,17 @@ export const HomeScreen = () => {
     return (
       <GradientBackground>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.colors.textOnPrimary} />
-          <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>
+          <ActivityIndicator size="large" color="#FFD700" />
+          <Text style={styles.loadingText}>
             Finding happy hours near you...
           </Text>
         </View>
       </GradientBackground>
     );
   }
+
+  // PRIMARY ACTION: Show Map if deals are live, otherwise show Explore
+  const primaryAction = timePeriod === 'goldenHour' || deals.length > 0 ? 'map' : 'explore';
 
   return (
     <GradientBackground>
@@ -102,181 +105,165 @@ export const HomeScreen = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.text} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FFD700" />
         }
       >
-        {/* Header Section */}
+        {/* Header Section - Simplified */}
         <View style={styles.headerSection}>
-          <View style={styles.headerLeft}>
-            <Text style={[styles.greetingEmoji]}>{greetingData.emoji}</Text>
-            <Text style={[styles.greetingTitle, { color: theme.colors.text }]}>
-              {greetingData.greeting}
-            </Text>
-            <Text style={[styles.greetingSub, { color: theme.colors.textSecondary }]}>
-              {greetingData.sub}
-            </Text>
-          </View>
-
-          {/* COD-style Mini Map */}
-          <MiniMap
-            userLocation={location}
-            venues={venues}
-            onPress={navigateToMap}
-          />
+          <Text style={styles.greetingTitle}>
+            {greetingData.greeting}
+          </Text>
+          <Text style={styles.greetingSub}>
+            {greetingData.sub}
+          </Text>
         </View>
 
-        {/* Quick Stats Bar */}
-        <View style={[styles.statsBar, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-          <View style={styles.statItem}>
-            <Text style={[styles.statNumber, { color: theme.colors.text }]}>{venues.length}</Text>
-            <Text style={[styles.statLabel, { color: theme.colors.textMuted }]}>NEARBY</Text>
-          </View>
-          <View style={[styles.statDivider, { backgroundColor: theme.colors.border }]} />
-          <View style={styles.statItem}>
-            <Text style={[styles.statNumber, { color: theme.colors.text }]}>{deals.length}</Text>
-            <Text style={[styles.statLabel, { color: theme.colors.textMuted }]}>DEALS LIVE</Text>
-          </View>
-          <View style={[styles.statDivider, { backgroundColor: theme.colors.border }]} />
-          <View style={styles.statItem}>
-            <Text style={[styles.statNumber, { color: theme.colors.secondary }]}>
-              {timePeriod === 'goldenHour' ? 'NOW' : '5PM'}
-            </Text>
-            <Text style={[styles.statLabel, { color: theme.colors.textMuted }]}>
-              {timePeriod === 'goldenHour' ? 'LIVE' : 'NEXT UP'}
-            </Text>
-          </View>
-        </View>
-
-        {/* Quick Navigation Cards */}
-        <View style={styles.quickNav}>
+        {/* ONE HERO ACTION - Gold CTA */}
+        {primaryAction === 'map' ? (
           <TouchableOpacity
-            style={[styles.quickNavCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
-            activeOpacity={0.8}
+            style={styles.heroCTA}
+            activeOpacity={0.9}
             onPress={navigateToMap}
           >
             <LinearGradient
-              colors={['#FF6B35', '#FF8A50']}
-              style={styles.quickNavIcon}
+              colors={['#FFD700', '#FFA500']}
+              style={styles.heroGradient}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
-              <Ionicons name="map" size={22} color="#FFF" />
+              <View style={styles.heroContent}>
+                <View style={styles.heroLeft}>
+                  <Text style={styles.heroTitle}>View Deals on Map</Text>
+                  <Text style={styles.heroSub}>{deals.length} deals live now</Text>
+                </View>
+                <Ionicons name="map" size={32} color="#0F0F14" />
+              </View>
             </LinearGradient>
-            <Text style={[styles.quickNavTitle, { color: theme.colors.text }]}>Map View</Text>
-            <Text style={[styles.quickNavSub, { color: theme.colors.textMuted }]}>See all spots</Text>
           </TouchableOpacity>
-
+        ) : (
           <TouchableOpacity
-            style={[styles.quickNavCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
-            activeOpacity={0.8}
+            style={styles.heroCTA}
+            activeOpacity={0.9}
             onPress={navigateToExplorer}
           >
             <LinearGradient
-              colors={['#FFD700', '#FFB300']}
-              style={styles.quickNavIcon}
+              colors={['#FFD700', '#FFA500']}
+              style={styles.heroGradient}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
-              <Ionicons name="compass" size={22} color="#FFF" />
+              <View style={styles.heroContent}>
+                <View style={styles.heroLeft}>
+                  <Text style={styles.heroTitle}>Explore & Earn Points</Text>
+                  <Text style={styles.heroSub}>Find hidden gems nearby</Text>
+                </View>
+                <Ionicons name="compass" size={32} color="#0F0F14" />
+              </View>
             </LinearGradient>
-            <Text style={[styles.quickNavTitle, { color: theme.colors.text }]}>Explore</Text>
-            <Text style={[styles.quickNavSub, { color: theme.colors.textMuted }]}>Earn rewards</Text>
           </TouchableOpacity>
+        )}
 
-          <TouchableOpacity
-            style={[styles.quickNavCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
-            activeOpacity={0.8}
-            onPress={() => navigation.navigate('ProfileTab')}
-          >
-            <LinearGradient
-              colors={['#7C4DFF', '#B388FF']}
-              style={styles.quickNavIcon}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <Ionicons name="person" size={22} color="#FFF" />
-            </LinearGradient>
-            <Text style={[styles.quickNavTitle, { color: theme.colors.text }]}>Profile</Text>
-            <Text style={[styles.quickNavSub, { color: theme.colors.textMuted }]}>Your stats</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Active Deals Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-              🔥 Deals Right Now
-            </Text>
-            <TouchableOpacity onPress={navigateToMap}>
-              <Text style={[styles.seeAll, { color: theme.colors.secondary }]}>See All</Text>
-            </TouchableOpacity>
+        {/* Quick Stats Bar - Reduced contrast on secondary info */}
+        <View style={styles.statsBar}>
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>{venues.length}</Text>
+            <Text style={styles.statLabel}>NEARBY</Text>
           </View>
-
-          {deals.length > 0 ? (
-            deals.slice(0, 5).map((deal) => (
-              <DealCard
-                key={deal.id}
-                deal={deal}
-                onPress={() => {
-                  const venue = venues.find(v => v.id === deal.venue_id);
-                  if (venue) navigateToVenue(venue);
-                }}
-              />
-            ))
-          ) : (
-            <View style={[styles.emptyDeals, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-              <Text style={styles.emptyIcon}>🍻</Text>
-              <Text style={[styles.emptyTitle, { color: theme.colors.text }]}>
-                Deals loading up soon
-              </Text>
-              <Text style={[styles.emptySub, { color: theme.colors.textMuted }]}>
-                Check back during happy hour for live deals
-              </Text>
-            </View>
-          )}
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>{deals.length}</Text>
+            <Text style={styles.statLabel}>LIVE</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={[styles.statNumber, timePeriod === 'goldenHour' && styles.statNumberActive]}>
+              {timePeriod === 'goldenHour' ? 'NOW' : '5PM'}
+            </Text>
+            <Text style={styles.statLabel}>
+              {timePeriod === 'goldenHour' ? 'ACTIVE' : 'NEXT'}
+            </Text>
+          </View>
         </View>
 
-        {/* Nearby Venues Section */}
+        {/* Active Deals Section - Simplified cards */}
+        {deals.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Deals Right Now</Text>
+            </View>
+
+            {deals.slice(0, 5).map((deal) => {
+              const venue = venues.find(v => v.id === deal.venue_id);
+              return (
+                <TouchableOpacity
+                  key={deal.id}
+                  style={styles.dealCard}
+                  activeOpacity={0.8}
+                  onPress={() => {
+                    if (venue) navigateToVenue(venue);
+                  }}
+                >
+                  <View style={styles.dealCardContent}>
+                    <Text style={styles.dealVenueName} numberOfLines={1}>
+                      {venue?.name || 'Venue'}
+                    </Text>
+                    <Text style={styles.dealHighlight} numberOfLines={2}>
+                      {deal.title}
+                    </Text>
+                    {deal.discount_percentage && (
+                      <View style={styles.dealBadge}>
+                        <Text style={styles.dealBadgeText}>{deal.discount_percentage}% OFF</Text>
+                      </View>
+                    )}
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color="#5A5D66" />
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
+
+        {/* Nearby Venues Section - Max 3 elements per card */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-              📍 Near You
-            </Text>
-            <TouchableOpacity onPress={navigateToMap}>
-              <Text style={[styles.seeAll, { color: theme.colors.secondary }]}>Map View</Text>
-            </TouchableOpacity>
+            <Text style={styles.sectionTitle}>Near You</Text>
           </View>
 
           {venues.slice(0, 6).map((venue) => (
             <TouchableOpacity
               key={venue.id}
-              style={[styles.venueRow, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
+              style={styles.venueCard}
               activeOpacity={0.8}
               onPress={() => navigateToVenue(venue)}
             >
-              <View style={styles.venueEmoji}>
-                <Text style={{ fontSize: 24 }}>
-                  {getVenueEmoji(venue.venue_type)}
-                </Text>
-              </View>
-              <View style={styles.venueInfo}>
-                <Text style={[styles.venueRowName, { color: theme.colors.text }]} numberOfLines={1}>
+              <View style={styles.venueCardContent}>
+                <Text style={styles.venueName} numberOfLines={1}>
                   {venue.name}
                 </Text>
-                <Text style={[styles.venueRowNeighborhood, { color: theme.colors.textMuted }]} numberOfLines={1}>
+                <Text style={styles.venueLocation} numberOfLines={1}>
                   {venue.neighborhood || venue.address}
                 </Text>
+                {venue.active && (
+                  <View style={styles.popularityBadge}>
+                    <View style={styles.liveDot} />
+                    <Text style={styles.liveText}>LIVE NOW</Text>
+                  </View>
+                )}
               </View>
-              {venue.active && (
-                <View style={styles.liveBadge}>
-                  <View style={styles.liveDot} />
-                  <Text style={styles.liveText}>LIVE</Text>
-                </View>
-              )}
-              <Ionicons name="chevron-forward" size={18} color={theme.colors.textMuted} />
+              <Ionicons name="chevron-forward" size={20} color="#5A5D66" />
             </TouchableOpacity>
           ))}
         </View>
+
+        {/* Secondary Action - Lower contrast outline button */}
+        <TouchableOpacity
+          style={styles.secondaryCTA}
+          activeOpacity={0.8}
+          onPress={() => navigation.navigate('ProfileTab')}
+        >
+          <Text style={styles.secondaryCTAText}>View Your Profile & Stats</Text>
+          <Ionicons name="chevron-forward" size={18} color="#A0A3AD" />
+        </TouchableOpacity>
 
         {/* Bottom spacing */}
         <View style={{ height: 100 }} />
@@ -284,20 +271,6 @@ export const HomeScreen = () => {
     </GradientBackground>
   );
 };
-
-function getVenueEmoji(type: string | null): string {
-  if (!type) return '🍻';
-  const lower = type.toLowerCase();
-  if (lower.includes('bar')) return '🍺';
-  if (lower.includes('restaurant')) return '🍽️';
-  if (lower.includes('club')) return '🎵';
-  if (lower.includes('rooftop')) return '🌆';
-  if (lower.includes('brewery')) return '🍺';
-  if (lower.includes('wine')) return '🍷';
-  if (lower.includes('lounge')) return '🍸';
-  if (lower.includes('pub')) return '🍺';
-  return '🍻';
-}
 
 const styles = StyleSheet.create({
   scroll: {
@@ -313,194 +286,225 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    marginTop: 12,
+    marginTop: 16,
     fontSize: 16,
     fontWeight: '600',
+    color: '#A0A3AD',
   },
 
-  // Header
+  // Header - Simplified, no emoji clutter
   headerSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
     marginBottom: 24,
   },
-  headerLeft: {
-    flex: 1,
-    marginRight: 16,
-  },
-  greetingEmoji: {
+  greetingTitle: {
     fontSize: 36,
+    fontWeight: '900',
+    letterSpacing: -1.5,
+    lineHeight: 40,
+    color: '#F5F7FA',
     marginBottom: 8,
   },
-  greetingTitle: {
-    fontSize: 32,
-    fontWeight: '900',
-    letterSpacing: -1,
-    lineHeight: 36,
-  },
   greetingSub: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
-    marginTop: 6,
-    lineHeight: 20,
+    color: '#A0A3AD',
+    lineHeight: 22,
   },
 
-  // Stats Bar
+  // ONE HERO CTA - Gold, high contrast, dominant
+  heroCTA: {
+    marginBottom: 24,
+    borderRadius: 16,
+    overflow: 'hidden',
+    // Subtle glow effect
+    shadowColor: '#FFD700',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  heroGradient: {
+    padding: 24,
+  },
+  heroContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  heroLeft: {
+    flex: 1,
+  },
+  heroTitle: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#0F0F14',
+    letterSpacing: -0.5,
+    marginBottom: 4,
+  },
+  heroSub: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#0F0F14',
+    opacity: 0.8,
+  },
+
+  // Stats Bar - Reduced contrast (30-40% as per rulebook)
   statsBar: {
     flexDirection: 'row',
-    borderRadius: 16,
-    borderWidth: 1,
+    backgroundColor: '#171A21',
+    borderRadius: 14,
     paddingVertical: 16,
-    marginBottom: 20,
+    marginBottom: 32,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   statItem: {
     flex: 1,
     alignItems: 'center',
   },
   statNumber: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '900',
     letterSpacing: -0.5,
+    color: '#F5F7FA',
+  },
+  statNumberActive: {
+    color: '#FFD700',
   },
   statLabel: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
-    letterSpacing: 1,
-    marginTop: 2,
+    letterSpacing: 1.2,
+    marginTop: 4,
+    color: '#5A5D66',
   },
   statDivider: {
     width: 1,
-    height: '80%',
+    height: '70%',
     alignSelf: 'center',
-  },
-
-  // Quick Nav
-  quickNav: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 28,
-  },
-  quickNavCard: {
-    flex: 1,
-    borderRadius: 16,
-    borderWidth: 1,
-    padding: 14,
-    alignItems: 'center',
-  },
-  quickNavIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  quickNavTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  quickNavSub: {
-    fontSize: 10,
-    fontWeight: '600',
-    marginTop: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
   },
 
   // Sections
   section: {
-    marginBottom: 28,
+    marginBottom: 32,
   },
   sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 14,
+    marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    letterSpacing: -0.3,
-  },
-  seeAll: {
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: 22,
+    fontWeight: '900',
+    letterSpacing: -0.5,
+    color: '#F5F7FA',
   },
 
-  // Empty deals state
-  emptyDeals: {
-    borderRadius: 16,
-    borderWidth: 1,
-    padding: 32,
-    alignItems: 'center',
-  },
-  emptyIcon: {
-    fontSize: 40,
-    marginBottom: 12,
-  },
-  emptyTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  emptySub: {
-    fontSize: 13,
-    fontWeight: '500',
-    textAlign: 'center',
-  },
-
-  // Venue Rows
-  venueRow: {
+  // Deal Cards - Max 3 elements: venue name, deal, badge
+  dealCard: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#171A21',
     borderRadius: 14,
+    padding: 16,
+    marginBottom: 10,
     borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    marginBottom: 8,
+    borderColor: 'rgba(255, 215, 0, 0.15)',
   },
-  venueEmoji: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255, 107, 53, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
+  dealCardContent: {
+    flex: 1,
     marginRight: 12,
   },
-  venueInfo: {
-    flex: 1,
-    marginRight: 8,
+  dealVenueName: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#F5F7FA',
+    letterSpacing: -0.3,
+    marginBottom: 6,
   },
-  venueRowName: {
-    fontSize: 15,
-    fontWeight: '700',
-    letterSpacing: -0.2,
+  dealHighlight: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#A0A3AD',
+    lineHeight: 19,
+    marginBottom: 8,
   },
-  venueRowNeighborhood: {
-    fontSize: 12,
-    fontWeight: '500',
-    marginTop: 2,
-  },
-  liveBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(76, 175, 80, 0.15)',
-    paddingHorizontal: 8,
+  dealBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(255, 215, 0, 0.15)',
+    paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8,
-    marginRight: 8,
+  },
+  dealBadgeText: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#FFD700',
+    letterSpacing: 0.5,
+  },
+
+  // Venue Cards - Max 3 elements: name, location, popularity
+  venueCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#171A21',
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  venueCardContent: {
+    flex: 1,
+    marginRight: 12,
+  },
+  venueName: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#F5F7FA',
+    letterSpacing: -0.3,
+    marginBottom: 6,
+  },
+  venueLocation: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#A0A3AD',
+    marginBottom: 8,
+  },
+  popularityBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
   },
   liveDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#4CAF50',
-    marginRight: 4,
+    backgroundColor: '#FFD700',
+    marginRight: 6,
   },
   liveText: {
-    color: '#4CAF50',
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 0.5,
+    color: '#FFD700',
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 0.8,
+  },
+
+  // Secondary CTA - Lower contrast, outline style
+  secondaryCTA: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+    borderRadius: 14,
+    paddingVertical: 16,
+    marginBottom: 20,
+  },
+  secondaryCTAText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#A0A3AD',
+    marginRight: 8,
   },
 });

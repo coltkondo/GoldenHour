@@ -11,6 +11,88 @@ import { VenueBottomSheet } from '../components/VenueBottomSheet';
 import { VenueMarker } from '../components/Map/VenueMarker';
 import { GradientBackground } from '../components/common/GradientBackground';
 
+// Dark map style for Google Maps
+const DARK_MAP_STYLE = [
+  { elementType: 'geometry', stylers: [{ color: '#1A1A1A' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#0F0F14' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#746855' }] },
+  {
+    featureType: 'administrative.locality',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#A0A3AD' }],
+  },
+  {
+    featureType: 'poi',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#5A5D66' }],
+  },
+  {
+    featureType: 'poi.park',
+    elementType: 'geometry',
+    stylers: [{ color: '#263c3f' }],
+  },
+  {
+    featureType: 'poi.park',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#6b9a76' }],
+  },
+  {
+    featureType: 'road',
+    elementType: 'geometry',
+    stylers: [{ color: '#2C2C2C' }],
+  },
+  {
+    featureType: 'road',
+    elementType: 'geometry.stroke',
+    stylers: [{ color: '#212a37' }],
+  },
+  {
+    featureType: 'road',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#9ca5b3' }],
+  },
+  {
+    featureType: 'road.highway',
+    elementType: 'geometry',
+    stylers: [{ color: '#3A3A3A' }],
+  },
+  {
+    featureType: 'road.highway',
+    elementType: 'geometry.stroke',
+    stylers: [{ color: '#1f2835' }],
+  },
+  {
+    featureType: 'road.highway',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#f3d19c' }],
+  },
+  {
+    featureType: 'transit',
+    elementType: 'geometry',
+    stylers: [{ color: '#2f3948' }],
+  },
+  {
+    featureType: 'transit.station',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#5A5D66' }],
+  },
+  {
+    featureType: 'water',
+    elementType: 'geometry',
+    stylers: [{ color: '#17263c' }],
+  },
+  {
+    featureType: 'water',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#515c6d' }],
+  },
+  {
+    featureType: 'water',
+    elementType: 'labels.text.stroke',
+    stylers: [{ color: '#17263c' }],
+  },
+];
+
 export const MapScreen = () => {
   const mapRef = useRef<MapView>(null);
   const { theme } = useTheme();
@@ -110,8 +192,8 @@ export const MapScreen = () => {
     return (
       <GradientBackground>
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color={theme.colors.text} />
-          <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>
+          <ActivityIndicator size="large" color="#FFD700" />
+          <Text style={styles.loadingText}>
             Loading happy hours...
           </Text>
         </View>
@@ -123,10 +205,16 @@ export const MapScreen = () => {
     return (
       <GradientBackground>
         <View style={styles.centerContainer}>
-          <Text style={styles.errorEmoji}>😵</Text>
-          <Text style={[styles.errorText, { color: theme.colors.text }]}>
+          <Text style={styles.errorText}>
             {locationError || error}
           </Text>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={loadNearbyVenues}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
         </View>
       </GradientBackground>
     );
@@ -138,6 +226,7 @@ export const MapScreen = () => {
         ref={mapRef}
         style={styles.map}
         provider={PROVIDER_GOOGLE}
+        customMapStyle={DARK_MAP_STYLE}
         initialRegion={location}
         showsUserLocation
         showsMyLocationButton={false}
@@ -153,23 +242,21 @@ export const MapScreen = () => {
         ))}
       </MapView>
 
-      {/* Top overlay - venue count pill */}
+      {/* Top overlay - simplified venue count */}
       <View style={styles.topOverlay}>
-        <View style={[styles.venueCount, { backgroundColor: theme.colors.tabBar }]}>
-          <Text style={styles.fireEmoji}>🔥</Text>
-          <Text style={[styles.venueCountText, { color: theme.colors.text }]}>
-            {visibleVenues.length} Happy Hours
-          </Text>
+        <View style={styles.venueCount}>
+          <Text style={styles.venueCountNumber}>{visibleVenues.length}</Text>
+          <Text style={styles.venueCountLabel}>LIVE</Text>
         </View>
       </View>
 
-      {/* Recenter button */}
+      {/* Recenter button - gold accent */}
       <TouchableOpacity
-        style={[styles.recenterButton, { backgroundColor: theme.colors.tabBar }]}
+        style={styles.recenterButton}
         onPress={recenterMap}
         activeOpacity={0.8}
       >
-        <Ionicons name="locate" size={22} color={theme.colors.primary} />
+        <Ionicons name="locate" size={24} color="#0F0F14" />
       </TouchableOpacity>
 
       {/* Bottom Sheet */}
@@ -200,18 +287,28 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   loadingText: {
-    marginTop: 12,
+    marginTop: 16,
     fontSize: 16,
     fontWeight: '600',
-  },
-  errorEmoji: {
-    fontSize: 48,
-    marginBottom: 12,
+    color: '#A0A3AD',
   },
   errorText: {
     fontSize: 16,
     textAlign: 'center',
     fontWeight: '600',
+    color: '#F5F7FA',
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: '#FFD700',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  retryButtonText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#0F0F14',
   },
   topOverlay: {
     position: 'absolute',
@@ -219,39 +316,46 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   venueCount: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    backgroundColor: '#0F0F14',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 215, 0, 0.3)',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 16,
+    shadowColor: '#FFD700',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 5,
+    alignItems: 'center',
   },
-  fireEmoji: {
-    fontSize: 16,
-    marginRight: 6,
+  venueCountNumber: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#FFD700',
+    letterSpacing: -0.5,
   },
-  venueCountText: {
-    fontSize: 14,
+  venueCountLabel: {
+    fontSize: 11,
     fontWeight: '700',
-    letterSpacing: -0.2,
+    color: '#A0A3AD',
+    letterSpacing: 1.2,
+    marginTop: 2,
   },
   recenterButton: {
     position: 'absolute',
-    top: 110,
+    top: 60,
     right: 16,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 4,
+    backgroundColor: '#FFD700',
+    shadowColor: '#FFD700',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 6,
   },
 });

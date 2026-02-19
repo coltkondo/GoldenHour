@@ -19,19 +19,20 @@ export const TabNavigator = () => {
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: theme.colors.tabBar,
-          borderTopColor: theme.colors.border,
+          backgroundColor: '#0F0F14', // Brand dark background
+          borderTopColor: 'rgba(255, 255, 255, 0.06)', // Subtle border
           borderTopWidth: 1,
           height: Platform.OS === 'ios' ? 88 : 64,
           paddingBottom: Platform.OS === 'ios' ? 28 : 8,
           paddingTop: 8,
         },
-        tabBarActiveTintColor: theme.colors.tabBarActive,
-        tabBarInactiveTintColor: theme.colors.tabBarInactive,
+        tabBarActiveTintColor: '#FFD700', // Gold for active (tappable)
+        tabBarInactiveTintColor: '#5A5D66', // Low-contrast gray for inactive
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '700',
-          letterSpacing: 0.3,
+          letterSpacing: 0.5,
+          marginTop: 4,
         },
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap = 'home';
@@ -51,22 +52,24 @@ export const TabNavigator = () => {
               break;
           }
 
+          // RULEBOOK: If it's gold, it's tappable. Simple icon treatment.
           if (focused) {
             return (
               <View style={styles.activeIconContainer}>
                 <LinearGradient
-                  colors={['#FF6B35', '#FFD700']}
+                  colors={['#FFD700', '#FFA500']} // Gold gradient only
                   style={styles.activeIconGradient}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                 >
-                  <Ionicons name={iconName} size={22} color="#FFFFFF" />
+                  <Ionicons name={iconName} size={24} color="#0F0F14" />
                 </LinearGradient>
               </View>
             );
           }
 
-          return <Ionicons name={iconName} size={22} color={color} />;
+          // Inactive state: simple icon, no decoration
+          return <Ionicons name={iconName} size={24} color={color} />;
         },
       })}
     >
@@ -99,10 +102,16 @@ const styles = StyleSheet.create({
     marginTop: -2,
   },
   activeIconGradient: {
-    width: 40,
-    height: 40,
+    width: 44, // Meets 44px minimum tap target
+    height: 44,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
+    // Subtle glow on active state
+    shadowColor: '#FFD700',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
 });

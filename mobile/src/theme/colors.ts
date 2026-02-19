@@ -1,24 +1,29 @@
-// Golden Hour - Time-Based Color System
-// Colors shift throughout the day to match the mood
+// Golden Hour - Time-Based Color System (Rulebook Compliant)
+// Dark-mode first with disciplined contrast and single gold accent
 
 export type TimePeriod = 'lateNight' | 'morning' | 'afternoon' | 'goldenHour' | 'evening';
 
 export interface ColorPalette {
+  // Core backgrounds (dark mode first)
   primary: string;
   primaryLight: string;
   secondary: string;
-  accent: string;
-  background: string;
-  backgroundGradient: string[];
-  surface: string;
+  accent: string; // GOLD - the only tappable accent color
+  background: string; // Near-black #0F0F14
+  backgroundGradient: string[]; // Only for backgrounds, never behind text
+  surface: string; // Slightly lighter #171A21
   surfaceElevated: string;
-  text: string;
-  textSecondary: string;
-  textMuted: string;
-  textOnPrimary: string;
-  border: string;
+  
+  // Text hierarchy (high contrast)
+  text: string; // Off-white #F5F7FA
+  textSecondary: string; // Muted gray #A0A3AD
+  textMuted: string; // Low-contrast gray #5A5D66
+  textOnPrimary: string; // For gold buttons
+  
+  // UI elements
+  border: string; // Subtle definition
   tabBar: string;
-  tabBarActive: string;
+  tabBarActive: string; // Gold
   tabBarInactive: string;
   cardBackground: string;
   cardBorder: string;
@@ -26,122 +31,122 @@ export interface ColorPalette {
   mapStyle: 'dark' | 'light';
 }
 
-// 12am - 6am: Indigo/Dark Purple + White/Light Grey
+// 12am - 6am: Deep indigo mood with gold accents
 const lateNightColors: ColorPalette = {
-  primary: '#7C4DFF',
-  primaryLight: '#B388FF',
-  secondary: '#CE93D8',
-  accent: '#E040FB',
-  background: '#1A0533',
-  backgroundGradient: ['#0D0019', '#1A0533', '#311B92', '#4A148C'],
-  surface: '#2D1B4E',
-  surfaceElevated: '#3D2B5E',
-  text: '#F3E5F5',
-  textSecondary: '#CE93D8',
-  textMuted: '#9575CD',
-  textOnPrimary: '#FFFFFF',
-  border: '#4A148C',
-  tabBar: '#1A0533',
-  tabBarActive: '#E040FB',
-  tabBarInactive: '#7C4DFF',
-  cardBackground: '#2D1B4E',
-  cardBorder: '#4A148C',
+  primary: '#0F0F14', // Near-black
+  primaryLight: '#171A21',
+  secondary: '#1A0F2E', // Deep purple tint
+  accent: '#FFD700', // GOLD - only tappable accent
+  background: '#0F0F14',
+  backgroundGradient: ['#0F0F14', '#1A0F2E', '#1A0533'], // Subtle indigo gradient
+  surface: '#171A21',
+  surfaceElevated: '#1F1F28',
+  text: '#F5F7FA', // Off-white
+  textSecondary: '#A0A3AD', // Muted gray
+  textMuted: '#5A5D66', // Low-contrast gray
+  textOnPrimary: '#0F0F14', // Dark text on gold
+  border: 'rgba(255, 255, 255, 0.06)',
+  tabBar: '#0F0F14',
+  tabBarActive: '#FFD700', // Gold
+  tabBarInactive: '#5A5D66',
+  cardBackground: '#171A21',
+  cardBorder: 'rgba(255, 255, 255, 0.06)',
   statusBarStyle: 'light',
   mapStyle: 'dark',
 };
 
-// 6am - 12pm: Soft blue + soft yellow
+// 6am - 12pm: Morning with subtle blue tint, still dark-mode first
 const morningColors: ColorPalette = {
-  primary: '#42A5F5',
-  primaryLight: '#90CAF9',
-  secondary: '#FFD54F',
-  accent: '#FF6B35',
-  background: '#E8F4FD',
-  backgroundGradient: ['#E3F2FD', '#BBDEFB', '#FFF9C4', '#FFF3E0'],
-  surface: '#FFFFFF',
-  surfaceElevated: '#F5F9FF',
-  text: '#1A237E',
-  textSecondary: '#3F51B5',
-  textMuted: '#7986CB',
-  textOnPrimary: '#FFFFFF',
-  border: '#BBDEFB',
-  tabBar: '#FFFFFF',
-  tabBarActive: '#1976D2',
-  tabBarInactive: '#90CAF9',
-  cardBackground: '#FFFFFF',
-  cardBorder: '#E3F2FD',
-  statusBarStyle: 'dark',
-  mapStyle: 'light',
-};
-
-// 12pm - 5pm: Comfort blue + gold
-const afternoonColors: ColorPalette = {
-  primary: '#1976D2',
-  primaryLight: '#64B5F6',
-  secondary: '#FFB300',
-  accent: '#FF6B35',
-  background: '#F0F7FF',
-  backgroundGradient: ['#E3F2FD', '#90CAF9', '#FFE082', '#FFF8E1'],
-  surface: '#FFFFFF',
-  surfaceElevated: '#F5F9FF',
-  text: '#0D47A1',
-  textSecondary: '#1565C0',
-  textMuted: '#64B5F6',
-  textOnPrimary: '#FFFFFF',
-  border: '#90CAF9',
-  tabBar: '#FFFFFF',
-  tabBarActive: '#0D47A1',
-  tabBarInactive: '#90CAF9',
-  cardBackground: '#FFFFFF',
-  cardBorder: '#E3F2FD',
-  statusBarStyle: 'dark',
-  mapStyle: 'light',
-};
-
-// 5pm - 8pm: Deep orange (PRIMARY - golden hour!)
-const goldenHourColors: ColorPalette = {
-  primary: '#FF6B35',
-  primaryLight: '#FF8A50',
-  secondary: '#FFB74D',
-  accent: '#FFD700',
-  background: '#1A0A00',
-  backgroundGradient: ['#BF360C', '#E65100', '#FF6B35', '#FF8A50', '#FFB74D'],
-  surface: 'rgba(255, 255, 255, 0.12)',
-  surfaceElevated: 'rgba(255, 255, 255, 0.18)',
-  text: '#FFFFFF',
-  textSecondary: '#FFE0B2',
-  textMuted: '#FFCC80',
-  textOnPrimary: '#FFFFFF',
-  border: 'rgba(255, 255, 255, 0.2)',
-  tabBar: 'rgba(26, 10, 0, 0.95)',
-  tabBarActive: '#FFD700',
-  tabBarInactive: '#FF8A50',
-  cardBackground: 'rgba(255, 255, 255, 0.12)',
-  cardBorder: 'rgba(255, 183, 77, 0.3)',
+  primary: '#0F0F14',
+  primaryLight: '#171A21',
+  secondary: '#0F1419', // Cool blue-black tint
+  accent: '#FFD700', // GOLD - only tappable accent
+  background: '#0F0F14',
+  backgroundGradient: ['#0F0F14', '#0F1419', '#1A1F2E'], // Subtle blue gradient
+  surface: '#171A21',
+  surfaceElevated: '#1F1F28',
+  text: '#F5F7FA',
+  textSecondary: '#A0A3AD',
+  textMuted: '#5A5D66',
+  textOnPrimary: '#0F0F14',
+  border: 'rgba(255, 255, 255, 0.06)',
+  tabBar: '#0F0F14',
+  tabBarActive: '#FFD700', // Gold
+  tabBarInactive: '#5A5D66',
+  cardBackground: '#171A21',
+  cardBorder: 'rgba(255, 255, 255, 0.06)',
   statusBarStyle: 'light',
   mapStyle: 'dark',
 };
 
-// 8pm - 12am: Navy + gold
+// 12pm - 5pm: Afternoon with neutral warmth
+const afternoonColors: ColorPalette = {
+  primary: '#0F0F14',
+  primaryLight: '#171A21',
+  secondary: '#1A1612', // Warm neutral tint
+  accent: '#FFD700', // GOLD - only tappable accent
+  background: '#0F0F14',
+  backgroundGradient: ['#0F0F14', '#1A1612', '#1F1A16'], // Subtle warm gradient
+  surface: '#171A21',
+  surfaceElevated: '#1F1F28',
+  text: '#F5F7FA',
+  textSecondary: '#A0A3AD',
+  textMuted: '#5A5D66',
+  textOnPrimary: '#0F0F14',
+  border: 'rgba(255, 255, 255, 0.06)',
+  tabBar: '#0F0F14',
+  tabBarActive: '#FFD700', // Gold
+  tabBarInactive: '#5A5D66',
+  cardBackground: '#171A21',
+  cardBorder: 'rgba(255, 255, 255, 0.06)',
+  statusBarStyle: 'light',
+  mapStyle: 'dark',
+};
+
+// 5pm - 8pm: GOLDEN HOUR - Enhanced gold presence (PRIMARY TIME)
+const goldenHourColors: ColorPalette = {
+  primary: '#0F0F14',
+  primaryLight: '#171A21',
+  secondary: '#1A0F05', // Deep orange-black tint
+  accent: '#FFD700', // GOLD - maximum emphasis
+  background: '#0F0F14',
+  backgroundGradient: ['#0F0F14', '#1A0F05', '#1F1408'], // Warm golden gradient
+  surface: '#171A21',
+  surfaceElevated: '#1F1A14',
+  text: '#F5F7FA',
+  textSecondary: '#FFD700', // GOLD for secondary text during golden hour
+  textMuted: '#A0A3AD', // Keep muted elements neutral
+  textOnPrimary: '#0F0F14',
+  border: 'rgba(255, 215, 0, 0.15)', // Gold-tinted borders
+  tabBar: '#0F0F14',
+  tabBarActive: '#FFD700', // Gold
+  tabBarInactive: '#A0A3AD', // Higher contrast during prime time
+  cardBackground: '#171A21',
+  cardBorder: 'rgba(255, 215, 0, 0.15)', // Gold glow on cards
+  statusBarStyle: 'light',
+  mapStyle: 'dark',
+};
+
+// 8pm - 12am: Evening with cool navy tint
 const eveningColors: ColorPalette = {
-  primary: '#1B3A5C',
-  primaryLight: '#2C5282',
-  secondary: '#FFD700',
-  accent: '#FF6B35',
-  background: '#0D1B2A',
-  backgroundGradient: ['#050D18', '#0D1B2A', '#1B2838', '#1B3A5C'],
-  surface: '#1B3A5C',
-  surfaceElevated: '#2C5282',
-  text: '#F0E6D3',
-  textSecondary: '#B8C9DB',
-  textMuted: '#6B8299',
-  textOnPrimary: '#FFFFFF',
-  border: '#2C5282',
-  tabBar: '#0D1B2A',
-  tabBarActive: '#FFD700',
-  tabBarInactive: '#6B8299',
-  cardBackground: '#1B3A5C',
-  cardBorder: '#2C5282',
+  primary: '#0F0F14',
+  primaryLight: '#171A21',
+  secondary: '#0D1116', // Cool navy tint
+  accent: '#FFD700', // GOLD - only tappable accent
+  background: '#0F0F14',
+  backgroundGradient: ['#0F0F14', '#0D1116', '#0F1419'], // Subtle navy gradient
+  surface: '#171A21',
+  surfaceElevated: '#1F1F28',
+  text: '#F5F7FA',
+  textSecondary: '#A0A3AD',
+  textMuted: '#5A5D66',
+  textOnPrimary: '#0F0F14',
+  border: 'rgba(255, 255, 255, 0.06)',
+  tabBar: '#0F0F14',
+  tabBarActive: '#FFD700', // Gold
+  tabBarInactive: '#5A5D66',
+  cardBackground: '#171A21',
+  cardBorder: 'rgba(255, 255, 255, 0.06)',
   statusBarStyle: 'light',
   mapStyle: 'dark',
 };
@@ -169,13 +174,66 @@ export function getColors(date?: Date): ColorPalette {
 }
 
 // Brand colors that stay constant regardless of time
+// RULEBOOK COMPLIANT: Single accent color system
 export const brand = {
-  orange: '#FF6B35',
-  orangeLight: '#FF8A50',
+  // Primary accent (tappable elements)
   gold: '#FFD700',
-  white: '#FFFFFF',
-  black: '#0A0A0A',
+  goldLight: '#FFA500',
+  
+  // Dark mode backgrounds
+  backgroundPrimary: '#0F0F14',
+  backgroundSecondary: '#171A21',
+  
+  // Text hierarchy
+  textPrimary: '#F5F7FA',
+  textSecondary: '#A0A3AD',
+  textMuted: '#5A5D66',
+  
+  // Borders
+  borderSubtle: 'rgba(255, 255, 255, 0.06)',
+  borderGold: 'rgba(255, 215, 0, 0.15)',
+  
+  // Status colors (use sparingly)
   success: '#4CAF50',
   error: '#FF3B30',
   warning: '#FFB300',
+  
+  // Legacy (deprecated - avoid using)
+  orange: '#FF6B35', // Remove gradual use
+  orangeLight: '#FF8A50', // Remove gradual use
+  white: '#FFFFFF',
+  black: '#0A0A0A',
+};
+
+// Helper function to get proper contrast ratios
+export function getContrastColor(background: string): string {
+  // For dark backgrounds, return light text
+  if (background === brand.backgroundPrimary || background === brand.backgroundSecondary) {
+    return brand.textPrimary;
+  }
+  // For gold backgrounds, return dark text
+  if (background === brand.gold) {
+    return brand.backgroundPrimary;
+  }
+  return brand.textPrimary;
+}
+
+// Semantic color helpers for consistency
+export const semantic = {
+  // Actions (always gold)
+  actionPrimary: brand.gold,
+  actionPrimaryGradient: [brand.gold, brand.goldLight],
+  actionSecondary: 'transparent', // Outline style
+  actionDisabled: brand.textMuted,
+  
+  // Cards
+  cardBackground: brand.backgroundSecondary,
+  cardBorder: brand.borderSubtle,
+  cardBorderActive: brand.borderGold,
+  
+  // Status indicators
+  live: brand.gold,
+  inactive: brand.textMuted,
+  success: brand.success,
+  error: brand.error,
 };

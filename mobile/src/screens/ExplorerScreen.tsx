@@ -16,29 +16,27 @@ const { width } = Dimensions.get('window');
 
 // DC Neighborhoods for the "map" to fill out
 const DC_NEIGHBORHOODS = [
-  { id: '1', name: 'Dupont Circle', emoji: '🔵', visited: true, venues: 12 },
-  { id: '2', name: 'Georgetown', emoji: '🏛️', visited: true, venues: 15 },
-  { id: '3', name: 'Adams Morgan', emoji: '🎭', visited: false, venues: 18 },
-  { id: '4', name: 'U Street', emoji: '🎵', visited: true, venues: 14 },
-  { id: '5', name: 'Capitol Hill', emoji: '🏛️', visited: false, venues: 10 },
-  { id: '6', name: 'Navy Yard', emoji: '⚓', visited: false, venues: 8 },
-  { id: '7', name: 'Shaw', emoji: '🎨', visited: true, venues: 11 },
-  { id: '8', name: 'Penn Quarter', emoji: '🏀', visited: false, venues: 9 },
-  { id: '9', name: 'Chinatown', emoji: '🏮', visited: false, venues: 7 },
-  { id: '10', name: 'Foggy Bottom', emoji: '🌫️', visited: false, venues: 6 },
-  { id: '11', name: 'H Street', emoji: '🚃', visited: true, venues: 13 },
-  { id: '12', name: '14th Street', emoji: '🍽️', visited: false, venues: 16 },
+  { id: '1', name: 'Dupont Circle', visited: true, venues: 12 },
+  { id: '2', name: 'Georgetown', visited: true, venues: 15 },
+  { id: '3', name: 'Adams Morgan', visited: false, venues: 18 },
+  { id: '4', name: 'U Street', visited: true, venues: 14 },
+  { id: '5', name: 'Capitol Hill', visited: false, venues: 10 },
+  { id: '6', name: 'Navy Yard', visited: false, venues: 8 },
+  { id: '7', name: 'Shaw', visited: true, venues: 11 },
+  { id: '8', name: 'Penn Quarter', visited: false, venues: 9 },
+  { id: '9', name: 'Chinatown', visited: false, venues: 7 },
+  { id: '10', name: 'Foggy Bottom', visited: false, venues: 6 },
+  { id: '11', name: 'H Street', visited: true, venues: 13 },
+  { id: '12', name: '14th Street', visited: false, venues: 16 },
 ];
 
 const REWARDS = [
-  { id: '1', title: 'First Sip', desc: 'Visit your first happy hour', icon: '🍺', earned: true, requirement: 1 },
-  { id: '2', title: 'Regular', desc: 'Visit 5 happy hours', icon: '⭐', earned: true, requirement: 5 },
-  { id: '3', title: 'Explorer', desc: 'Visit 10 different spots', icon: '🧭', earned: false, requirement: 10 },
-  { id: '4', title: 'Neighborhood Pro', desc: 'Hit 5 different neighborhoods', icon: '🗺️', earned: true, requirement: 5 },
-  { id: '5', title: 'Golden Legend', desc: 'Visit 25 happy hours', icon: '👑', earned: false, requirement: 25 },
-  { id: '6', title: 'DC Native', desc: 'Visit all neighborhoods', icon: '🏆', earned: false, requirement: 12 },
-  { id: '7', title: 'Social Butterfly', desc: 'Leave 10 reviews', icon: '🦋', earned: false, requirement: 10 },
-  { id: '8', title: 'Photographer', desc: 'Upload 5 photos', icon: '📸', earned: false, requirement: 5 },
+  { id: '1', title: 'First Sip', desc: 'Visit your first happy hour', earned: true, requirement: 1 },
+  { id: '2', title: 'Regular', desc: 'Visit 5 happy hours', earned: true, requirement: 5 },
+  { id: '3', title: 'Explorer', desc: 'Visit 10 different spots', earned: false, requirement: 10 },
+  { id: '4', title: 'Neighborhood Pro', desc: 'Hit 5 different neighborhoods', earned: true, requirement: 5 },
+  { id: '5', title: 'Golden Legend', desc: 'Visit 25 happy hours', earned: false, requirement: 25 },
+  { id: '6', title: 'DC Native', desc: 'Visit all neighborhoods', earned: false, requirement: 12 },
 ];
 
 export const ExplorerScreen = () => {
@@ -57,117 +55,100 @@ export const ExplorerScreen = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
+        {/* Header - Simplified */}
         <View style={styles.header}>
-          <Text style={[styles.headerTitle, { color: theme.colors.text }]}>
-            Explorer
-          </Text>
-          <Text style={[styles.headerSub, { color: theme.colors.textSecondary }]}>
-            Fill out your DC happy hour map
-          </Text>
+          <Text style={styles.headerTitle}>Explorer</Text>
+          <Text style={styles.headerSub}>Complete your DC map</Text>
         </View>
 
-        {/* Progress Ring */}
-        <View style={[styles.progressCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-          <View style={styles.progressRing}>
-            <LinearGradient
-              colors={['#FF6B35', '#FFD700']}
-              style={styles.ringGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <View style={[styles.ringInner, { backgroundColor: theme.colors.surface }]}>
-                <Text style={[styles.ringPercent, { color: theme.colors.text }]}>
-                  {completionPct}%
-                </Text>
-                <Text style={[styles.ringLabel, { color: theme.colors.textMuted }]}>
-                  COMPLETE
-                </Text>
-              </View>
-            </LinearGradient>
+        {/* RULEBOOK: Progress bars outperform explanations - Visual progress bar instead of ring */}
+        <View style={styles.progressCard}>
+          <View style={styles.progressHeader}>
+            <Text style={styles.progressPercent}>{completionPct}%</Text>
+            <Text style={styles.progressLabel}>COMPLETE</Text>
           </View>
-          <View style={styles.progressStats}>
-            <View style={styles.progressStat}>
-              <Text style={[styles.progressStatNum, { color: theme.colors.text }]}>{visitedCount}</Text>
-              <Text style={[styles.progressStatLabel, { color: theme.colors.textMuted }]}>HOODS HIT</Text>
+          
+          {/* Visual progress bar */}
+          <View style={styles.progressBarContainer}>
+            <View style={styles.progressBarBg}>
+              <LinearGradient
+                colors={['#FFD700', '#FFA500']}
+                style={[styles.progressBarFill, { width: `${completionPct}%` }]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+              />
             </View>
-            <View style={styles.progressStat}>
-              <Text style={[styles.progressStatNum, { color: theme.colors.text }]}>{earnedRewards}</Text>
-              <Text style={[styles.progressStatLabel, { color: theme.colors.textMuted }]}>BADGES</Text>
+          </View>
+
+          {/* Stats - Condensed */}
+          <View style={styles.statsRow}>
+            <View style={styles.stat}>
+              <Text style={styles.statNum}>{visitedCount}</Text>
+              <Text style={styles.statLabel}>HOODS</Text>
             </View>
-            <View style={styles.progressStat}>
-              <Text style={[styles.progressStatNum, { color: theme.colors.secondary }]}>#{3}</Text>
-              <Text style={[styles.progressStatLabel, { color: theme.colors.textMuted }]}>RANK</Text>
+            <View style={styles.statDivider} />
+            <View style={styles.stat}>
+              <Text style={styles.statNum}>{earnedRewards}</Text>
+              <Text style={styles.statLabel}>BADGES</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.stat}>
+              <Text style={[styles.statNum, { color: '#FFD700' }]}>#{3}</Text>
+              <Text style={styles.statLabel}>RANK</Text>
             </View>
           </View>
         </View>
 
-        {/* Tab Selector */}
-        <View style={[styles.tabBar, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
+        {/* Tab Selector - Gold accent for active */}
+        <View style={styles.tabBar}>
           {(['map', 'rewards', 'submit'] as const).map((tab) => (
             <TouchableOpacity
               key={tab}
-              style={[styles.tab, selectedTab === tab && { backgroundColor: theme.colors.primary }]}
+              style={[
+                styles.tab,
+                selectedTab === tab && styles.tabActive,
+              ]}
               onPress={() => setSelectedTab(tab)}
               activeOpacity={0.8}
             >
-              <Text
-                style={[
-                  styles.tabText,
-                  { color: selectedTab === tab ? '#FFF' : theme.colors.textMuted },
-                ]}
-              >
-                {tab === 'map' ? '🗺️ Map' : tab === 'rewards' ? '🏆 Rewards' : '➕ Submit'}
+              <Text style={[styles.tabText, selectedTab === tab && styles.tabTextActive]}>
+                {tab === 'map' ? 'Map' : tab === 'rewards' ? 'Rewards' : 'Submit'}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        {/* Map Tab */}
+        {/* Map Tab - Simplified cards, no emojis */}
         {selectedTab === 'map' && (
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-              DC Neighborhoods
-            </Text>
+            <Text style={styles.sectionTitle}>DC Neighborhoods</Text>
             <View style={styles.neighborhoodGrid}>
               {DC_NEIGHBORHOODS.map((hood) => (
                 <TouchableOpacity
                   key={hood.id}
                   style={[
                     styles.neighborhoodCard,
-                    {
-                      backgroundColor: hood.visited ? theme.colors.primary : theme.colors.surface,
-                      borderColor: hood.visited ? theme.colors.secondary : theme.colors.border,
-                    },
+                    hood.visited && styles.neighborhoodCardVisited,
                   ]}
                   activeOpacity={0.8}
                 >
-                  <Text style={styles.hoodEmoji}>{hood.emoji}</Text>
-                  <Text
-                    style={[
-                      styles.hoodName,
-                      { color: hood.visited ? '#FFF' : theme.colors.text },
-                    ]}
-                    numberOfLines={1}
-                  >
+                  {/* RULEBOOK: Max 3 elements per card */}
+                  {/* 1. Name */}
+                  <Text style={[styles.hoodName, hood.visited && styles.hoodNameVisited]} numberOfLines={1}>
                     {hood.name}
                   </Text>
-                  <Text
-                    style={[
-                      styles.hoodVenues,
-                      { color: hood.visited ? 'rgba(255,255,255,0.8)' : theme.colors.textMuted },
-                    ]}
-                  >
+                  {/* 2. Venue count */}
+                  <Text style={[styles.hoodVenues, hood.visited && styles.hoodVenuesVisited]}>
                     {hood.venues} spots
                   </Text>
-                  {hood.visited && (
+                  {/* 3. Status indicator */}
+                  {hood.visited ? (
                     <View style={styles.checkBadge}>
-                      <Ionicons name="checkmark" size={12} color="#FFF" />
+                      <Ionicons name="checkmark" size={14} color="#0F0F14" />
                     </View>
-                  )}
-                  {!hood.visited && (
+                  ) : (
                     <View style={styles.lockBadge}>
-                      <Ionicons name="lock-closed" size={10} color={theme.colors.textMuted} />
+                      <Ionicons name="lock-closed" size={12} color="#5A5D66" />
                     </View>
                   )}
                 </TouchableOpacity>
@@ -176,86 +157,71 @@ export const ExplorerScreen = () => {
           </View>
         )}
 
-        {/* Rewards Tab */}
+        {/* Rewards Tab - Simplified, no emojis */}
         {selectedTab === 'rewards' && (
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-              Badges & Rewards
-            </Text>
+            <Text style={styles.sectionTitle}>Your Badges</Text>
             {REWARDS.map((reward) => (
               <View
                 key={reward.id}
                 style={[
                   styles.rewardCard,
-                  {
-                    backgroundColor: theme.colors.surface,
-                    borderColor: reward.earned ? theme.colors.secondary : theme.colors.border,
-                    opacity: reward.earned ? 1 : 0.6,
-                  },
+                  !reward.earned && styles.rewardCardLocked,
                 ]}
               >
-                <Text style={styles.rewardIcon}>{reward.icon}</Text>
+                {/* RULEBOOK: Max 3 elements */}
+                {/* 1. Title */}
                 <View style={styles.rewardContent}>
-                  <Text style={[styles.rewardTitle, { color: theme.colors.text }]}>
+                  <Text style={[styles.rewardTitle, !reward.earned && styles.rewardTitleLocked]}>
                     {reward.title}
                   </Text>
-                  <Text style={[styles.rewardDesc, { color: theme.colors.textMuted }]}>
-                    {reward.desc}
-                  </Text>
+                  {/* 2. Description */}
+                  <Text style={styles.rewardDesc}>{reward.desc}</Text>
                 </View>
+                {/* 3. Status icon */}
                 {reward.earned ? (
-                  <View style={styles.earnedBadge}>
-                    <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />
-                  </View>
+                  <Ionicons name="checkmark-circle" size={28} color="#FFD700" />
                 ) : (
-                  <View style={[styles.lockedBadge, { borderColor: theme.colors.border }]}>
-                    <Ionicons name="lock-closed" size={16} color={theme.colors.textMuted} />
-                  </View>
+                  <Ionicons name="lock-closed" size={20} color="#5A5D66" />
                 )}
               </View>
             ))}
           </View>
         )}
 
-        {/* Submit Tab */}
+        {/* Submit Tab - One primary action */}
         {selectedTab === 'submit' && (
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-              Submit a Happy Hour
-            </Text>
-            <View style={[styles.submitCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-              <Text style={styles.submitEmoji}>🍻</Text>
-              <Text style={[styles.submitTitle, { color: theme.colors.text }]}>
-                Know a spot we're missing?
+            <Text style={styles.sectionTitle}>Submit Happy Hour</Text>
+            
+            {/* RULEBOOK: One hero CTA */}
+            <View style={styles.submitCard}>
+              <Text style={styles.submitTitle}>Know a spot we're missing?</Text>
+              <Text style={styles.submitDesc}>
+                Add a venue and earn points for verified submissions
               </Text>
-              <Text style={[styles.submitDesc, { color: theme.colors.textMuted }]}>
-                Help the community by adding a new happy hour venue. Earn badges for verified submissions!
-              </Text>
-              <TouchableOpacity
-                style={[styles.submitButton, { backgroundColor: theme.colors.primary }]}
-                activeOpacity={0.8}
-              >
-                <Ionicons name="add-circle" size={20} color="#FFF" />
-                <Text style={styles.submitButtonText}>Submit New Venue</Text>
+              
+              <TouchableOpacity style={styles.submitButton} activeOpacity={0.9}>
+                <LinearGradient
+                  colors={['#FFD700', '#FFA500']}
+                  style={styles.submitGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <Ionicons name="add-circle" size={20} color="#0F0F14" />
+                  <Text style={styles.submitButtonText}>Submit Venue</Text>
+                </LinearGradient>
               </TouchableOpacity>
             </View>
 
-            {/* Submission tips */}
-            <View style={[styles.tipsCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-              <Text style={[styles.tipsTitle, { color: theme.colors.text }]}>
-                💡 Submission Tips
-              </Text>
-              {[
-                'Include the venue name and address',
-                'Add happy hour days and times',
-                'List specific deals (e.g. $5 drafts)',
-                'Mention any food specials',
-              ].map((tip, i) => (
-                <View key={i} style={styles.tipRow}>
-                  <Ionicons name="checkmark-circle" size={16} color={theme.colors.secondary} />
-                  <Text style={[styles.tipText, { color: theme.colors.textSecondary }]}>{tip}</Text>
-                </View>
-              ))}
+            {/* Tips - Simplified */}
+            <View style={styles.tipsCard}>
+              <Text style={styles.tipsTitle}>What to Include</Text>
+              <View style={styles.tipsList}>
+                <Text style={styles.tipText}>• Venue name and address</Text>
+                <Text style={styles.tipText}>• Happy hour days and times</Text>
+                <Text style={styles.tipText}>• Specific deals (e.g. $5 drafts)</Text>
+              </View>
             </View>
           </View>
         )}
@@ -277,93 +243,114 @@ const styles = StyleSheet.create({
 
   // Header
   header: {
-    marginBottom: 20,
+    marginBottom: 24,
   },
   headerTitle: {
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: '900',
-    letterSpacing: -1,
+    letterSpacing: -1.5,
+    color: '#F5F7FA',
   },
   headerSub: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
-    marginTop: 4,
+    marginTop: 6,
+    color: '#A0A3AD',
   },
 
-  // Progress Card
+  // Progress Card - Visual bar instead of ring
   progressCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 20,
+    backgroundColor: '#171A21',
+    borderRadius: 16,
     borderWidth: 1,
+    borderColor: 'rgba(255, 215, 0, 0.2)',
     padding: 20,
     marginBottom: 20,
   },
-  progressRing: {
-    marginRight: 20,
-  },
-  ringGradient: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  ringInner: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  ringPercent: {
-    fontSize: 24,
-    fontWeight: '900',
-    letterSpacing: -1,
-  },
-  ringLabel: {
-    fontSize: 8,
-    fontWeight: '700',
-    letterSpacing: 1,
-  },
-  progressStats: {
-    flex: 1,
-    gap: 8,
-  },
-  progressStat: {
+  progressHeader: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    gap: 8,
+    marginBottom: 12,
   },
-  progressStatNum: {
+  progressPercent: {
+    fontSize: 40,
+    fontWeight: '900',
+    letterSpacing: -1.5,
+    color: '#FFD700',
+    marginRight: 12,
+  },
+  progressLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    color: '#A0A3AD',
+  },
+  progressBarContainer: {
+    marginBottom: 16,
+  },
+  progressBarBg: {
+    height: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  stat: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  statNum: {
     fontSize: 22,
     fontWeight: '900',
     letterSpacing: -0.5,
-    minWidth: 35,
+    color: '#F5F7FA',
   },
-  progressStatLabel: {
+  statLabel: {
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 1,
+    marginTop: 2,
+    color: '#5A5D66',
+  },
+  statDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
   },
 
-  // Tab Bar
+  // Tab Bar - Gold for active
   tabBar: {
     flexDirection: 'row',
+    backgroundColor: '#171A21',
     borderRadius: 14,
     borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     padding: 4,
-    marginBottom: 20,
+    marginBottom: 24,
   },
   tab: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderRadius: 10,
     alignItems: 'center',
   },
+  tabActive: {
+    backgroundColor: 'transparent',
+  },
   tabText: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '700',
+    color: '#5A5D66',
+  },
+  tabTextActive: {
+    color: '#FFD700',
   },
 
   // Sections
@@ -371,13 +358,14 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    letterSpacing: -0.3,
-    marginBottom: 14,
+    fontSize: 22,
+    fontWeight: '900',
+    letterSpacing: -0.5,
+    marginBottom: 16,
+    color: '#F5F7FA',
   },
 
-  // Neighborhood Grid
+  // Neighborhood Grid - No emojis, gold for visited
   neighborhoodGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -385,135 +373,155 @@ const styles = StyleSheet.create({
   },
   neighborhoodCard: {
     width: (width - 50) / 2,
+    backgroundColor: '#171A21',
     borderRadius: 14,
-    borderWidth: 1.5,
-    padding: 14,
-    position: 'relative',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+    padding: 16,
+    minHeight: 90,
+    justifyContent: 'space-between',
   },
-  hoodEmoji: {
-    fontSize: 24,
-    marginBottom: 6,
+  neighborhoodCardVisited: {
+    backgroundColor: 'rgba(255, 215, 0, 0.1)',
+    borderColor: 'rgba(255, 215, 0, 0.3)',
   },
   hoodName: {
-    fontSize: 14,
-    fontWeight: '700',
-    letterSpacing: -0.2,
+    fontSize: 15,
+    fontWeight: '800',
+    letterSpacing: -0.3,
+    color: '#F5F7FA',
+    marginBottom: 6,
+  },
+  hoodNameVisited: {
+    color: '#FFD700',
   },
   hoodVenues: {
     fontSize: 12,
     fontWeight: '600',
-    marginTop: 2,
+    color: '#A0A3AD',
+  },
+  hoodVenuesVisited: {
+    color: 'rgba(255, 215, 0, 0.8)',
   },
   checkBadge: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: '#4CAF50',
+    top: 12,
+    right: 12,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#FFD700',
     justifyContent: 'center',
     alignItems: 'center',
   },
   lockBadge: {
     position: 'absolute',
-    top: 10,
-    right: 10,
+    top: 12,
+    right: 12,
   },
 
-  // Rewards
+  // Rewards - Simplified
   rewardCard: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#171A21',
     borderRadius: 14,
     borderWidth: 1,
-    padding: 14,
+    borderColor: 'rgba(255, 215, 0, 0.3)',
+    padding: 16,
     marginBottom: 10,
   },
-  rewardIcon: {
-    fontSize: 28,
-    marginRight: 12,
+  rewardCardLocked: {
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+    opacity: 0.5,
   },
   rewardContent: {
     flex: 1,
+    marginRight: 12,
   },
   rewardTitle: {
-    fontSize: 15,
-    fontWeight: '700',
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#F5F7FA',
+    marginBottom: 4,
+  },
+  rewardTitleLocked: {
+    color: '#A0A3AD',
   },
   rewardDesc: {
-    fontSize: 12,
-    fontWeight: '500',
-    marginTop: 2,
-  },
-  earnedBadge: {},
-  lockedBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 1.5,
-    justifyContent: 'center',
-    alignItems: 'center',
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#A0A3AD',
   },
 
-  // Submit
+  // Submit - One hero CTA
   submitCard: {
+    backgroundColor: '#171A21',
     borderRadius: 16,
     borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     padding: 24,
     alignItems: 'center',
     marginBottom: 16,
   },
-  submitEmoji: {
-    fontSize: 48,
-    marginBottom: 12,
-  },
   submitTitle: {
-    fontSize: 18,
-    fontWeight: '800',
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#F5F7FA',
     marginBottom: 8,
+    textAlign: 'center',
   },
   submitDesc: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
+    color: '#A0A3AD',
     textAlign: 'center',
     lineHeight: 20,
-    marginBottom: 16,
+    marginBottom: 20,
   },
   submitButton: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#FFD700',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  submitGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 24,
     paddingVertical: 14,
-    borderRadius: 14,
     gap: 8,
   },
   submitButtonText: {
-    color: '#FFFFFF',
+    color: '#0F0F14',
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: '900',
   },
 
-  // Tips
+  // Tips - Simplified
   tipsCard: {
-    borderRadius: 16,
+    backgroundColor: '#171A21',
+    borderRadius: 14,
     borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     padding: 16,
   },
   tipsTitle: {
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: '800',
+    color: '#F5F7FA',
     marginBottom: 12,
   },
-  tipRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  tipsList: {
     gap: 8,
-    marginBottom: 8,
   },
   tipText: {
     fontSize: 13,
-    fontWeight: '500',
-    flex: 1,
+    fontWeight: '600',
+    color: '#A0A3AD',
+    lineHeight: 18,
   },
 });

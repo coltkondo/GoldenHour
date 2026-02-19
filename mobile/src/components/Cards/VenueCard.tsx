@@ -1,5 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Venue } from '../../types/api';
 
 interface VenueCardProps {
@@ -49,20 +51,6 @@ export const VenueCard: React.FC<VenueCardProps> = ({
     onPress(venue);
   };
 
-  const handlePhonePress = (e: any) => {
-    e.stopPropagation();
-    if (venue.phone) {
-      Linking.openURL(`tel:${venue.phone}`);
-    }
-  };
-
-  const handleWebsitePress = (e: any) => {
-    e.stopPropagation();
-    if (venue.website) {
-      Linking.openURL(venue.website);
-    }
-  };
-
   const handleDirectionsPress = (e: any) => {
     e.stopPropagation();
     const url = `https://www.google.com/maps/dir/?api=1&destination=${venue.latitude},${venue.longitude}`;
@@ -78,268 +66,166 @@ export const VenueCard: React.FC<VenueCardProps> = ({
       activeOpacity={0.8}
       onPress={handlePress}
     >
-      {isSelected && <View style={styles.selectedIndicator} />}
+      {/* RULEBOOK: Max 3 elements per card */}
       
-      {/* Header Section */}
-      <View style={styles.header}>
-        <View style={styles.titleContainer}>
-          <View style={styles.nameRow}>
-            <Text style={styles.venueName} numberOfLines={1}>
-              {venue.name}
+      {/* 1. VENUE NAME (Primary Info) */}
+      <View style={styles.nameRow}>
+        <Text style={styles.venueName} numberOfLines={1}>
+          {venue.name}
+        </Text>
+        {venue.verified && (
+          <Ionicons name="checkmark-circle" size={18} color="#4CAF50" style={styles.verifiedIcon} />
+        )}
+      </View>
+
+      {/* 2. LOCATION (Secondary Info) */}
+      <Text style={styles.location} numberOfLines={1}>
+        {venue.neighborhood || venue.address} · {distance.toFixed(1)} mi
+      </Text>
+
+      {/* 3. POPULARITY SIGNAL (Active/Distance) */}
+      <View style={styles.bottomRow}>
+        {venue.active ? (
+          <View style={styles.liveBadge}>
+            <View style={styles.liveDot} />
+            <Text style={styles.liveText}>LIVE NOW</Text>
+          </View>
+        ) : (
+          <View style={styles.distanceBadge}>
+            <Ionicons name="time-outline" size={14} color="#5A5D66" />
+            <Text style={styles.distanceText}>
+              {venue.venue_type || 'Venue'}
             </Text>
-            {venue.verified && (
-              <View style={styles.verifiedBadge}>
-                <Text style={styles.verifiedIcon}>✓</Text>
-              </View>
-            )}
           </View>
-          
-          <View style={styles.metaRow}>
-            {venue.venue_type && (
-              <View style={styles.typeBadge}>
-                <Text style={styles.typeText}>{venue.venue_type}</Text>
-              </View>
-            )}
-            {venue.neighborhood && (
-              <Text style={styles.neighborhood}>📍 {venue.neighborhood}</Text>
-            )}
-          </View>
-        </View>
-
-        <View style={styles.distanceContainer}>
-          <Text style={styles.distanceValue}>{distance.toFixed(1)}</Text>
-          <Text style={styles.distanceUnit}>mi</Text>
-        </View>
-      </View>
-
-      {/* Address Section */}
-      {venue.address && (
-        <View style={styles.addressSection}>
-          <Text style={styles.addressIcon}>📍</Text>
-          <Text style={styles.addressText} numberOfLines={1}>
-            {venue.address}
-          </Text>
-        </View>
-      )}
-
-      {/* Action Buttons */}
-      <View style={styles.actionBar}>
-        <TouchableOpacity 
-          style={styles.actionButton}
-          onPress={handleDirectionsPress}
-        >
-          <Text style={styles.actionIcon}>🧭</Text>
-          <Text style={styles.actionText}>Directions</Text>
-        </TouchableOpacity>
-
-        {venue.phone && (
-          <>
-            <View style={styles.actionDivider} />
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={handlePhonePress}
-            >
-              <Text style={styles.actionIcon}>📞</Text>
-              <Text style={styles.actionText}>Call</Text>
-            </TouchableOpacity>
-          </>
         )}
 
-        {venue.website && (
-          <>
-            <View style={styles.actionDivider} />
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={handleWebsitePress}
+        {/* Quick directions button - appears on selected card */}
+        {isSelected && (
+          <TouchableOpacity
+            style={styles.directionsButton}
+            onPress={handleDirectionsPress}
+            activeOpacity={0.8}
+          >
+            <LinearGradient
+              colors={['#FFD700', '#FFA500']}
+              style={styles.directionsGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
             >
-              <Text style={styles.actionIcon}>🌐</Text>
-              <Text style={styles.actionText}>Website</Text>
-            </TouchableOpacity>
-          </>
+              <Ionicons name="navigate" size={16} color="#0F0F14" />
+              <Text style={styles.directionsText}>Go</Text>
+            </LinearGradient>
+          </TouchableOpacity>
         )}
       </View>
-
-      {/* Status Indicator */}
-      {venue.active && (
-        <View style={styles.statusBar}>
-          <View style={styles.activeIndicator} />
-          <Text style={styles.statusText}>Currently serving happy hour</Text>
-        </View>
-      )}
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
+  // RULEBOOK: Dark mode, gold accent, max 3 elements
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#171A21', // Dark surface
     marginHorizontal: 16,
     marginTop: 12,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
-    overflow: 'hidden',
+    borderRadius: 14,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)', // Subtle border
   },
   cardSelected: {
-    borderWidth: 2,
-    borderColor: '#FF6B35',
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 8,
+    borderColor: 'rgba(255, 215, 0, 0.3)', // Gold border when selected
+    shadowColor: '#FFD700',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 6,
   },
-  selectedIndicator: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 4,
-    backgroundColor: '#FF6B35',
-    zIndex: 1,
-  },
-  
-  // ... rest of the styles remain the same as before
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    padding: 16,
-    paddingBottom: 12,
-  },
-  titleContainer: {
-    flex: 1,
-    marginRight: 12,
-  },
+
+  // 1. Venue Name (Primary)
   nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 8,
   },
   venueName: {
-    fontSize: 19,
-    fontWeight: '700',
-    color: '#1A1A1A',
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#F5F7FA', // Off-white
     letterSpacing: -0.3,
     flex: 1,
   },
-  verifiedBadge: {
-    backgroundColor: '#4CAF50',
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
+  verifiedIcon: {
     marginLeft: 6,
   },
-  verifiedIcon: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: 'bold',
+
+  // 2. Location (Secondary)
+  location: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#A0A3AD', // Muted gray
+    marginBottom: 12,
   },
-  metaRow: {
+
+  // 3. Bottom Row (Popularity Signal)
+  bottomRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    flexWrap: 'wrap',
+    justifyContent: 'space-between',
   },
-  typeBadge: {
-    backgroundColor: '#F0F0F0',
+  
+  // Live badge (gold)
+  liveBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 215, 0, 0.15)',
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginRight: 8,
+    paddingVertical: 6,
+    borderRadius: 8,
   },
-  typeText: {
+  liveDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#FFD700',
+    marginRight: 6,
+  },
+  liveText: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#FFD700',
+    letterSpacing: 0.8,
+  },
+
+  // Distance badge (inactive state)
+  distanceBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  distanceText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#666',
+    color: '#5A5D66', // Low-contrast gray
     textTransform: 'capitalize',
   },
-  neighborhood: {
-    fontSize: 13,
-    color: '#666',
-    fontWeight: '500',
+
+  // Directions button (only on selected cards)
+  directionsButton: {
+    borderRadius: 10,
+    overflow: 'hidden',
   },
-  distanceContainer: {
+  directionsGradient: {
+    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8F9FA',
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 12,
-    minWidth: 60,
+    gap: 4,
   },
-  distanceValue: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#FF6B35',
-    lineHeight: 20,
-  },
-  distanceUnit: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#999',
-    marginTop: 2,
-  },
-  addressSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-  },
-  addressIcon: {
-    fontSize: 14,
-    marginRight: 6,
-  },
-  addressText: {
-    flex: 1,
-    fontSize: 14,
-    color: '#666',
-    lineHeight: 18,
-  },
-  actionBar: {
-    flexDirection: 'row',
-    borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
-    backgroundColor: '#FAFAFA',
-  },
-  actionButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 14,
-  },
-  actionIcon: {
-    fontSize: 16,
-    marginRight: 6,
-  },
-  actionText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#007AFF',
-  },
-  actionDivider: {
-    width: 1,
-    backgroundColor: '#E0E0E0',
-  },
-  statusBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#E8F5E9',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  activeIndicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#4CAF50',
-    marginRight: 8,
-  },
-  statusText: {
+  directionsText: {
     fontSize: 13,
-    fontWeight: '600',
-    color: '#2E7D32',
+    fontWeight: '800',
+    color: '#0F0F14',
+    letterSpacing: -0.2,
   },
 });

@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Dimensions,
   Linking,
   TextInput,
   ActivityIndicator,
@@ -19,13 +18,10 @@ import { Venue, Deal } from '../types/api';
 import { DealCard } from '../components/Cards/DealCard';
 import { GradientBackground } from '../components/common/GradientBackground';
 
-const { width } = Dimensions.get('window');
-
 type HappyHourRouteParams = {
   HappyHour: { venue: Venue };
 };
 
-// Mock reviews for UI (to be replaced with real API)
 interface Review {
   id: string;
   userName: string;
@@ -89,12 +85,13 @@ export const HappyHourScreen = () => {
             key={star}
             disabled={!interactive}
             onPress={() => interactive && setSelectedRating(star)}
+            activeOpacity={0.7}
           >
             <Ionicons
               name={star <= rating ? 'star' : 'star-outline'}
-              size={interactive ? 28 : 14}
+              size={interactive ? 32 : 14}
               color="#FFD700"
-              style={{ marginRight: 2 }}
+              style={{ marginRight: interactive ? 4 : 2 }}
             />
           </TouchableOpacity>
         ))}
@@ -109,212 +106,173 @@ export const HappyHourScreen = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Hero Header */}
-        <LinearGradient
-          colors={['#BF360C', '#E65100', '#FF6B35', '#FF8A50']}
-          style={styles.hero}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
+        {/* RULEBOOK: Simplified hero - dark background, gold accents */}
+        <View style={styles.hero}>
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={24} color="#FFF" />
+            <Ionicons name="arrow-back" size={24} color="#F5F7FA" />
           </TouchableOpacity>
 
           <View style={styles.heroContent}>
+            {/* Meta badges */}
             <View style={styles.heroMeta}>
               {venue.venue_type && (
-                <View style={styles.typePill}>
-                  <Text style={styles.typePillText}>{venue.venue_type}</Text>
+                <View style={styles.typeBadge}>
+                  <Text style={styles.typeBadgeText}>{venue.venue_type}</Text>
                 </View>
               )}
               {venue.verified && (
-                <View style={styles.verifiedPill}>
-                  <Ionicons name="checkmark-circle" size={14} color="#4CAF50" />
-                  <Text style={styles.verifiedText}>Verified</Text>
+                <View style={styles.verifiedBadge}>
+                  <Ionicons name="checkmark-circle" size={16} color="#4CAF50" />
                 </View>
               )}
             </View>
 
+            {/* Venue name */}
             <Text style={styles.heroName}>{venue.name}</Text>
 
+            {/* Location */}
             {venue.neighborhood && (
-              <Text style={styles.heroNeighborhood}>
-                📍 {venue.neighborhood}
-              </Text>
+              <View style={styles.locationRow}>
+                <Ionicons name="location" size={16} color="#A0A3AD" />
+                <Text style={styles.heroLocation}>{venue.neighborhood}</Text>
+              </View>
             )}
 
             {/* Live status */}
             {venue.active && (
               <View style={styles.liveIndicator}>
-                <View style={styles.livePulse} />
-                <Text style={styles.liveText}>HAPPY HOUR ACTIVE</Text>
+                <View style={styles.liveDot} />
+                <Text style={styles.liveText}>LIVE NOW</Text>
               </View>
             )}
           </View>
-        </LinearGradient>
+        </View>
 
-        {/* Quick Actions Bar */}
-        <View style={[styles.actionsBar, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-          <TouchableOpacity style={styles.actionBtn} onPress={handleDirections}>
-            <Ionicons name="navigate" size={20} color="#FF6B35" />
-            <Text style={[styles.actionBtnText, { color: theme.colors.text }]}>Directions</Text>
-          </TouchableOpacity>
+        {/* RULEBOOK: One primary action - Directions in gold */}
+        <TouchableOpacity style={styles.primaryAction} onPress={handleDirections} activeOpacity={0.9}>
+          <LinearGradient
+            colors={['#FFD700', '#FFA500']}
+            style={styles.primaryActionGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Ionicons name="navigate" size={20} color="#0F0F14" />
+            <Text style={styles.primaryActionText}>Get Directions</Text>
+          </LinearGradient>
+        </TouchableOpacity>
 
+        {/* Secondary actions - Lower contrast */}
+        <View style={styles.secondaryActions}>
           {venue.phone && (
-            <>
-              <View style={[styles.actionDivider, { backgroundColor: theme.colors.border }]} />
-              <TouchableOpacity style={styles.actionBtn} onPress={handleCall}>
-                <Ionicons name="call" size={20} color="#FF6B35" />
-                <Text style={[styles.actionBtnText, { color: theme.colors.text }]}>Call</Text>
-              </TouchableOpacity>
-            </>
+            <TouchableOpacity style={styles.secondaryAction} onPress={handleCall} activeOpacity={0.8}>
+              <Ionicons name="call-outline" size={18} color="#A0A3AD" />
+              <Text style={styles.secondaryActionText}>Call</Text>
+            </TouchableOpacity>
           )}
-
           {venue.website && (
-            <>
-              <View style={[styles.actionDivider, { backgroundColor: theme.colors.border }]} />
-              <TouchableOpacity style={styles.actionBtn} onPress={handleWebsite}>
-                <Ionicons name="globe" size={20} color="#FF6B35" />
-                <Text style={[styles.actionBtnText, { color: theme.colors.text }]}>Website</Text>
-              </TouchableOpacity>
-            </>
+            <TouchableOpacity style={styles.secondaryAction} onPress={handleWebsite} activeOpacity={0.8}>
+              <Ionicons name="globe-outline" size={18} color="#A0A3AD" />
+              <Text style={styles.secondaryActionText}>Website</Text>
+            </TouchableOpacity>
           )}
         </View>
 
-        <GradientBackground style={styles.bodyGradient}>
+        <GradientBackground style={styles.body}>
           {/* Active Deals */}
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-              🔥 Active Deals
-            </Text>
+            <Text style={styles.sectionTitle}>Active Deals</Text>
             {loading ? (
-              <ActivityIndicator size="small" color={theme.colors.primary} />
+              <ActivityIndicator size="small" color="#FFD700" />
             ) : deals.length > 0 ? (
               deals.map((deal) => (
                 <DealCard key={deal.id} deal={deal} venueName={venue.name} />
               ))
             ) : (
-              <View style={[styles.emptySection, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-                <Text style={styles.emptyEmoji}>🕐</Text>
-                <Text style={[styles.emptyText, { color: theme.colors.text }]}>
-                  No active deals right now
-                </Text>
-                <Text style={[styles.emptySub, { color: theme.colors.textMuted }]}>
-                  Check back during happy hour times
-                </Text>
+              <View style={styles.emptySection}>
+                <Text style={styles.emptyText}>No active deals right now</Text>
+                <Text style={styles.emptySub}>Check back during happy hour</Text>
               </View>
             )}
           </View>
 
-          {/* Venue Info */}
+          {/* Venue Info - Max 3 elements */}
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-              📋 Info
-            </Text>
-            <View style={[styles.infoCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
+            <Text style={styles.sectionTitle}>Venue Info</Text>
+            <View style={styles.infoCard}>
+              {/* 1. Address */}
               <View style={styles.infoRow}>
-                <Ionicons name="location" size={18} color={theme.colors.textMuted} />
-                <Text style={[styles.infoText, { color: theme.colors.text }]}>{venue.address}</Text>
+                <Ionicons name="location-outline" size={20} color="#A0A3AD" />
+                <Text style={styles.infoText}>{venue.address}</Text>
               </View>
+              {/* 2. Phone */}
               {venue.phone && (
                 <View style={styles.infoRow}>
-                  <Ionicons name="call" size={18} color={theme.colors.textMuted} />
-                  <Text style={[styles.infoText, { color: theme.colors.text }]}>{venue.phone}</Text>
+                  <Ionicons name="call-outline" size={20} color="#A0A3AD" />
+                  <Text style={styles.infoText}>{venue.phone}</Text>
                 </View>
               )}
+              {/* 3. Website */}
               {venue.website && (
                 <View style={styles.infoRow}>
-                  <Ionicons name="globe" size={18} color={theme.colors.textMuted} />
-                  <Text style={[styles.infoText, { color: theme.colors.secondary }]} numberOfLines={1}>
-                    {venue.website}
+                  <Ionicons name="globe-outline" size={20} color="#A0A3AD" />
+                  <Text style={styles.infoTextLink} numberOfLines={1}>
+                    {venue.website.replace('https://', '').replace('http://', '')}
                   </Text>
                 </View>
               )}
-            </View>
-          </View>
-
-          {/* User Photos (placeholder for social media feel) */}
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-                📸 Photos
-              </Text>
-              <TouchableOpacity style={[styles.addButton, { backgroundColor: theme.colors.primary }]}>
-                <Ionicons name="camera" size={16} color="#FFF" />
-                <Text style={styles.addButtonText}>Add Photo</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.photoGrid}>
-              {/* Placeholder photo slots */}
-              {[1, 2, 3, 4].map((i) => (
-                <View key={i} style={[styles.photoPlaceholder, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-                  <Ionicons name="image-outline" size={28} color={theme.colors.textMuted} />
-                  <Text style={[styles.photoPlaceholderText, { color: theme.colors.textMuted }]}>
-                    {i === 1 ? 'Be first!' : ''}
-                  </Text>
-                </View>
-              ))}
             </View>
           </View>
 
           {/* Reviews */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-                ⭐ Reviews
-              </Text>
-              <Text style={[styles.reviewCount, { color: theme.colors.textMuted }]}>
-                {MOCK_REVIEWS.length} reviews
-              </Text>
+              <Text style={styles.sectionTitle}>Reviews</Text>
+              <Text style={styles.reviewCount}>{MOCK_REVIEWS.length} reviews</Text>
             </View>
 
-            {/* Write a review */}
-            <View style={[styles.writeReview, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-              <Text style={[styles.writeReviewTitle, { color: theme.colors.text }]}>
-                Rate this spot
-              </Text>
+            {/* Write review - Simplified */}
+            <View style={styles.writeReview}>
+              <Text style={styles.writeReviewTitle}>Rate this spot</Text>
               {renderStars(selectedRating, true)}
               <TextInput
-                style={[styles.reviewInput, { color: theme.colors.text, borderColor: theme.colors.border }]}
+                style={styles.reviewInput}
                 placeholder="Share your experience..."
-                placeholderTextColor={theme.colors.textMuted}
+                placeholderTextColor="#5A5D66"
                 multiline
                 numberOfLines={3}
                 value={newReview}
                 onChangeText={setNewReview}
               />
-              <TouchableOpacity
-                style={[styles.submitButton, { backgroundColor: theme.colors.primary }]}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.submitButtonText}>Submit Review</Text>
+              <TouchableOpacity style={styles.submitButton} activeOpacity={0.9}>
+                <LinearGradient
+                  colors={['#FFD700', '#FFA500']}
+                  style={styles.submitGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <Text style={styles.submitButtonText}>Submit Review</Text>
+                </LinearGradient>
               </TouchableOpacity>
             </View>
 
             {/* Review list */}
             {MOCK_REVIEWS.map((review) => (
-              <View key={review.id} style={[styles.reviewCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
+              <View key={review.id} style={styles.reviewCard}>
                 <View style={styles.reviewHeader}>
                   <View style={styles.reviewUser}>
-                    <View style={[styles.avatar, { backgroundColor: theme.colors.primary }]}>
+                    <View style={styles.avatar}>
                       <Text style={styles.avatarText}>
                         {review.userName.charAt(0).toUpperCase()}
                       </Text>
                     </View>
                     <View>
-                      <Text style={[styles.reviewUserName, { color: theme.colors.text }]}>
-                        {review.userName}
-                      </Text>
-                      <Text style={[styles.reviewDate, { color: theme.colors.textMuted }]}>
-                        {review.date}
-                      </Text>
+                      <Text style={styles.reviewUserName}>{review.userName}</Text>
+                      <Text style={styles.reviewDate}>{review.date}</Text>
                     </View>
                   </View>
                   {renderStars(review.rating)}
                 </View>
-                <Text style={[styles.reviewText, { color: theme.colors.textSecondary }]}>
-                  {review.text}
-                </Text>
+                <Text style={styles.reviewText}>{review.text}</Text>
               </View>
             ))}
           </View>
@@ -329,7 +287,7 @@ export const HappyHourScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: '#0F0F14',
   },
   scroll: {
     flex: 1,
@@ -338,119 +296,144 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
   },
 
-  // Hero
+  // Hero - Dark background, simplified
   hero: {
+    backgroundColor: '#171A21',
     paddingTop: 60,
     paddingBottom: 24,
     paddingHorizontal: 20,
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(0,0,0,0.2)',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(0,0,0,0.3)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   heroContent: {
-    gap: 8,
+    gap: 12,
   },
   heroMeta: {
     flexDirection: 'row',
     gap: 8,
   },
-  typePill: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
+  typeBadge: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
   },
-  typePillText: {
-    color: '#FFFFFF',
+  typeBadgeText: {
+    color: '#A0A3AD',
     fontSize: 12,
     fontWeight: '700',
     textTransform: 'capitalize',
   },
-  verifiedPill: {
-    flexDirection: 'row',
+  verifiedBadge: {
+    backgroundColor: 'rgba(76, 175, 80, 0.15)',
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    gap: 4,
-  },
-  verifiedText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '700',
   },
   heroName: {
     fontSize: 32,
     fontWeight: '900',
-    color: '#FFFFFF',
+    color: '#F5F7FA',
     letterSpacing: -1,
     lineHeight: 36,
   },
-  heroNeighborhood: {
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  heroLocation: {
     fontSize: 15,
     fontWeight: '600',
-    color: 'rgba(255,255,255,0.85)',
+    color: '#A0A3AD',
   },
   liveIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
     gap: 8,
   },
-  livePulse: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#4CAF50',
+  liveDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#FFD700',
   },
   liveText: {
-    color: '#4CAF50',
-    fontSize: 13,
-    fontWeight: '800',
+    color: '#FFD700',
+    fontSize: 12,
+    fontWeight: '900',
     letterSpacing: 1,
   },
 
-  // Actions Bar
-  actionsBar: {
+  // Primary Action - Gold CTA
+  primaryAction: {
+    marginHorizontal: 20,
+    marginTop: 20,
+    borderRadius: 14,
+    overflow: 'hidden',
+    shadowColor: '#FFD700',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  primaryActionGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    gap: 10,
+  },
+  primaryActionText: {
+    color: '#0F0F14',
+    fontSize: 17,
+    fontWeight: '900',
+    letterSpacing: -0.3,
+  },
+
+  // Secondary Actions - Lower contrast
+  secondaryActions: {
     flexDirection: 'row',
     marginHorizontal: 20,
-    marginTop: -1,
-    borderRadius: 16,
-    borderWidth: 1,
-    overflow: 'hidden',
+    marginTop: 12,
+    gap: 10,
   },
-  actionBtn: {
+  secondaryAction: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 12,
+    paddingVertical: 12,
     gap: 6,
   },
-  actionBtnText: {
-    fontSize: 13,
+  secondaryActionText: {
+    color: '#A0A3AD',
+    fontSize: 14,
     fontWeight: '700',
-  },
-  actionDivider: {
-    width: 1,
   },
 
   // Body
-  bodyGradient: {
+  body: {
     paddingHorizontal: 20,
-    paddingTop: 24,
+    paddingTop: 28,
   },
 
   // Sections
   section: {
-    marginBottom: 28,
+    marginBottom: 32,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -459,127 +442,115 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    letterSpacing: -0.3,
+    fontSize: 22,
+    fontWeight: '900',
+    letterSpacing: -0.5,
     marginBottom: 14,
+    color: '#F5F7FA',
   },
 
   // Empty state
   emptySection: {
-    borderRadius: 16,
+    backgroundColor: '#171A21',
+    borderRadius: 14,
     borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     padding: 28,
     alignItems: 'center',
   },
-  emptyEmoji: {
-    fontSize: 36,
-    marginBottom: 8,
-  },
   emptyText: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '700',
+    color: '#F5F7FA',
+    marginBottom: 4,
   },
   emptySub: {
     fontSize: 13,
-    fontWeight: '500',
-    marginTop: 4,
+    fontWeight: '600',
+    color: '#A0A3AD',
   },
 
   // Info Card
   infoCard: {
-    borderRadius: 16,
+    backgroundColor: '#171A21',
+    borderRadius: 14,
     borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     padding: 16,
     gap: 12,
   },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
   },
   infoText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
+    color: '#F5F7FA',
     flex: 1,
   },
-
-  // Photos
-  addButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 10,
-    gap: 4,
-  },
-  addButtonText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  photoGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  photoPlaceholder: {
-    width: (width - 56) / 2,
-    height: 100,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  photoPlaceholderText: {
-    fontSize: 11,
+  infoTextLink: {
+    fontSize: 14,
     fontWeight: '600',
-    marginTop: 4,
+    color: '#FFD700',
+    flex: 1,
   },
 
   // Reviews
   reviewCount: {
     fontSize: 13,
     fontWeight: '600',
+    color: '#A0A3AD',
   },
   writeReview: {
-    borderRadius: 16,
+    backgroundColor: '#171A21',
+    borderRadius: 14,
     borderWidth: 1,
-    padding: 16,
-    marginBottom: 12,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+    padding: 18,
+    marginBottom: 14,
   },
   writeReviewTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    marginBottom: 10,
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#F5F7FA',
+    marginBottom: 12,
   },
   starsRow: {
     flexDirection: 'row',
-    marginBottom: 10,
+    marginBottom: 12,
   },
   reviewInput: {
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderWidth: 1,
-    borderRadius: 12,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 10,
     padding: 12,
     fontSize: 14,
+    color: '#F5F7FA',
     minHeight: 80,
     textAlignVertical: 'top',
-    marginBottom: 10,
+    marginBottom: 12,
   },
   submitButton: {
-    paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  submitGradient: {
+    paddingVertical: 14,
     alignItems: 'center',
   },
   submitButtonText: {
-    color: '#FFFFFF',
+    color: '#0F0F14',
     fontSize: 15,
-    fontWeight: '800',
+    fontWeight: '900',
   },
   reviewCard: {
-    borderRadius: 14,
+    backgroundColor: '#171A21',
+    borderRadius: 12,
     borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     padding: 14,
     marginBottom: 10,
   },
@@ -587,7 +558,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   reviewUser: {
     flexDirection: 'row',
@@ -598,24 +569,30 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
+    backgroundColor: '#FFD700',
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarText: {
-    color: '#FFFFFF',
+    color: '#0F0F14',
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: '900',
   },
   reviewUserName: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '800',
+    color: '#F5F7FA',
   },
   reviewDate: {
     fontSize: 11,
-    fontWeight: '500',
+    fontWeight: '600',
+    color: '#5A5D66',
+    marginTop: 2,
   },
   reviewText: {
     fontSize: 14,
     lineHeight: 20,
+    fontWeight: '500',
+    color: '#A0A3AD',
   },
 });
