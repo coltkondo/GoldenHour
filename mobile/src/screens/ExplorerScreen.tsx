@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,49 +6,117 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { GradientBackground } from '../components/common/GradientBackground';
+import { venuesAPI, dealsAPI } from '../api/endpoints';
+import { Venue, Deal, DAY_NAMES } from '../types/api';
 
 const { width } = Dimensions.get('window');
 
-// DC Neighborhoods for the "map" to fill out
-const DC_NEIGHBORHOODS = [
-  { id: '1', name: 'Dupont Circle', emoji: '🔵', visited: true, venues: 12 },
-  { id: '2', name: 'Georgetown', emoji: '🏛️', visited: true, venues: 15 },
-  { id: '3', name: 'Adams Morgan', emoji: '🎭', visited: false, venues: 18 },
-  { id: '4', name: 'U Street', emoji: '🎵', visited: true, venues: 14 },
-  { id: '5', name: 'Capitol Hill', emoji: '🏛️', visited: false, venues: 10 },
-  { id: '6', name: 'Navy Yard', emoji: '⚓', visited: false, venues: 8 },
-  { id: '7', name: 'Shaw', emoji: '🎨', visited: true, venues: 11 },
-  { id: '8', name: 'Penn Quarter', emoji: '🏀', visited: false, venues: 9 },
-  { id: '9', name: 'Chinatown', emoji: '🏮', visited: false, venues: 7 },
-  { id: '10', name: 'Foggy Bottom', emoji: '🌫️', visited: false, venues: 6 },
-  { id: '11', name: 'H Street', emoji: '🚃', visited: true, venues: 13 },
-  { id: '12', name: '14th Street', emoji: '🍽️', visited: false, venues: 16 },
-];
+const TAG_ICONS: Record<string, string> = {
+  'Sports Bar': '🏈',
+  'Dive Bar': '🍺',
+  'College Bar': '🎓',
+  'Live Music': '🎵',
+  'Cocktail Bar': '🍸',
+  'Brewery': '🍻',
+  'Restaurant': '🍽️',
+  'Rooftop': '🌇',
+  'Wine Bar': '🍷',
+  'Pub': '🍺',
+  'Club': '🎶',
+  'Lounge': '🛋️',
+};
 
-const REWARDS = [
-  { id: '1', title: 'First Sip', desc: 'Visit your first happy hour', icon: '🍺', earned: true, requirement: 1 },
-  { id: '2', title: 'Regular', desc: 'Visit 5 happy hours', icon: '⭐', earned: true, requirement: 5 },
-  { id: '3', title: 'Explorer', desc: 'Visit 10 different spots', icon: '🧭', earned: false, requirement: 10 },
-  { id: '4', title: 'Neighborhood Pro', desc: 'Hit 5 different neighborhoods', icon: '🗺️', earned: true, requirement: 5 },
-  { id: '5', title: 'Golden Legend', desc: 'Visit 25 happy hours', icon: '👑', earned: false, requirement: 25 },
-  { id: '6', title: 'DC Native', desc: 'Visit all neighborhoods', icon: '🏆', earned: false, requirement: 12 },
-  { id: '7', title: 'Social Butterfly', desc: 'Leave 10 reviews', icon: '🦋', earned: false, requirement: 10 },
-  { id: '8', title: 'Photographer', desc: 'Upload 5 photos', icon: '📸', earned: false, requirement: 5 },
-];
+const formatTime = (timeStr: string) => {
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const displayHour = hours % 12 || 12;
+  return minutes === 0 ? `${displayHour}${period}` : `${displayHour}:${String(minutes).padStart(2, '0')}${period}`;
+};
 
 export const ExplorerScreen = () => {
   const { theme } = useTheme();
-  const [selectedTab, setSelectedTab] = useState<'map' | 'rewards' | 'submit'>('map');
+  const navigation = useNavigation<any>();
+  const [selectedTab, setSelectedTab] = useState<'browse' | 'tonight' | 'submit'>('browse');
+  const [venues, setVenues] = useState<Venue[]>([]);
+  const [todayDeals, setTodayDeals] = useState<Deal[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
-  const visitedCount = DC_NEIGHBORHOODS.filter(n => n.visited).length;
-  const totalCount = DC_NEIGHBORHOODS.length;
-  const completionPct = Math.round((visitedCount / totalCount) * 100);
-  const earnedRewards = REWARDS.filter(r => r.earned).length;
+  const today = new Date().getDay();
+  const todayDb = today === 0 ? 6 : today - 1;
+  const todayName = DAY_NAMES[todayDb];
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      const [venueData, dealData] = await Promise.all([
+        venuesAPI.getAll({ limit: 100 }),
+        dealsAPI.getToday(),
+      ]);
+      setVenues(venueData);
+      setTodayDeals(dealData);
+    } catch {
+      // Data may not be available
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Extract unique tags from venues
+  const allTags = Array.from(
+    new Set(
+      venues.flatMap((v: any) => v.tags || []).filter(Boolean)
+    )
+  ).sort();
+
+  // Also extract unique venue types
+  const venueTypes = Array.from(
+    new Set(venues.map((v) => v.venue_type).filter(Boolean))
+  ).sort() as string[];
+
+  // Combine tags and venue types for browse categories
+  const categories = Array.from(new Set([...venueTypes, ...allTags])).sort();
+
+  // Filter venues by selected tag
+  const filteredVenues = selectedTag
+    ? venues.filter(
+        (v: any) =>
+          v.venue_type === selectedTag ||
+          (v.tags && v.tags.includes(selectedTag))
+      )
+    : venues;
+
+  // Group tonight's deals by venue
+  const dealsByVenue = todayDeals.reduce<Record<string, Deal[]>>((acc, deal) => {
+    if (!acc[deal.venue_id]) acc[deal.venue_id] = [];
+    acc[deal.venue_id].push(deal);
+    return acc;
+  }, {});
+
+  const venueMap = venues.reduce<Record<string, Venue>>((acc, v) => {
+    acc[v.id] = v;
+    return acc;
+  }, {});
+
+  if (loading) {
+    return (
+      <GradientBackground>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#FF6B35" />
+        </View>
+      </GradientBackground>
+    );
+  }
 
   return (
     <GradientBackground>
@@ -63,48 +131,31 @@ export const ExplorerScreen = () => {
             Explorer
           </Text>
           <Text style={[styles.headerSub, { color: theme.colors.textSecondary }]}>
-            Fill out your DC happy hour map
+            Discover happy hours in Happy Valley
           </Text>
         </View>
 
-        {/* Progress Ring */}
-        <View style={[styles.progressCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-          <View style={styles.progressRing}>
-            <LinearGradient
-              colors={['#FF6B35', '#FFD700']}
-              style={styles.ringGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <View style={[styles.ringInner, { backgroundColor: theme.colors.surface }]}>
-                <Text style={[styles.ringPercent, { color: theme.colors.text }]}>
-                  {completionPct}%
-                </Text>
-                <Text style={[styles.ringLabel, { color: theme.colors.textMuted }]}>
-                  COMPLETE
-                </Text>
-              </View>
-            </LinearGradient>
+        {/* Stats Card */}
+        <View style={[styles.statsCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
+          <View style={styles.statItem}>
+            <Text style={[styles.statNum, { color: theme.colors.text }]}>{venues.length}</Text>
+            <Text style={[styles.statLabel, { color: theme.colors.textMuted }]}>BARS</Text>
           </View>
-          <View style={styles.progressStats}>
-            <View style={styles.progressStat}>
-              <Text style={[styles.progressStatNum, { color: theme.colors.text }]}>{visitedCount}</Text>
-              <Text style={[styles.progressStatLabel, { color: theme.colors.textMuted }]}>HOODS HIT</Text>
-            </View>
-            <View style={styles.progressStat}>
-              <Text style={[styles.progressStatNum, { color: theme.colors.text }]}>{earnedRewards}</Text>
-              <Text style={[styles.progressStatLabel, { color: theme.colors.textMuted }]}>BADGES</Text>
-            </View>
-            <View style={styles.progressStat}>
-              <Text style={[styles.progressStatNum, { color: theme.colors.secondary }]}>#{3}</Text>
-              <Text style={[styles.progressStatLabel, { color: theme.colors.textMuted }]}>RANK</Text>
-            </View>
+          <View style={[styles.statDivider, { backgroundColor: theme.colors.border }]} />
+          <View style={styles.statItem}>
+            <Text style={[styles.statNum, { color: theme.colors.text }]}>{todayDeals.length}</Text>
+            <Text style={[styles.statLabel, { color: theme.colors.textMuted }]}>DEALS TONIGHT</Text>
+          </View>
+          <View style={[styles.statDivider, { backgroundColor: theme.colors.border }]} />
+          <View style={styles.statItem}>
+            <Text style={[styles.statNum, { color: theme.colors.text }]}>{categories.length}</Text>
+            <Text style={[styles.statLabel, { color: theme.colors.textMuted }]}>CATEGORIES</Text>
           </View>
         </View>
 
         {/* Tab Selector */}
         <View style={[styles.tabBar, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-          {(['map', 'rewards', 'submit'] as const).map((tab) => (
+          {(['browse', 'tonight', 'submit'] as const).map((tab) => (
             <TouchableOpacity
               key={tab}
               style={[styles.tab, selectedTab === tab && { backgroundColor: theme.colors.primary }]}
@@ -117,103 +168,150 @@ export const ExplorerScreen = () => {
                   { color: selectedTab === tab ? '#FFF' : theme.colors.textMuted },
                 ]}
               >
-                {tab === 'map' ? '🗺️ Map' : tab === 'rewards' ? '🏆 Rewards' : '➕ Submit'}
+                {tab === 'browse' ? 'Browse' : tab === 'tonight' ? 'Tonight' : 'Submit'}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        {/* Map Tab */}
-        {selectedTab === 'map' && (
+        {/* Browse Tab */}
+        {selectedTab === 'browse' && (
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-              DC Neighborhoods
-            </Text>
-            <View style={styles.neighborhoodGrid}>
-              {DC_NEIGHBORHOODS.map((hood) => (
+            {/* Category chips */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.chipScroll}
+              contentContainerStyle={styles.chipContainer}
+            >
+              <TouchableOpacity
+                style={[
+                  styles.chip,
+                  !selectedTag && styles.chipActive,
+                  { borderColor: theme.colors.border },
+                ]}
+                onPress={() => setSelectedTag(null)}
+              >
+                <Text style={[styles.chipText, { color: !selectedTag ? '#FFF' : theme.colors.text }]}>
+                  All ({venues.length})
+                </Text>
+              </TouchableOpacity>
+              {categories.map((cat) => (
                 <TouchableOpacity
-                  key={hood.id}
+                  key={cat}
                   style={[
-                    styles.neighborhoodCard,
-                    {
-                      backgroundColor: hood.visited ? theme.colors.primary : theme.colors.surface,
-                      borderColor: hood.visited ? theme.colors.secondary : theme.colors.border,
-                    },
+                    styles.chip,
+                    selectedTag === cat && styles.chipActive,
+                    { borderColor: theme.colors.border },
                   ]}
-                  activeOpacity={0.8}
+                  onPress={() => setSelectedTag(selectedTag === cat ? null : cat)}
                 >
-                  <Text style={styles.hoodEmoji}>{hood.emoji}</Text>
-                  <Text
-                    style={[
-                      styles.hoodName,
-                      { color: hood.visited ? '#FFF' : theme.colors.text },
-                    ]}
-                    numberOfLines={1}
-                  >
-                    {hood.name}
+                  <Text style={[styles.chipText, { color: selectedTag === cat ? '#FFF' : theme.colors.text }]}>
+                    {TAG_ICONS[cat] || '📍'} {cat}
                   </Text>
-                  <Text
-                    style={[
-                      styles.hoodVenues,
-                      { color: hood.visited ? 'rgba(255,255,255,0.8)' : theme.colors.textMuted },
-                    ]}
-                  >
-                    {hood.venues} spots
-                  </Text>
-                  {hood.visited && (
-                    <View style={styles.checkBadge}>
-                      <Ionicons name="checkmark" size={12} color="#FFF" />
-                    </View>
-                  )}
-                  {!hood.visited && (
-                    <View style={styles.lockBadge}>
-                      <Ionicons name="lock-closed" size={10} color={theme.colors.textMuted} />
-                    </View>
-                  )}
                 </TouchableOpacity>
               ))}
-            </View>
+            </ScrollView>
+
+            {/* Venue list */}
+            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+              {selectedTag || 'All Bars'} ({filteredVenues.length})
+            </Text>
+            {filteredVenues.map((venue: any) => (
+              <TouchableOpacity
+                key={venue.id}
+                style={[styles.venueCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
+                activeOpacity={0.8}
+                onPress={() => navigation.navigate('HappyHour', { venue })}
+              >
+                <View style={styles.venueCardLeft}>
+                  <Text style={styles.venueEmoji}>
+                    {TAG_ICONS[venue.venue_type] || '🍺'}
+                  </Text>
+                </View>
+                <View style={styles.venueCardContent}>
+                  <Text style={[styles.venueName, { color: theme.colors.text }]}>
+                    {venue.nickname || venue.name}
+                  </Text>
+                  <Text style={[styles.venueAddress, { color: theme.colors.textMuted }]} numberOfLines={1}>
+                    {venue.address}
+                  </Text>
+                  <View style={styles.venueTagRow}>
+                    {venue.venue_type && (
+                      <View style={[styles.venueTag, { backgroundColor: 'rgba(255, 107, 53, 0.15)' }]}>
+                        <Text style={styles.venueTagText}>{venue.venue_type}</Text>
+                      </View>
+                    )}
+                    {venue.cash_only && (
+                      <View style={[styles.venueTag, { backgroundColor: 'rgba(255, 215, 0, 0.15)' }]}>
+                        <Text style={[styles.venueTagText, { color: '#FFD700' }]}>Cash Only</Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={theme.colors.textMuted} />
+              </TouchableOpacity>
+            ))}
           </View>
         )}
 
-        {/* Rewards Tab */}
-        {selectedTab === 'rewards' && (
+        {/* Tonight Tab */}
+        {selectedTab === 'tonight' && (
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-              Badges & Rewards
-            </Text>
-            {REWARDS.map((reward) => (
-              <View
-                key={reward.id}
-                style={[
-                  styles.rewardCard,
-                  {
-                    backgroundColor: theme.colors.surface,
-                    borderColor: reward.earned ? theme.colors.secondary : theme.colors.border,
-                    opacity: reward.earned ? 1 : 0.6,
-                  },
-                ]}
-              >
-                <Text style={styles.rewardIcon}>{reward.icon}</Text>
-                <View style={styles.rewardContent}>
-                  <Text style={[styles.rewardTitle, { color: theme.colors.text }]}>
-                    {reward.title}
-                  </Text>
-                  <Text style={[styles.rewardDesc, { color: theme.colors.textMuted }]}>
-                    {reward.desc}
-                  </Text>
-                </View>
-                {reward.earned ? (
-                  <View style={styles.earnedBadge}>
-                    <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />
-                  </View>
-                ) : (
-                  <View style={[styles.lockedBadge, { borderColor: theme.colors.border }]}>
-                    <Ionicons name="lock-closed" size={16} color={theme.colors.textMuted} />
-                  </View>
-                )}
+            <View style={styles.tonightHeader}>
+              <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+                {todayName}'s Deals
+              </Text>
+              <View style={styles.liveBadge}>
+                <View style={styles.liveDot} />
+                <Text style={styles.liveLabel}>LIVE</Text>
               </View>
-            ))}
+            </View>
+
+            {Object.keys(dealsByVenue).length > 0 ? (
+              Object.entries(dealsByVenue).map(([venueId, deals]) => {
+                const venue = venueMap[venueId];
+                if (!venue) return null;
+                return (
+                  <TouchableOpacity
+                    key={venueId}
+                    style={[styles.tonightCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
+                    activeOpacity={0.8}
+                    onPress={() => navigation.navigate('HappyHour', { venue })}
+                  >
+                    <View style={styles.tonightCardHeader}>
+                      <Text style={[styles.tonightVenueName, { color: theme.colors.text }]}>
+                        {(venue as any).nickname || venue.name}
+                      </Text>
+                      <Ionicons name="chevron-forward" size={16} color={theme.colors.textMuted} />
+                    </View>
+                    {deals.map((deal) => (
+                      <View key={deal.id} style={styles.tonightDealRow}>
+                        <View style={styles.tonightDealDot} />
+                        <Text style={[styles.tonightDealTitle, { color: theme.colors.textSecondary }]}>
+                          {deal.title}
+                        </Text>
+                        {deal.deal_price != null && (
+                          <Text style={styles.tonightDealPrice}>
+                            ${deal.deal_price.toFixed(2)}
+                          </Text>
+                        )}
+                      </View>
+                    ))}
+                  </TouchableOpacity>
+                );
+              })
+            ) : (
+              <View style={[styles.emptyCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
+                <Text style={styles.emptyEmoji}>🌙</Text>
+                <Text style={[styles.emptyTitle, { color: theme.colors.text }]}>
+                  No deals tonight
+                </Text>
+                <Text style={[styles.emptyDesc, { color: theme.colors.textMuted }]}>
+                  Check back on another day for happy hour specials
+                </Text>
+              </View>
+            )}
           </View>
         )}
 
@@ -229,9 +327,10 @@ export const ExplorerScreen = () => {
                 Know a spot we're missing?
               </Text>
               <Text style={[styles.submitDesc, { color: theme.colors.textMuted }]}>
-                Help the community by adding a new happy hour venue. Earn badges for verified submissions!
+                Help the Penn State community by adding a new happy hour venue or deal!
               </Text>
               <TouchableOpacity
+                onPress={() => navigation.navigate('QuickSubmit')}
                 style={[styles.submitButton, { backgroundColor: theme.colors.primary }]}
                 activeOpacity={0.8}
               >
@@ -243,7 +342,7 @@ export const ExplorerScreen = () => {
             {/* Submission tips */}
             <View style={[styles.tipsCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
               <Text style={[styles.tipsTitle, { color: theme.colors.text }]}>
-                💡 Submission Tips
+                Tips
               </Text>
               {[
                 'Include the venue name and address',
@@ -274,6 +373,11 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingHorizontal: 20,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 
   // Header
   header: {
@@ -290,61 +394,33 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 
-  // Progress Card
-  progressCard: {
+  // Stats Card
+  statsCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 20,
+    borderRadius: 16,
     borderWidth: 1,
-    padding: 20,
+    padding: 16,
     marginBottom: 20,
   },
-  progressRing: {
-    marginRight: 20,
-  },
-  ringGradient: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    justifyContent: 'center',
+  statItem: {
+    flex: 1,
     alignItems: 'center',
   },
-  ringInner: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  ringPercent: {
+  statNum: {
     fontSize: 24,
     fontWeight: '900',
-    letterSpacing: -1,
-  },
-  ringLabel: {
-    fontSize: 8,
-    fontWeight: '700',
-    letterSpacing: 1,
-  },
-  progressStats: {
-    flex: 1,
-    gap: 8,
-  },
-  progressStat: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: 8,
-  },
-  progressStatNum: {
-    fontSize: 22,
-    fontWeight: '900',
     letterSpacing: -0.5,
-    minWidth: 35,
   },
-  progressStatLabel: {
-    fontSize: 10,
+  statLabel: {
+    fontSize: 9,
     fontWeight: '700',
     letterSpacing: 1,
+    marginTop: 2,
+  },
+  statDivider: {
+    width: 1,
+    height: 30,
   },
 
   // Tab Bar
@@ -377,52 +453,32 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
 
-  // Neighborhood Grid
-  neighborhoodGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
+  // Category Chips
+  chipScroll: {
+    marginBottom: 16,
+    marginHorizontal: -20,
   },
-  neighborhoodCard: {
-    width: (width - 50) / 2,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    padding: 14,
-    position: 'relative',
+  chipContainer: {
+    paddingHorizontal: 20,
+    gap: 8,
   },
-  hoodEmoji: {
-    fontSize: 24,
-    marginBottom: 6,
+  chip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
   },
-  hoodName: {
-    fontSize: 14,
-    fontWeight: '700',
-    letterSpacing: -0.2,
+  chipActive: {
+    backgroundColor: '#FF6B35',
+    borderColor: '#FF6B35',
   },
-  hoodVenues: {
-    fontSize: 12,
+  chipText: {
+    fontSize: 13,
     fontWeight: '600',
-    marginTop: 2,
-  },
-  checkBadge: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: '#4CAF50',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  lockBadge: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
   },
 
-  // Rewards
-  rewardCard: {
+  // Venue Cards
+  venueCard: {
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 14,
@@ -430,30 +486,135 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 10,
   },
-  rewardIcon: {
-    fontSize: 28,
+  venueCardLeft: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 107, 53, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 12,
   },
-  rewardContent: {
+  venueEmoji: {
+    fontSize: 22,
+  },
+  venueCardContent: {
     flex: 1,
   },
-  rewardTitle: {
-    fontSize: 15,
+  venueName: {
+    fontSize: 16,
     fontWeight: '700',
+    letterSpacing: -0.2,
   },
-  rewardDesc: {
+  venueAddress: {
     fontSize: 12,
     fontWeight: '500',
     marginTop: 2,
   },
-  earnedBadge: {},
-  lockedBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 1.5,
-    justifyContent: 'center',
+  venueTagRow: {
+    flexDirection: 'row',
+    gap: 6,
+    marginTop: 6,
+  },
+  venueTag: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  venueTagText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#FF6B35',
+  },
+
+  // Tonight
+  tonightHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+  liveBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(76, 175, 80, 0.15)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+    gap: 6,
+  },
+  liveDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#4CAF50',
+  },
+  liveLabel: {
+    color: '#4CAF50',
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1,
+  },
+  tonightCard: {
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 14,
+    marginBottom: 10,
+  },
+  tonightCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  tonightVenueName: {
+    fontSize: 16,
+    fontWeight: '800',
+    letterSpacing: -0.2,
+  },
+  tonightDealRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  tonightDealDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#FF6B35',
+    marginRight: 10,
+  },
+  tonightDealTitle: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  tonightDealPrice: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#4CAF50',
+  },
+
+  // Empty
+  emptyCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 28,
+    alignItems: 'center',
+  },
+  emptyEmoji: {
+    fontSize: 36,
+    marginBottom: 8,
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  emptyDesc: {
+    fontSize: 13,
+    fontWeight: '500',
+    textAlign: 'center',
+    marginTop: 4,
   },
 
   // Submit

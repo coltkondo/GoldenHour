@@ -109,7 +109,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onFinish }) => {
           },
         ]}
       >
-        <Text style={styles.tagline}>DC's Best Happy Hours</Text>
+        <Text style={styles.tagline}>Happy Hours in Happy Valley</Text>
         <View style={styles.taglineDivider} />
         <Text style={styles.taglineSub}>Right Now. Right Here.</Text>
       </Animated.View>

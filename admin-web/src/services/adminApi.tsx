@@ -1,8 +1,13 @@
 const API_BASE = '/api/v1/admin'
 
+function getAuthHeader(): Record<string, string> {
+  const token = localStorage.getItem('gh_admin_token')
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
     ...options,
   })
   if (!res.ok) {
@@ -88,4 +93,31 @@ export const dealsApi = {
 export const exportApi = {
   venuesCsvUrl: `${API_BASE}/export/venues.csv`,
   dealsCsvUrl: `${API_BASE}/export/deals.csv`,
+}
+
+// ---------- Submissions ----------
+
+export interface SubmissionListParams {
+  skip?: number
+  limit?: number
+  status?: string
+  submission_type?: string
+}
+
+export const submissionsApi = {
+  list: (params: SubmissionListParams = {}) => {
+    const qs = new URLSearchParams()
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== '') qs.set(k, String(v))
+    })
+    return request<any[]>(`/submissions/?${qs}`)
+  },
+  count: (params: { status?: string } = {}) => {
+    const qs = new URLSearchParams()
+    if (params.status) qs.set('status', params.status)
+    return request<{ count: number }>(`/submissions/count?${qs}`)
+  },
+  get: (id: string) => request<any>(`/submissions/${id}`),
+  review: (id: string, action: { status: string; admin_notes?: string }) =>
+    request<any>(`/submissions/${id}/review`, { method: 'PATCH', body: JSON.stringify(action) }),
 }

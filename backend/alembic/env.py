@@ -29,6 +29,9 @@ try:
     import app.models.venue as _venue  # noqa: F401
     import app.models.deal as _deal    # noqa: F401
     import app.models.happy_hour as _happy  # noqa: F401
+    import app.models.user as _user  # noqa: F401
+    import app.models.submission as _submission  # noqa: F401
+    import app.models.point_transaction as _pt  # noqa: F401
 except Exception:
     # If models fail, autogenerate will show the issue
     pass

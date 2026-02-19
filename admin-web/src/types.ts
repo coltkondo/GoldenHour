@@ -47,3 +47,29 @@ export interface Deal {
 export interface DealWithVenue extends Deal {
   venue_name: string | null
 }
+
+export interface Submission {
+  id: string
+  user_id: string
+  submitter_username: string
+  submission_type: string
+  submitted_data: Record<string, any>
+  related_bar_id: string | null
+  related_deal_id: string | null
+  status: string
+  admin_notes: string | null
+  points_awarded: number
+  reviewed_by: string | null
+  reviewed_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface AdminUser {
+  id: string
+  username: string
+  email: string
+  role: string
+  points_balance: number
+  created_at: string
+}

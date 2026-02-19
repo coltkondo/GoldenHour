@@ -14,10 +14,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { useTheme } from '../theme';
-import { dealsAPI } from '../api/endpoints';
-import { Venue, Deal } from '../types/api';
+import { dealsAPI, venuesAPI } from '../api/endpoints';
+import { Venue, Deal, HappyHourSchedule, DAY_NAMES } from '../types/api';
 import { DealCard } from '../components/Cards/DealCard';
 import { GradientBackground } from '../components/common/GradientBackground';
+import { FlagReportModal } from '../components/FlagReportModal';
 
 const { width } = Dimensions.get('window');
 
@@ -25,20 +26,12 @@ type HappyHourRouteParams = {
   HappyHour: { venue: Venue };
 };
 
-// Mock reviews for UI (to be replaced with real API)
-interface Review {
-  id: string;
-  userName: string;
-  rating: number;
-  text: string;
-  date: string;
-}
-
-const MOCK_REVIEWS: Review[] = [
-  { id: '1', userName: 'HappyHourHero', rating: 5, text: 'Best wings deal in DC. Absolute steal during happy hour!', date: '2 days ago' },
-  { id: '2', userName: 'DCFoodie', rating: 4, text: 'Great vibes, solid drink specials. Gets busy around 6pm.', date: '1 week ago' },
-  { id: '3', userName: 'BarCrawlKing', rating: 5, text: 'My go-to spot. Never disappoints.', date: '2 weeks ago' },
-];
+const formatTime = (timeStr: string) => {
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const displayHour = hours % 12 || 12;
+  return minutes === 0 ? `${displayHour}${period}` : `${displayHour}:${String(minutes).padStart(2, '0')}${period}`;
+};
 
 export const HappyHourScreen = () => {
   const { theme } = useTheme();
@@ -47,21 +40,29 @@ export const HappyHourScreen = () => {
   const { venue } = route.params;
 
   const [deals, setDeals] = useState<Deal[]>([]);
+  const [schedules, setSchedules] = useState<HappyHourSchedule[]>([]);
   const [loading, setLoading] = useState(true);
   const [newReview, setNewReview] = useState('');
   const [selectedRating, setSelectedRating] = useState(0);
+  const [reportModalVisible, setReportModalVisible] = useState(false);
+  const today = new Date().getDay();
+  // JS getDay(): 0=Sunday, but our DB uses 0=Monday. Convert:
+  const todayDb = today === 0 ? 6 : today - 1;
 
   useEffect(() => {
-    loadDeals();
+    loadData();
   }, []);
 
-  const loadDeals = async () => {
+  const loadData = async () => {
     try {
-      const allDeals = await dealsAPI.getActive();
-      const venueDeals = allDeals.filter((d: Deal) => d.venue_id === venue.id);
+      const [venueDeals, venueSchedules] = await Promise.all([
+        dealsAPI.getByVenue(venue.id),
+        venuesAPI.getSchedules(venue.id),
+      ]);
       setDeals(venueDeals);
+      setSchedules(venueSchedules);
     } catch {
-      // Deals may not be available
+      // Data may not be available
     } finally {
       setLoading(false);
     }
@@ -179,7 +180,19 @@ export const HappyHourScreen = () => {
               </TouchableOpacity>
             </>
           )}
+
+          <View style={[styles.actionDivider, { backgroundColor: theme.colors.border }]} />
+          <TouchableOpacity style={styles.actionBtn} onPress={() => setReportModalVisible(true)}>
+            <Ionicons name="flag" size={20} color="#F59E0B" />
+            <Text style={[styles.actionBtnText, { color: theme.colors.text }]}>Report</Text>
+          </TouchableOpacity>
         </View>
+
+        <FlagReportModal
+          visible={reportModalVisible}
+          onClose={() => setReportModalVisible(false)}
+          venue={venue}
+        />
 
         <GradientBackground style={styles.bodyGradient}>
           {/* Active Deals */}
@@ -257,14 +270,67 @@ export const HappyHourScreen = () => {
             </View>
           </View>
 
+          {/* Weekly Schedule */}
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+              📅 Weekly Schedule
+            </Text>
+            {schedules.length > 0 ? (
+              <View style={[styles.scheduleCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
+                {DAY_NAMES.map((dayName, dayIndex) => {
+                  const daySchedules = schedules.filter((s) => s.day_of_week === dayIndex);
+                  const isToday = dayIndex === todayDb;
+                  return (
+                    <View
+                      key={dayIndex}
+                      style={[
+                        styles.scheduleRow,
+                        isToday && styles.scheduleTodayRow,
+                        dayIndex < 6 && { borderBottomWidth: 1, borderBottomColor: theme.colors.border },
+                      ]}
+                    >
+                      <View style={styles.scheduleDayCol}>
+                        <Text style={[styles.scheduleDayText, { color: theme.colors.text }, isToday && styles.scheduleTodayText]}>
+                          {dayName.slice(0, 3)}
+                        </Text>
+                        {isToday && (
+                          <View style={styles.todayBadge}>
+                            <Text style={styles.todayBadgeText}>TODAY</Text>
+                          </View>
+                        )}
+                      </View>
+                      <View style={styles.scheduleTimesCol}>
+                        {daySchedules.length > 0 ? (
+                          daySchedules.map((s) => (
+                            <Text key={s.id} style={[styles.scheduleTimeText, { color: theme.colors.text }]}>
+                              {formatTime(s.start_time)} – {formatTime(s.end_time)}
+                            </Text>
+                          ))
+                        ) : (
+                          <Text style={[styles.scheduleClosedText, { color: theme.colors.textMuted }]}>
+                            No happy hour
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+            ) : (
+              <View style={[styles.emptySection, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
+                <Text style={styles.emptyEmoji}>📅</Text>
+                <Text style={[styles.emptyText, { color: theme.colors.text }]}>
+                  Schedule coming soon
+                </Text>
+              </View>
+            )}
+          </View>
+
           {/* Reviews */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
                 ⭐ Reviews
-              </Text>
-              <Text style={[styles.reviewCount, { color: theme.colors.textMuted }]}>
-                {MOCK_REVIEWS.length} reviews
               </Text>
             </View>
 
@@ -291,32 +357,15 @@ export const HappyHourScreen = () => {
               </TouchableOpacity>
             </View>
 
-            {/* Review list */}
-            {MOCK_REVIEWS.map((review) => (
-              <View key={review.id} style={[styles.reviewCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-                <View style={styles.reviewHeader}>
-                  <View style={styles.reviewUser}>
-                    <View style={[styles.avatar, { backgroundColor: theme.colors.primary }]}>
-                      <Text style={styles.avatarText}>
-                        {review.userName.charAt(0).toUpperCase()}
-                      </Text>
-                    </View>
-                    <View>
-                      <Text style={[styles.reviewUserName, { color: theme.colors.text }]}>
-                        {review.userName}
-                      </Text>
-                      <Text style={[styles.reviewDate, { color: theme.colors.textMuted }]}>
-                        {review.date}
-                      </Text>
-                    </View>
-                  </View>
-                  {renderStars(review.rating)}
-                </View>
-                <Text style={[styles.reviewText, { color: theme.colors.textSecondary }]}>
-                  {review.text}
-                </Text>
-              </View>
-            ))}
+            <View style={[styles.emptySection, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
+              <Text style={styles.emptyEmoji}>⭐</Text>
+              <Text style={[styles.emptyText, { color: theme.colors.text }]}>
+                Be the first to review!
+              </Text>
+              <Text style={[styles.emptySub, { color: theme.colors.textMuted }]}>
+                Share your happy hour experience
+              </Text>
+            </View>
           </View>
 
           <View style={{ height: 100 }} />
@@ -617,5 +666,58 @@ const styles = StyleSheet.create({
   reviewText: {
     fontSize: 14,
     lineHeight: 20,
+  },
+
+  // Schedule
+  scheduleCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  scheduleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  scheduleTodayRow: {
+    backgroundColor: 'rgba(255, 107, 53, 0.1)',
+  },
+  scheduleDayCol: {
+    width: 80,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  scheduleDayText: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  scheduleTodayText: {
+    color: '#FF6B35',
+  },
+  todayBadge: {
+    backgroundColor: '#FF6B35',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  todayBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 8,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
+  scheduleTimesCol: {
+    flex: 1,
+  },
+  scheduleTimeText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  scheduleClosedText: {
+    fontSize: 13,
+    fontWeight: '500',
+    fontStyle: 'italic',
   },
 });

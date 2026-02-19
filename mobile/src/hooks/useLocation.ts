@@ -14,7 +14,8 @@ export const useLocation = () => {
         const { status } = await Location.requestForegroundPermissionsAsync();
         
         if (status !== 'granted') {
-          setError('Location permission denied');
+          // Use default location (State College) when permission denied
+          console.log('Location permission denied, using default State College location');
           setLoading(false);
           return;
         }
@@ -29,8 +30,8 @@ export const useLocation = () => {
           longitudeDelta: 0.05,
         });
       } catch (err) {
-        console.error('Error getting location:', err);
-        setError('Failed to get location');
+        console.error('Error getting location, using default:', err);
+        // Still use default location on error
       } finally {
         setLoading(false);
       }

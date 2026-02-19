@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE, Circle } from 'react-native-maps';
+import MapView, { Marker, Circle } from 'react-native-maps';
 import { useTheme } from '../../theme';
 import { Venue } from '../../types/api';
 
@@ -21,7 +21,6 @@ export const MiniMap: React.FC<MiniMapProps> = ({ userLocation, venues, onPress 
     >
       <MapView
         style={styles.map}
-        provider={PROVIDER_GOOGLE}
         region={{
           ...userLocation,
           latitudeDelta: 0.03,

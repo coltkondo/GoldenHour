@@ -18,19 +18,59 @@ router = APIRouter(prefix="/deals", tags=["deals"])
 @router.get("/active", response_model=List[DealResponse])
 async def get_active_deals(
     skip: int = Query(0, ge=0),
-    limit: int = Query(50, ge=1, le=100),
+    limit: int = Query(50, ge=1, le=200),
     category: Optional[str] = None,
+    venue_id: Optional[UUID] = None,
     db: Session = Depends(get_db)
 ):
     """
-    Get all currently active deals.
+    Get all currently active deals. Optionally filter by venue or category.
     """
     query = db.query(Deal).filter(Deal.active == True)
-    
+
     if category:
         query = query.filter(Deal.category == category)
-    
+
+    if venue_id:
+        query = query.filter(Deal.venue_id == venue_id)
+
     deals = query.offset(skip).limit(limit).all()
+    return deals
+
+
+@router.get("/today", response_model=List[DealResponse])
+async def get_todays_deals(
+    db: Session = Depends(get_db)
+):
+    """
+    Get all deals that are active today (based on schedule).
+    """
+    today = datetime.now().weekday()  # 0=Monday
+
+    deal_ids = (
+        db.query(HappyHourSchedule.deal_ids)
+        .filter(
+            HappyHourSchedule.day_of_week == today,
+            HappyHourSchedule.active == True,
+        )
+        .all()
+    )
+
+    # Flatten deal_ids arrays from schedules
+    all_deal_ids = set()
+    for (ids,) in deal_ids:
+        if ids:
+            for did in ids:
+                all_deal_ids.add(did)
+
+    if not all_deal_ids:
+        return []
+
+    deals = (
+        db.query(Deal)
+        .filter(Deal.id.in_(all_deal_ids), Deal.active == True)
+        .all()
+    )
     return deals
 
 @router.get("/nearby", response_model=List[DealResponse])

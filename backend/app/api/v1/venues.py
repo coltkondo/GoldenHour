@@ -5,7 +5,9 @@ from uuid import UUID
 
 from app.core.database import get_db
 from app.models.venue import Venue
+from app.models.happy_hour import HappyHourSchedule
 from app.schemas.venue import VenueResponse, VenueCreate, VenueWithDeals
+from app.schemas.happy_hour import HappyHourScheduleResponse
 from app.services.search import bounding_box, haversine_distance
 
 
@@ -75,11 +77,32 @@ async def get_venue(
     Get a specific venue by ID.
     """
     venue = db.query(Venue).filter(Venue.id == venue_id).first()
-    
+
     if not venue:
         raise HTTPException(status_code=404, detail="Venue not found")
-    
+
     return venue
+
+
+@router.get("/{venue_id}/schedules", response_model=List[HappyHourScheduleResponse])
+async def get_venue_schedules(
+    venue_id: UUID,
+    db: Session = Depends(get_db)
+):
+    """
+    Get all happy hour schedules for a venue.
+    """
+    venue = db.query(Venue).filter(Venue.id == venue_id).first()
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue not found")
+
+    schedules = (
+        db.query(HappyHourSchedule)
+        .filter(HappyHourSchedule.venue_id == venue_id, HappyHourSchedule.active == True)
+        .order_by(HappyHourSchedule.day_of_week, HappyHourSchedule.start_time)
+        .all()
+    )
+    return schedules
 
 @router.post("/", response_model=VenueResponse, status_code=201)
 async def create_venue(
