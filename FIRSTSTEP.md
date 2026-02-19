@@ -1,80 +1,6 @@
-# Golden Hour -- Getting Started
+# Golden Hour — Getting Started
 
-This guide covers everything you need to run the app for the first time.
-
----
-
-## Step 1: Clone and Install
-
-```bash
-git clone <repo-url>
-cd GoldenHour
-```
-
-Install mobile dependencies:
-
-```bash
-cd mobile
-npm install
-cd ..
-```
-
-Install Python dependencies for the local API server:
-
-```bash
-pip3 install fastapi uvicorn
-```
-
----
-
-## Step 2: Start the Local API Server
-
-From the project root:
-
-```bash
-python3 serve_local.py
-```
-
-This starts a lightweight FastAPI server on port 8000 that reads venue, deal, and schedule data directly from CSV files in the `data/` directory. No database setup is required.
-
-You should see:
-
-```
-Loaded: 12 venues, 84 deals, 67 schedules
-```
-
-Verify by opening http://localhost:8000/docs in a browser.
-
----
-
-## Step 3: Start the Mobile App
-
-In a separate terminal:
-
-```bash
-cd mobile
-npx expo start
-```
-
-This launches the Expo development server. You have several options:
-
-- **Physical device**: Install Expo Go on your phone, then scan the QR code. Your phone must be on the same Wi-Fi network as your computer. The app automatically detects your computer's IP address.
-- **iOS Simulator**: Press `i` in the terminal (requires Xcode on macOS).
-- **Android Emulator**: Press `a` in the terminal (requires Android Studio).
-
----
-
-## Step 4: Explore the App
-
-The app has four main screens:
-
-**Home** -- Shows a time-based greeting (morning, afternoon, golden hour, evening, late night), today's active deals, and featured venues.
-
-**Map** -- Displays all venues as markers on an interactive map centered on State College, PA. Tap a marker to see venue details in a bottom sheet, including the venue name, address, type, and associated deals.
-
-**Explorer** -- Browse venues by neighborhood. Includes a search bar and category filters. Tap a venue to see its details and deals.
-
-**Profile** -- Placeholder screen for future user preferences and settings.
+This guide covers everything you need to run the full app for the first time.
 
 ---
 
@@ -82,116 +8,201 @@ The app has four main screens:
 
 | Tool | Version | Purpose |
 |------|---------|---------|
-| Node.js | 18+ | Running the mobile app and admin dashboard |
+| Docker Desktop | Latest | Runs PostgreSQL, Redis, and the backend API |
+| Node.js | 18+ | Mobile app and admin web |
 | npm | 8+ | Package management |
-| Python | 3.11+ | Running the local API server |
-| Expo Go | Latest | Running the mobile app on a physical device |
+| Expo Go | Latest | Run the mobile app on a physical device |
 
-Optional (for full stack development):
-
-| Tool | Version | Purpose |
-|------|---------|---------|
-| Docker | Latest | Running PostgreSQL and Redis containers |
-| PostgreSQL | 15+ | Production database (with PostGIS) |
-| Redis | 7+ | Caching layer |
+> **Docker is required.** The app now has user accounts and a submission system that need a real database. The old `serve_local.py` script still works for browsing venues but does not support login, signup, or submissions.
 
 ---
 
-## Project Architecture
+## Step 1: Start the Backend
 
-```
-GoldenHour/
-  mobile/              React Native app (Expo, TypeScript)
-    src/
-      screens/         Home, Map, Explorer, Profile, HappyHour, Loading
-      components/      DealCard, VenueCard, VenueMarker, MiniMap, BottomSheet
-      api/             Axios client and endpoint functions
-      hooks/           useLocation hook
-      config/          API URL and default location constants
-      types/           TypeScript type definitions
-      navigation/      Tab and stack navigators
-      theme/           Time-based color themes
-
-  backend/             FastAPI API (Python)
-    app/
-      api/v1/          Public endpoints (venues, deals)
-      api/admin/       Admin CRUD endpoints
-      models/          SQLAlchemy models (Venue, Deal, HappyHourSchedule)
-      schemas/         Pydantic request/response schemas
-      services/        Search and geo query logic
-      core/            Database and config
-    scripts/           CSV import script
-
-  admin-web/           React admin dashboard (Vite)
-  data/                CSV source files (venues, deals, schedules)
-  serve_local.py       Standalone local dev API server
-  docker-compose.yml   PostgreSQL + Redis containers
-  docs/                Additional documentation
-```
-
----
-
-## Data Overview
-
-The current dataset covers State College, PA (Penn State area):
-
-- **12 venues** -- Bars, restaurants, and breweries in the downtown and campus areas
-- **84 deals** -- Food and drink specials with pricing information
-- **67 schedules** -- Day and time windows when deals are active
-
-Data is stored as CSV files in `data/` and loaded by the local API server on startup.
-
----
-
-## Development Workflow
-
-### Day-to-day development
-
-1. Start the local API server: `python3 serve_local.py`
-2. Start the mobile app: `cd mobile && npx expo start`
-3. Make changes to mobile code -- Expo hot-reloads automatically
-4. Test on your phone via Expo Go
-
-### Adding new data
-
-Edit the CSV files in `data/`:
-- `pennstate_venues.csv` for new venues
-- `pennstate_deals.csv` for new deals
-- `pennstate_schedules.csv` for new schedule entries
-
-Restart `serve_local.py` to pick up changes.
-
-### Full stack development
-
-If you need PostgreSQL for testing database-dependent features:
+From the project root:
 
 ```bash
-docker-compose up -d db redis
-cd backend
-pip install -r requirements.txt
-alembic upgrade head
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+# First time only: build the backend image to install Python dependencies
+docker compose build backend
+
+# Start PostgreSQL, Redis, and the backend API
+docker compose up -d
 ```
+
+The backend starts on **http://localhost:8000**. Database tables are created automatically on first startup.
+
+Verify it is running:
+
+```bash
+# Should return {"status": "healthy"}
+curl http://localhost:8000/health
+
+# Or open the interactive API docs
+open http://localhost:8000/docs
+```
+
+Watch the logs if something looks wrong:
+
+```bash
+docker compose logs -f backend
+```
+
+---
+
+## Step 2: Start the Mobile App
+
+In a separate terminal:
+
+```bash
+cd mobile
+npm install       # first time only
+npx expo start
+```
+
+- **Physical device**: Install Expo Go, scan the QR code. Your phone must be on the same Wi-Fi network as your computer.
+- **iOS Simulator**: Press `i` (requires Xcode on macOS).
+- **Android Emulator**: Press `a` (requires Android Studio).
+
+---
+
+## Step 3: Create Your Account
+
+Open the app on your phone or simulator. You will land on the **Sign In** screen. Tap **Sign Up** to create an account.
+
+The account is created in your local PostgreSQL database. Every new account starts as a regular `user` role.
+
+---
+
+## Step 4: Create an Admin Account
+
+To use the admin review queue (approve/reject submissions), one account needs the `admin` role. Promote an account like this:
+
+```bash
+# Open a psql shell inside the running database container
+docker compose exec db psql -U postgres -d goldenhour
+
+# Inside psql, run:
+UPDATE users SET role = 'admin' WHERE email = 'your@email.com';
+\q
+```
+
+Sign out and back in on the mobile app to pick up the new role. The **Review Queue** option will appear in your Profile.
+
+---
+
+## Step 5: Start the Admin Web (Optional)
+
+The admin web dashboard is used for managing venues, deals, and reviewing the submission queue from a browser.
+
+```bash
+cd admin-web
+npm install       # first time only
+npm run dev
+```
+
+Open **http://localhost:5173** in a browser and log in with your admin account credentials.
+
+---
+
+## App Features
+
+### Mobile screens
+
+| Screen | Description |
+|--------|-------------|
+| Home | Time-based greeting, today's deals, featured venues |
+| Map | Interactive map with venue markers |
+| Explorer | Browse and filter venues by neighborhood |
+| Happy Hour | Full venue detail: deals, schedule, info |
+| Profile | Account info, points balance, and navigation to contribute screens |
+| Quick Submit | Submit a new bar, deal, update, or closure report |
+| My Submissions | View your submission history and points earned |
+| Leaderboard | Top contributors ranked by points |
+| Admin Review | (Admin only) Approve or reject pending submissions |
+
+### Points system
+
+| Action | Points |
+|--------|--------|
+| New bar or new deal submitted and approved | 50 pts |
+| Deal expired or bar closed report approved | 25 pts |
+| Deal update or bar update approved | 15 pts |
+
+---
+
+## Daily Development Workflow
+
+```bash
+# Terminal 1 — backend + database
+docker compose up -d
+
+# Terminal 2 — mobile app
+cd mobile && npx expo start
+
+# Terminal 3 — admin web (if needed)
+cd admin-web && npm run dev
+```
+
+Hot reload is active for both the mobile app and the admin web. Backend changes reload automatically because the `./backend` directory is bind-mounted into the container.
+
+---
+
+## Stopping Everything
+
+```bash
+docker compose down
+```
+
+Data persists in a Docker volume (`postgres_data`) between restarts.
 
 ---
 
 ## Common Issues
 
-**App shows API errors on Expo Go**: Make sure `serve_local.py` is running and your phone is on the same Wi-Fi network as your computer.
+**"Sign up failed — try again"**: The backend is not running. Make sure `docker compose up -d` has been run and `curl http://localhost:8000/health` returns healthy.
 
-**Map is blank**: The app uses Apple Maps on iOS (no API key needed). On Android, Google Maps requires a valid API key in `mobile/app.json`.
+**App shows API errors**: Your phone and computer must be on the same Wi-Fi network. The app auto-detects your machine's IP via Expo's `hostUri`.
 
-**Location permission denied**: The app falls back to a default State College location. All data will still load.
+**Map is blank on Android**: Google Maps requires an API key in `mobile/app.json`. On iOS, Apple Maps works without a key.
 
-**Port 8000 already in use**: Another process is using the port. Find it with `lsof -i :8000` and stop it, or change the port in `serve_local.py`.
+**Location permission denied**: The app falls back to a default State College, PA location. All data still loads.
+
+**Port 8000 in use**: `lsof -i :8000` to find the conflicting process, or stop it with `docker compose down`.
+
+**Backend logs show "table does not exist"**: This should not happen since tables are auto-created on startup. If it does, run `docker compose restart backend`.
 
 ---
 
-## Next Steps
+## Project Structure
 
-See the full documentation in `docs/`:
+```
+GoldenHour/
+  backend/             FastAPI API (Python, SQLAlchemy, PostgreSQL + PostGIS)
+    app/
+      api/v1/          Public + auth endpoints (venues, deals, auth, submissions, points, leaderboard)
+      api/admin/       Admin CRUD + submission review endpoints
+      models/          SQLAlchemy models (Venue, Deal, User, Submission, PointTransaction)
+      schemas/         Pydantic request/response schemas
+      services/        Shared business logic (submission review, auto-apply)
+      core/            Database, config, JWT security, points config
 
-- [SETUP.md](docs/SETUP.md) -- Detailed setup for all environments
-- [API.md](docs/API.md) -- Complete API endpoint reference
-- [DATA_MODELS.md](docs/DATA_MODELS.md) -- Database schema documentation
-- [admin-guide.md](docs/admin-guide.md) -- Admin dashboard usage
+  mobile/              React Native app (Expo, TypeScript)
+    src/
+      screens/         All app screens including auth, submit, leaderboard
+      context/         AuthContext (JWT token + user state)
+      api/             Axios client with JWT interceptor and all endpoint functions
+      navigation/      Auth-gated stack + tab navigators
+      components/      Cards, FlagReportModal, common components
+      types/           TypeScript type definitions
+      config/          API URL detection, constants, points config
+
+  admin-web/           React admin dashboard (Vite)
+    src/
+      context/         AuthContext (admin JWT)
+      pages/           Login, Submissions (PendingReview, ReviewDetail), Venues, Deals
+      services/        Admin API client
+
+  data/                CSV source files (venues, deals, schedules)
+  docker-compose.yml   PostgreSQL + Redis + backend containers
+  docs/                Additional documentation
+```

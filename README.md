@@ -1,126 +1,144 @@
 # Golden Hour
 
-A community-driven happy hour discovery platform. Users find local happy hour deals, browse venues on a map, and explore what is available nearby -- all from their phone.
+A community-driven happy hour discovery platform. Users find local happy hour deals, browse venues on a map, and contribute new information to earn points.
 
 ## What This App Does
 
-Golden Hour helps people find cheap food and drink deals at bars and restaurants near them. The mobile app shows venues on a map, lists active deals for the current day, and lets users explore by neighborhood or category. The initial dataset covers State College, PA (Penn State area) with 12 venues and 84 deals.
+Golden Hour helps people find cheap food and drink deals at bars and restaurants near them. The mobile app shows venues on a map, lists active deals, and lets users browse by neighborhood. Logged-in users can submit new deals, flag expired ones, and report bar closures — submissions go into a review queue that admins approve. Approved submissions automatically update the database and award points to the submitter.
+
+The current dataset covers State College, PA (Penn State area).
+
+## Quick Start
+
+**Docker is required.** The app has user accounts, JWT auth, and a submission system that need a real database.
+
+```bash
+# 1. Build and start the backend (PostgreSQL + Redis + FastAPI)
+docker compose build backend
+docker compose up -d
+
+# 2. Start the mobile app
+cd mobile && npx expo start
+
+# 3. (Optional) Start the admin web dashboard
+cd admin-web && npm run dev
+```
+
+See [FIRSTSTEP.md](FIRSTSTEP.md) for the full walkthrough including how to create an admin account.
 
 ## Project Structure
 
 ```
 GoldenHour/
-  backend/           FastAPI REST API (Python, SQLAlchemy, PostgreSQL)
+  backend/           FastAPI REST API (Python, SQLAlchemy, PostgreSQL + PostGIS)
   mobile/            React Native mobile app (Expo, TypeScript)
-  admin-web/         React admin dashboard for managing venues and deals
+  admin-web/         React admin dashboard (Vite)
   data/              CSV source files for venues, deals, and schedules
-  serve_local.py     Lightweight local dev server (no database required)
-  docker-compose.yml PostgreSQL and Redis containers
+  docker-compose.yml PostgreSQL, Redis, and backend containers
   docs/              Additional documentation
 ```
-
-## Quick Start (Local Development)
-
-### Prerequisites
-
-- Python 3.11 or later
-- Node.js 18 or later with npm
-- Expo Go app installed on your phone (iOS App Store or Google Play)
-
-### 1. Start the local API server
-
-The local server reads data directly from CSV files. No database setup required.
-
-```bash
-pip3 install fastapi uvicorn
-python3 serve_local.py
-```
-
-This starts the API at http://localhost:8000 serving 12 venues, 84 deals, and 67 schedules.
-
-### 2. Start the mobile app
-
-```bash
-cd mobile
-npm install
-npx expo start
-```
-
-Scan the QR code with Expo Go on your phone. The app automatically detects your machine's IP address so the phone can reach the local API server.
-
-### 3. Verify the API
-
-Open http://localhost:8000/docs in a browser to see the interactive API documentation.
 
 ## Architecture
 
 ### Backend
 
-- **Framework**: FastAPI with Pydantic validation
-- **Database**: PostgreSQL 15 with PostGIS (for production)
+- **Framework**: FastAPI with Pydantic v2 validation
+- **Database**: PostgreSQL 15 with PostGIS
 - **ORM**: SQLAlchemy 2.0
-- **Migrations**: Alembic
-- **Caching**: Redis (optional, for production)
+- **Auth**: JWT via `python-jose`, passwords hashed with `passlib[bcrypt]`
+- **Migrations**: Alembic (tables also auto-created on startup via `create_all`)
 
 ### Mobile
 
 - **Framework**: React Native with Expo SDK 54
 - **Language**: TypeScript
-- **Navigation**: React Navigation (bottom tabs + native stack)
-- **Maps**: react-native-maps (Apple Maps on iOS, default on Android)
-- **HTTP**: Axios
-- **Animations**: react-native-reanimated, @gorhom/bottom-sheet
+- **Auth**: JWT stored in `AsyncStorage`, injected on every API request
+- **Navigation**: React Navigation (auth-gated stack + bottom tabs)
+- **Maps**: react-native-maps (Apple Maps on iOS)
+- **HTTP**: Axios with request interceptor for auth
 
 ### Admin Web
 
 - **Framework**: React with Vite
-- **Purpose**: CRUD management of venues and deals
-
-## Data
-
-All source data lives in the `data/` directory as CSV files:
-
-- `pennstate_venues.csv` -- 13 venues (12 with valid coordinates)
-- `pennstate_deals.csv` -- 97 deals (84 linked to valid venues)
-- `pennstate_schedules.csv` -- 167 schedule entries (grouped into 67 unique time slots)
+- **Auth**: JWT stored in `localStorage`
+- **Purpose**: CRUD management of venues/deals, submission review queue
 
 ## API Endpoints
 
-The mobile app uses these endpoints (served by both `serve_local.py` and the full backend):
+### Public
 
 | Endpoint | Description |
 |----------|-------------|
 | `GET /api/v1/venues/` | List all active venues |
 | `GET /api/v1/venues/nearby` | Find venues within a radius |
-| `GET /api/v1/venues/{id}` | Get a single venue |
 | `GET /api/v1/venues/{id}/schedules` | Get schedules for a venue |
-| `GET /api/v1/venues/neighborhoods/list` | List all neighborhoods |
 | `GET /api/v1/deals/active` | Get all active deals |
 | `GET /api/v1/deals/today` | Get deals available today |
-| `GET /api/v1/deals/nearby` | Find deals near a location |
+| `GET /api/v1/leaderboard/` | Top contributors by points |
 
-## Mobile App Screens
+### Auth (requires account)
 
-- **Home** -- Time-based greeting, today's deals, featured venues
-- **Map** -- Interactive map with venue markers and bottom sheet details
-- **Explorer** -- Browse venues by neighborhood with search and filters
-- **Profile** -- User preferences and settings (placeholder)
+| Endpoint | Description |
+|----------|-------------|
+| `POST /api/v1/auth/register` | Create account, returns JWT |
+| `POST /api/v1/auth/login` | Sign in, returns JWT |
+| `GET /api/v1/auth/me` | Current user info |
+| `POST /api/v1/submissions/` | Submit a deal/bar/update/report |
+| `GET /api/v1/submissions/mine` | Your submission history |
+| `GET /api/v1/points/users/{id}` | Points balance and history |
 
-## Production Deployment
+### Admin only
 
-The backend is deployed to Railway with a PostgreSQL database. The production API is at:
+| Endpoint | Description |
+|----------|-------------|
+| `GET /api/v1/submissions/` | All submissions with filters |
+| `PATCH /api/v1/submissions/{id}/review` | Approve or reject, auto-applies change |
+| `GET /api/v1/admin/venues/` | CRUD for venues |
+| `GET /api/v1/admin/deals/` | CRUD for deals |
+
+## User Roles
+
+| Role | Capabilities |
+|------|-------------|
+| `user` | Browse, submit deals/reports, view own submissions and points |
+| `admin` | Everything above + review queue, immediate publish, full CRUD in admin web |
+
+New accounts default to `user`. Promote to admin via psql:
+
+```sql
+UPDATE users SET role = 'admin' WHERE email = 'your@email.com';
+```
+
+## Points System
+
+Submitting information that gets approved earns points:
+
+| Submission type | Points |
+|-----------------|--------|
+| New bar or new deal | 50 |
+| Deal expired or bar closed | 25 |
+| Deal update or bar update | 15 |
+
+## Data
+
+All source data lives in `data/` as CSV files:
+
+- `pennstate_venues.csv` — 13 venues
+- `pennstate_deals.csv` — 97 deals
+- `pennstate_schedules.csv` — 167 schedule entries
+
+## Production
+
+The backend is deployed to Railway. The mobile app automatically switches between local dev and production based on build mode (`__DEV__`).
 
 ```
 https://goldenhour-production.up.railway.app
 ```
 
-The mobile app automatically switches between the local dev server and production based on whether it is running in development or release mode.
-
 ## Documentation
 
-- [docs/SETUP.md](docs/SETUP.md) -- Detailed setup instructions
-- [docs/API.md](docs/API.md) -- Full API reference
-- [docs/DATA_MODELS.md](docs/DATA_MODELS.md) -- Database schema and model definitions
-- [docs/admin-guide.md](docs/admin-guide.md) -- Admin dashboard usage guide
-- [backend/README.md](backend/README.md) -- Backend-specific documentation
-- [admin-web/README.md](admin-web/README.md) -- Admin web app documentation
+- [FIRSTSTEP.md](FIRSTSTEP.md) — Full setup walkthrough for new developers
+- [docs/SETUP.md](docs/SETUP.md) — Detailed environment setup
+- [docs/API.md](docs/API.md) — Full API reference
+- [docs/DATA_MODELS.md](docs/DATA_MODELS.md) — Database schema
+- [docs/admin-guide.md](docs/admin-guide.md) — Admin dashboard guide
