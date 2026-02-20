@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   db:
     image: postgis/postgis:15-3.3
@@ -32,12 +30,21 @@ services:
   backend:
     build: ./backend
     container_name: golden-hour-backend
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    # --reload watches the bind-mounted ./backend directory for file changes.
+    # docker-entrypoint.sh now passes "$@" to exec, so this command is used
+    # instead of the Dockerfile CMD default.
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     ports:
       - "8000:8000"
     environment:
+      # DB host is 'db' (the container name), NOT localhost.
+      # localhost inside a container refers to the container itself.
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/goldenhour
       - REDIS_URL=redis://redis:6379
+      # Override SECRET_KEY in production via your deployment platform's env vars.
+      # For local dev the default below is fine.
+      - SECRET_KEY=${SECRET_KEY:-dev-secret-key-change-in-production}
+      - ENVIRONMENT=development
     volumes:
       - ./backend:/app
     depends_on:
@@ -46,15 +53,17 @@ services:
       redis:
         condition: service_healthy
 
-  # Image-backed backend (no host bind-mount). Use this for migrations/seeds
-  # so the container runs the code baked into the image rather than the host
-  # filesystem. This avoids sync issues on Windows/Docker Desktop.
+  # Image-backed backend with no host bind-mount.
+  # Use this for one-off commands so the baked image code runs, not the host filesystem.
+  # Example: docker compose run --rm backend_image python -m scripts.import_csv --force
   backend_image:
     build: ./backend
     container_name: golden-hour-backend-image
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/goldenhour
       - REDIS_URL=redis://redis:6379
+      - SECRET_KEY=${SECRET_KEY:-dev-secret-key-change-in-production}
+      - ENVIRONMENT=development
     depends_on:
       db:
         condition: service_healthy

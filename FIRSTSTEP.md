@@ -13,14 +13,33 @@ This guide covers everything you need to run the full app for the first time.
 | npm | 8+ | Package management |
 | Expo Go | Latest | Run the mobile app on a physical device |
 
-> **Docker is required.** The app now has user accounts and a submission system that need a real database. The old `serve_local.py` script still works for browsing venues but does not support login, signup, or submissions.
+> **Docker is required.** The app has user accounts and a submission system that need a real database. The old `serve_local.py` script still works for browsing venues but does not support login, signup, or submissions.
 
 ---
 
-## Step 1: Start the Backend
+## Step 1: Configure the Backend Environment
+
+Copy the example env file and confirm it looks right:
+
+**Mac/Linux:**
+```bash
+cp backend/.env.example backend/.env
+```
+
+**Windows (PowerShell):**
+```powershell
+Copy-Item backend\.env.example backend\.env
+```
+
+Open `backend/.env` and verify the values. The defaults work for local Docker development — you do not need to change anything to get started. The `SECRET_KEY` default is fine for local dev only; change it before deploying.
+
+---
+
+## Step 2: Start the Backend
 
 From the project root:
 
+**Mac/Linux/Windows (all the same):**
 ```bash
 # First time only: build the backend image to install Python dependencies
 docker compose build backend
@@ -29,27 +48,42 @@ docker compose build backend
 docker compose up -d
 ```
 
-The backend starts on **http://localhost:8000**. Database tables are created automatically on first startup.
+The backend starts on **http://localhost:8000**. Database tables are created automatically on first startup, and the Penn State venue/deal data is seeded if the database is empty.
 
 Verify it is running:
 
+**Mac/Linux:**
 ```bash
-# Should return {"status": "healthy"}
+# Should return {"status":"healthy"}
 curl http://localhost:8000/health
 
-# Or open the interactive API docs
+# Open interactive API docs in browser
 open http://localhost:8000/docs
 ```
 
-Watch the logs if something looks wrong:
+**Windows (PowerShell):**
+```powershell
+# Should return {"status":"healthy"}
+Invoke-RestMethod http://localhost:8000/health
 
+# Open interactive API docs in browser
+start http://localhost:8000/docs
+```
+
+**Windows (Command Prompt):**
+```cmd
+curl http://localhost:8000/health
+start http://localhost:8000/docs
+```
+
+Watch the logs if something looks wrong:
 ```bash
 docker compose logs -f backend
 ```
 
 ---
 
-## Step 2: Start the Mobile App
+## Step 3: Start the Mobile App
 
 In a separate terminal:
 
@@ -60,12 +94,12 @@ npx expo start
 ```
 
 - **Physical device**: Install Expo Go, scan the QR code. Your phone must be on the same Wi-Fi network as your computer.
-- **iOS Simulator**: Press `i` (requires Xcode on macOS).
+- **iOS Simulator**: Press `i` (requires Xcode on macOS only).
 - **Android Emulator**: Press `a` (requires Android Studio).
 
 ---
 
-## Step 3: Create Your Account
+## Step 4: Create Your Account
 
 Open the app on your phone or simulator. You will land on the **Sign In** screen. Tap **Sign Up** to create an account.
 
@@ -73,7 +107,7 @@ The account is created in your local PostgreSQL database. Every new account star
 
 ---
 
-## Step 4: Create an Admin Account
+## Step 5: Create an Admin Account
 
 To use the admin review queue (approve/reject submissions), one account needs the `admin` role. Promote an account like this:
 
@@ -90,7 +124,7 @@ Sign out and back in on the mobile app to pick up the new role. The **Review Que
 
 ---
 
-## Step 5: Start the Admin Web (Optional)
+## Step 6: Start the Admin Web (Optional)
 
 The admin web dashboard is used for managing venues, deals, and reviewing the submission queue from a browser.
 
@@ -133,17 +167,20 @@ Open **http://localhost:5173** in a browser and log in with your admin account c
 ## Daily Development Workflow
 
 ```bash
-# Terminal 1 — backend + database
+# Terminal 1 — backend + database (all platforms)
 docker compose up -d
 
-# Terminal 2 — mobile app
+# Terminal 2 — mobile app (all platforms)
 cd mobile && npx expo start
 
-# Terminal 3 — admin web (if needed)
+# Terminal 3 — admin web (if needed, all platforms)
 cd admin-web && npm run dev
 ```
 
-Hot reload is active for both the mobile app and the admin web. Backend changes reload automatically because the `./backend` directory is bind-mounted into the container.
+Hot reload is active for all three:
+- **Mobile app**: Expo reloads on save automatically.
+- **Admin web**: Vite HMR reloads on save automatically.
+- **Backend**: `--reload` is passed to uvicorn, so Python changes restart the server automatically (the `./backend` directory is bind-mounted into the container).
 
 ---
 
@@ -153,23 +190,69 @@ Hot reload is active for both the mobile app and the admin web. Backend changes 
 docker compose down
 ```
 
-Data persists in a Docker volume (`postgres_data`) between restarts.
+Data persists in a Docker volume (`postgres_data`) between restarts. To also wipe the database:
+
+```bash
+docker compose down -v
+```
 
 ---
 
 ## Common Issues
 
-**"Sign up failed — try again"**: The backend is not running. Make sure `docker compose up -d` has been run and `curl http://localhost:8000/health` returns healthy.
+**"Sign up failed — try again"**
+The backend is not running. Run `docker compose up -d` and wait for the health check to pass, then try `curl http://localhost:8000/health`.
 
-**App shows API errors**: Your phone and computer must be on the same Wi-Fi network. The app auto-detects your machine's IP via Expo's `hostUri`.
+**App shows API errors on physical device**
+Your phone and computer must be on the same Wi-Fi network. The app auto-detects your machine's IP via Expo's `hostUri`.
 
-**Map is blank on Android**: Google Maps requires an API key in `mobile/app.json`. On iOS, Apple Maps works without a key.
+**Map is blank on Android**
+Google Maps requires an API key in `mobile/app.json`. On iOS, Apple Maps works without a key.
 
-**Location permission denied**: The app falls back to a default State College, PA location. All data still loads.
+**Location permission denied**
+The app falls back to a default State College, PA location. All data still loads normally.
 
-**Port 8000 in use**: `lsof -i :8000` to find the conflicting process, or stop it with `docker compose down`.
+**Port 8000 already in use**
 
-**Backend logs show "table does not exist"**: This should not happen since tables are auto-created on startup. If it does, run `docker compose restart backend`.
+Mac/Linux:
+```bash
+lsof -i :8000
+```
+Windows (PowerShell):
+```powershell
+netstat -ano | findstr :8000
+```
+Or just stop whatever is using it and run `docker compose up -d` again.
+
+**Backend logs show "table does not exist"**
+Tables are auto-created on startup. If they're missing, run:
+```bash
+docker compose restart backend
+```
+Or force a migration manually:
+```bash
+docker compose exec backend alembic upgrade head
+```
+
+**`alembic upgrade head` fails with "Multiple head revisions"**
+This was a known bug and has been fixed. If you're seeing it, pull the latest code.
+
+**Windows: `docker compose` says daemon not running**
+Open Docker Desktop from the Start menu and wait for it to fully start (the whale icon in the system tray stops animating). Then retry.
+
+**Windows: line ending issues in shell scripts**
+If you get `\r: command not found` errors, the shell scripts have Windows line endings. Fix with:
+```bash
+docker compose exec backend sed -i 's/\r//' docker-entrypoint.sh
+```
+
+---
+
+## Python Version
+
+- **Docker image**: Python 3.11 (defined in `backend/Dockerfile`)
+- **Local development**: Any Python 3.10+ works. Python 3.14 is used on the dev machine.
+- The code uses `dict[str, Any]` and `X | Y` union syntax which require Python 3.10+.
 
 ---
 
@@ -185,24 +268,14 @@ GoldenHour/
       schemas/         Pydantic request/response schemas
       services/        Shared business logic (submission review, auto-apply)
       core/            Database, config, JWT security, points config
+    alembic/           Database migrations
+    scripts/           CSV import / seed script
+    .env.example       Template for backend environment variables
 
   mobile/              React Native app (Expo, TypeScript)
-    src/
-      screens/         All app screens including auth, submit, leaderboard
-      context/         AuthContext (JWT token + user state)
-      api/             Axios client with JWT interceptor and all endpoint functions
-      navigation/      Auth-gated stack + tab navigators
-      components/      Cards, FlagReportModal, common components
-      types/           TypeScript type definitions
-      config/          API URL detection, constants, points config
-
   admin-web/           React admin dashboard (Vite)
-    src/
-      context/         AuthContext (admin JWT)
-      pages/           Login, Submissions (PendingReview, ReviewDetail), Venues, Deals
-      services/        Admin API client
-
   data/                CSV source files (venues, deals, schedules)
   docker-compose.yml   PostgreSQL + Redis + backend containers
+  serve_local.py       No-database dev server (read-only, no auth)
   docs/                Additional documentation
 ```

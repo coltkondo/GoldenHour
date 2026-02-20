@@ -1,12 +1,12 @@
 # Golden Hour
 
-A community-driven happy hour discovery platform. Users find local happy hour deals, browse venues on a map, and contribute new information to earn points.
+The best college happy hour discovery platform. Users find local happy hour deals, browse venues on a map, and contribute new information to earn points.
 
 ## What This App Does
 
 Golden Hour helps people find cheap food and drink deals at bars and restaurants near them. The mobile app shows venues on a map, lists active deals, and lets users browse by neighborhood. Logged-in users can submit new deals, flag expired ones, and report bar closures — submissions go into a review queue that admins approve. Approved submissions automatically update the database and award points to the submitter.
 
-The current dataset covers State College, PA (Penn State area).
+The current dataset covers State College, PA.
 
 ## Quick Start
 

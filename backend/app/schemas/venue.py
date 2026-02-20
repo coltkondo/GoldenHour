@@ -8,8 +8,8 @@ class VenueBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
     nickname: Optional[str] = None
     address: str
-    latitude: float = Field(..., ge=-90, le=90)
-    longitude: float = Field(..., ge=-180, le=180)
+    latitude: Optional[float] = Field(None, ge=-90, le=90)
+    longitude: Optional[float] = Field(None, ge=-180, le=180)
     phone: Optional[str] = None
     website: Optional[str] = None
     neighborhood: Optional[str] = None
@@ -54,5 +54,5 @@ class VenueResponse(VenueBase):
         from_attributes = True
 
 class VenueWithDeals(VenueResponse):
-    deals_count: int
-    active_deals_count: int
+    deals_count: int = 0
+    active_deals_count: int = 0
