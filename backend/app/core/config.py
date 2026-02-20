@@ -21,8 +21,13 @@ class Settings(BaseSettings):
     API_V1_PREFIX: str = "/api/v1"
     PROJECT_NAME: str = "Golden Hour API"
     
+    # Optional: Maps and external services
+    GOOGLE_MAPS_API_KEY: Optional[str] = None
+    MAPBOX_TOKEN: Optional[str] = None
+    
     class Config:
         env_file = ".env"
         case_sensitive = True
+        extra = "ignore"
 
 settings = Settings()
