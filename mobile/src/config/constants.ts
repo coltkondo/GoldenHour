@@ -1,19 +1,10 @@
 import { Platform } from 'react-native';
-import Constants from 'expo-constants';
+
 
 // Detect the correct API URL for local development.
 // Physical devices on Expo Go cannot reach "localhost" — they need the
 // dev machine's LAN IP, which Expo exposes via hostUri.
 const getLocalApiUrl = (): string => {
-  const hostUri = Constants.expoConfig?.hostUri;
-  if (hostUri) {
-    const ip = hostUri.split(':')[0];
-    return `http://${ip}:8000/api/v1`;
-  }
-  // Fallback for simulators/emulators
-  if (Platform.OS === 'android') {
-    return 'http://10.0.2.2:8000/api/v1';
-  }
   return 'http://localhost:8000/api/v1';
 };
 
