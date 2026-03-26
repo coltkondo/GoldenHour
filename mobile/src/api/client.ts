@@ -21,7 +21,7 @@ apiClient.interceptors.request.use(
     } catch {
       // no token stored; continue unauthenticated
     }
-    console.log('API Request:', config.method?.toUpperCase(), config.url);
+    console.log('API Request:', config);
     return config;
   },
   (error) => Promise.reject(error)

@@ -111,12 +111,6 @@ export const HappyHourScreen = () => {
         showsVerticalScrollIndicator={false}
       >
         {/* Hero Header */}
-        <LinearGradient
-          colors={['#BF360C', '#E65100', '#FF6B35', '#FF8A50']}
-          style={styles.hero}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
             <Ionicons name="arrow-back" size={24} color="#FFF" />
           </TouchableOpacity>
@@ -152,7 +146,6 @@ export const HappyHourScreen = () => {
               </View>
             )}
           </View>
-        </LinearGradient>
 
         {/* Quick Actions Bar */}
         <View style={[styles.actionsBar, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
@@ -198,7 +191,7 @@ export const HappyHourScreen = () => {
           {/* Active Deals */}
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-              🔥 Active Deals
+              Active Deals
             </Text>
             {loading ? (
               <ActivityIndicator size="small" color={theme.colors.primary} />
@@ -222,7 +215,7 @@ export const HappyHourScreen = () => {
           {/* Venue Info */}
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-              📋 Info
+              Info
             </Text>
             <View style={[styles.infoCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
               <View style={styles.infoRow}>
@@ -250,7 +243,7 @@ export const HappyHourScreen = () => {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-                📸 Photos
+                Photos
               </Text>
               <TouchableOpacity style={[styles.addButton, { backgroundColor: theme.colors.primary }]}>
                 <Ionicons name="camera" size={16} color="#FFF" />
@@ -273,7 +266,7 @@ export const HappyHourScreen = () => {
           {/* Weekly Schedule */}
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-              📅 Weekly Schedule
+              Weekly Schedule
             </Text>
             {schedules.length > 0 ? (
               <View style={[styles.scheduleCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
@@ -330,7 +323,7 @@ export const HappyHourScreen = () => {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-                ⭐ Reviews
+                Reviews
               </Text>
             </View>
 
