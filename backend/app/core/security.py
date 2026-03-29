@@ -12,14 +12,14 @@ from app.models.user import User
 
 from app.core.config import settings
 from app.core.database import get_db
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_PREFIX}/auth/login")
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_PREFIX}/auth/login")
 
 
 def hash_password(plain: str) -> str:
     """Hash a password using bcrypt directly."""
     salt = bcrypt.gensalt(rounds=12)
-    return bcrypt.hashpw(plain.encode(), salt).decode('utf-8')
+    return bcrypt.hashpw(plain.encode(), salt).decode("utf-8")
 
 
 def verify_password(plain: str, hashed: str) -> bool:
@@ -30,7 +30,9 @@ def verify_password(plain: str, hashed: str) -> bool:
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()
     expire = datetime.utcnow() + (
-        expires_delta if expires_delta else timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        expires_delta
+        if expires_delta
+        else timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
     to_encode["exp"] = expire
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
@@ -40,7 +42,9 @@ def decode_access_token(token: str) -> dict:
     return jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
 
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+def get_current_user(
+    token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
+):
     credentials_exc = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -50,16 +54,23 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         payload = decode_access_token(token)
         user_id: str = payload.get("sub")
         if user_id is None:
-            logger.bind(token_preview=token[:10] + "...").warning("invalid_token")
+            logger.warning("invalid_token_missing_sub")
             raise credentials_exc
     except JWTError:
-        logger.bind(token_preview=token[:10] + "...", error="JWT validation failed").warning("invalid_token")
+        logger.warning("invalid_token_jwt_error")
         raise credentials_exc
 
     user = db.query(User).filter(User.id == user_id).first()
     if user is None:
         logger.bind(user_id=user_id).warning("user_not_found")
         raise credentials_exc
+
+    if not user.active:
+        logger.bind(user_id=str(user.id)).warning("deactivated_user_login_attempt")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account has been deactivated",
+        )
 
     logger.bind(user_id=str(user.id), role=user.role).info("user_authenticated")
     return user

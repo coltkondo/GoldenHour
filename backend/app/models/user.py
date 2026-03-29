@@ -12,11 +12,19 @@ class User(Base, TimestampMixin):
     username = Column(String(50), unique=True, nullable=False, index=True)
     email = Column(String(255), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
-    role = Column(SAEnum("admin", "user", name="user_role"), nullable=False, default="user")
+    role = Column(
+        SAEnum("admin", "user", name="user_role", create_type=False),
+        nullable=False,
+        default="user",
+    )
     points_balance = Column(Integer, nullable=False, default=0)
 
-    submissions = relationship("Submission", foreign_keys="Submission.user_id", back_populates="submitter")
-    reviewed_submissions = relationship("Submission", foreign_keys="Submission.reviewed_by", back_populates="reviewer")
+    submissions = relationship(
+        "Submission", foreign_keys="Submission.user_id", back_populates="submitter"
+    )
+    reviewed_submissions = relationship(
+        "Submission", foreign_keys="Submission.reviewed_by", back_populates="reviewer"
+    )
     point_transactions = relationship("PointTransaction", back_populates="user")
 
     def __repr__(self):

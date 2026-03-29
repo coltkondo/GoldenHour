@@ -11,10 +11,19 @@ class PointTransaction(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    submission_id = Column(UUID(as_uuid=True), ForeignKey("submissions.id"), nullable=True)
+    submission_id = Column(
+        UUID(as_uuid=True), ForeignKey("submissions.id"), nullable=True
+    )
     points = Column(Integer, nullable=False)
     transaction_type = Column(
-        SAEnum("submission_approved", "bonus", "redemption", "adjustment", name="transaction_type_enum"),
+        SAEnum(
+            "submission_approved",
+            "bonus",
+            "redemption",
+            "adjustment",
+            name="transaction_type_enum",
+            create_type=False,
+        ),
         nullable=False,
     )
     description = Column(Text, nullable=False, default="")

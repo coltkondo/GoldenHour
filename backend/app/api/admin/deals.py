@@ -1,6 +1,7 @@
 """
 Admin Deal management — full CRUD with soft delete, search, and filtering.
 """
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func, or_
@@ -8,11 +9,15 @@ from typing import List, Optional
 from uuid import UUID
 
 from app.core.database import get_db
+from app.core.security import require_admin
 from app.models.deal import Deal
 from app.models.venue import Venue
+from app.models.user import User
 from app.schemas.deal import DealResponse, DealCreate, DealUpdate, DealWithVenue
 
-router = APIRouter(prefix="/deals", tags=["admin-deals"])
+router = APIRouter(
+    prefix="/deals", tags=["admin-deals"], dependencies=[Depends(require_admin)]
+)
 
 
 @router.get("/", response_model=List[DealWithVenue])
@@ -24,7 +29,9 @@ async def list_deals(
     category: Optional[str] = None,
     deal_type: Optional[str] = None,
     active_only: Optional[bool] = None,
-    sort_by: str = Query("title", pattern="^(title|category|deal_type|created_at|updated_at)$"),
+    sort_by: str = Query(
+        "title", pattern="^(title|category|deal_type|created_at|updated_at)$"
+    ),
     sort_order: str = Query("asc", pattern="^(asc|desc)$"),
     db: Session = Depends(get_db),
 ):

@@ -5,6 +5,7 @@ Revises: b2c3d4e5f6a7
 Create Date: 2026-02-17 12:00:00.000000
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
@@ -18,84 +19,117 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # --- Enums ---
-    user_role = postgresql.ENUM("admin", "user", name="user_role", create_type=False)
-    user_role.create(op.get_bind(), checkfirst=True)
+    conn = op.get_bind()
 
-    submission_type_enum = postgresql.ENUM(
-        "new_deal", "deal_update", "deal_expired",
-        "new_bar", "bar_closed", "bar_update",
-        name="submission_type_enum", create_type=False,
-    )
-    submission_type_enum.create(op.get_bind(), checkfirst=True)
+    # --- Enums (idempotent via raw SQL) ---
+    for type_name, values in [
+        ("user_role", ["admin", "user"]),
+        (
+            "submission_type_enum",
+            [
+                "new_deal",
+                "deal_update",
+                "deal_expired",
+                "new_bar",
+                "bar_closed",
+                "bar_update",
+            ],
+        ),
+        ("submission_status_enum", ["pending", "approved", "rejected"]),
+        (
+            "transaction_type_enum",
+            [
+                "submission_approved",
+                "bonus",
+                "redemption",
+                "adjustment",
+            ],
+        ),
+    ]:
+        quoted = ", ".join(f"'{v}'" for v in values)
+        conn.execute(
+            sa.text(
+                f"DO $$ BEGIN "
+                f"IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = '{type_name}') THEN "
+                f"CREATE TYPE {type_name} AS ENUM ({quoted}); "
+                f"END IF; END $$;"
+            )
+        )
 
-    submission_status_enum = postgresql.ENUM(
-        "pending", "approved", "rejected",
-        name="submission_status_enum", create_type=False,
+    # --- users (raw SQL to avoid SQLAlchemy Enum auto-creation) ---
+    conn.execute(
+        sa.text("""
+        CREATE TABLE IF NOT EXISTS users (
+            id UUID PRIMARY KEY,
+            username VARCHAR(50) NOT NULL,
+            email VARCHAR(255) NOT NULL,
+            password_hash VARCHAR(255) NOT NULL,
+            role user_role NOT NULL DEFAULT 'user',
+            points_balance INTEGER NOT NULL DEFAULT 0,
+            created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+            updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
+        )
+    """)
     )
-    submission_status_enum.create(op.get_bind(), checkfirst=True)
+    conn.execute(
+        sa.text(
+            "CREATE UNIQUE INDEX IF NOT EXISTS ix_users_username ON users(username)"
+        )
+    )
+    conn.execute(
+        sa.text("CREATE UNIQUE INDEX IF NOT EXISTS ix_users_email ON users(email)")
+    )
 
-    transaction_type_enum = postgresql.ENUM(
-        "submission_approved", "bonus", "redemption", "adjustment",
-        name="transaction_type_enum", create_type=False,
+    # --- submissions (raw SQL) ---
+    conn.execute(
+        sa.text("""
+        CREATE TABLE IF NOT EXISTS submissions (
+            id UUID PRIMARY KEY,
+            user_id UUID NOT NULL REFERENCES users(id),
+            submission_type submission_type_enum NOT NULL,
+            submitted_data JSONB NOT NULL DEFAULT '{}',
+            related_bar_id UUID REFERENCES venues(id),
+            related_deal_id UUID REFERENCES deals(id),
+            status submission_status_enum NOT NULL DEFAULT 'pending',
+            admin_notes TEXT,
+            points_awarded INTEGER NOT NULL DEFAULT 0,
+            reviewed_by UUID REFERENCES users(id),
+            reviewed_at TIMESTAMP WITHOUT TIME ZONE,
+            created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+            updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
+        )
+    """)
     )
-    transaction_type_enum.create(op.get_bind(), checkfirst=True)
+    conn.execute(
+        sa.text(
+            "CREATE INDEX IF NOT EXISTS ix_submissions_user_id ON submissions(user_id)"
+        )
+    )
+    conn.execute(
+        sa.text(
+            "CREATE INDEX IF NOT EXISTS ix_submissions_status ON submissions(status)"
+        )
+    )
 
-    # --- users ---
-    op.create_table(
-        "users",
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
-        sa.Column("username", sa.String(50), nullable=False),
-        sa.Column("email", sa.String(255), nullable=False),
-        sa.Column("password_hash", sa.String(255), nullable=False),
-        sa.Column("role", sa.Enum("admin", "user", name="user_role", create_type=False), nullable=False, server_default="user"),
-        sa.Column("points_balance", sa.Integer(), nullable=False, server_default="0"),
-        sa.Column("created_at", sa.DateTime(), nullable=False),
-        sa.Column("updated_at", sa.DateTime(), nullable=False),
+    # --- point_transactions (raw SQL) ---
+    conn.execute(
+        sa.text("""
+        CREATE TABLE IF NOT EXISTS point_transactions (
+            id UUID PRIMARY KEY,
+            user_id UUID NOT NULL REFERENCES users(id),
+            submission_id UUID REFERENCES submissions(id),
+            points INTEGER NOT NULL,
+            transaction_type transaction_type_enum NOT NULL,
+            description TEXT NOT NULL DEFAULT '',
+            created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
+        )
+    """)
     )
-    op.create_index("ix_users_username", "users", ["username"], unique=True)
-    op.create_index("ix_users_email", "users", ["email"], unique=True)
-
-    # --- submissions ---
-    op.create_table(
-        "submissions",
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
-        sa.Column("user_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id"), nullable=False),
-        sa.Column("submission_type", sa.Enum(
-            "new_deal", "deal_update", "deal_expired",
-            "new_bar", "bar_closed", "bar_update",
-            name="submission_type_enum", create_type=False,
-        ), nullable=False),
-        sa.Column("submitted_data", postgresql.JSONB(astext_type=sa.Text()), nullable=False, server_default="{}"),
-        sa.Column("related_bar_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("venues.id"), nullable=True),
-        sa.Column("related_deal_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("deals.id"), nullable=True),
-        sa.Column("status", sa.Enum("pending", "approved", "rejected", name="submission_status_enum", create_type=False),
-                  nullable=False, server_default="pending"),
-        sa.Column("admin_notes", sa.Text(), nullable=True),
-        sa.Column("points_awarded", sa.Integer(), nullable=False, server_default="0"),
-        sa.Column("reviewed_by", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id"), nullable=True),
-        sa.Column("reviewed_at", sa.DateTime(), nullable=True),
-        sa.Column("created_at", sa.DateTime(), nullable=False),
-        sa.Column("updated_at", sa.DateTime(), nullable=False),
+    conn.execute(
+        sa.text(
+            "CREATE INDEX IF NOT EXISTS ix_point_transactions_user_id ON point_transactions(user_id)"
+        )
     )
-    op.create_index("ix_submissions_user_id", "submissions", ["user_id"])
-    op.create_index("ix_submissions_status", "submissions", ["status"])
-
-    # --- point_transactions ---
-    op.create_table(
-        "point_transactions",
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
-        sa.Column("user_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id"), nullable=False),
-        sa.Column("submission_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("submissions.id"), nullable=True),
-        sa.Column("points", sa.Integer(), nullable=False),
-        sa.Column("transaction_type", sa.Enum(
-            "submission_approved", "bonus", "redemption", "adjustment",
-            name="transaction_type_enum", create_type=False,
-        ), nullable=False),
-        sa.Column("description", sa.Text(), nullable=False, server_default=""),
-        sa.Column("created_at", sa.DateTime(), nullable=False),
-    )
-    op.create_index("ix_point_transactions_user_id", "point_transactions", ["user_id"])
 
 
 def downgrade() -> None:

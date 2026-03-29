@@ -21,7 +21,7 @@
 
 ## 1. Security
 
-### SEC-01
+### SEC-01 
 [SEVERITY: Critical]  
 File / Area: `backend/app/api/admin/venues.py`, `backend/app/api/admin/deals.py`, `backend/app/api/admin/export.py`  
 Issue: All admin endpoints under `/admin/venues`, `/admin/deals`, and `/admin/export` have **zero authentication or authorization**. No `get_current_user` or `require_admin` dependency is applied to any route. Anyone who discovers the URL prefix can create, update, soft-delete venues and deals, and download full CSV exports of the database.  
@@ -69,7 +69,7 @@ File / Area: `backend/app/core/config.py:13`
 Issue: `SECRET_KEY` has no minimum-length or complexity validation. The `.env.example` ships with `SECRET_KEY=dev-secret-key-change-in-production`. There is no runtime check to reject known placeholder values.  
 Why it matters: If deployed with the default secret, JWT tokens are trivially forgeable by anyone who reads the open-source code.
 
-### SEC-09
+### TODO: SEC-09
 [SEVERITY: Medium]  
 File / Area: `docker-compose.yml:22,27`  
 Issue: PostgreSQL (port 5432) and Redis (port 6379) are exposed to the host network with default credentials (`postgres`/`postgres`) and no Redis password.  
@@ -85,37 +85,37 @@ Why it matters: Poor UX leading to weak account security. Backend also only enfo
 
 ## 2. Error Handling
 
-### ERR-01
+### TODO: ERR-01
 [SEVERITY: Critical]  
 File / Area: `backend/app/main.py:43-52`  
 Issue: The global exception handler returns a plain Python `dict` instead of a `JSONResponse` with status code 500. FastAPI may auto-convert it, but the response will not have the correct HTTP status code (should be 500, may default to 200).  
 Why it matters: Unhandled server errors appear as successful responses to clients and monitoring systems. Error tracking and alerting will miss failures.
 
-### ERR-02
+### TODO: ERR-02
 [SEVERITY: High]  
 File / Area: `backend/app/services/submission_review.py:73-79`  
 Issue: The `except` block logs the error but **does not call `db.rollback()`** before re-raising. SQLAlchemy's session may be left in an inconsistent state with partial mutations applied.  
 Why it matters: Subsequent requests on the same session or connection can encounter dirty state, phantom data, or constraint violations from the aborted transaction.
 
-### ERR-03
+### TODO: ERR-03
 [SEVERITY: High]  
 File / Area: `mobile/src/screens/ExplorerScreen.tsx:68`, `mobile/src/screens/HappyHourScreen.tsx:64`  
 Issue: Empty `catch` blocks with no error feedback to the user. The UI silently shows stale or empty data.  
 Why it matters: Users cannot distinguish between "no results" and "server error." Silent failures erode trust and make debugging impossible.
 
-### ERR-04
+### TODO: ERR-04
 [SEVERITY: Medium]  
 File / Area: `mobile/src/components/FlagReportModal.tsx:82-83`  
 Issue: `catch` block contains only a comment "silently fail" with no user notification or logging.  
 Why it matters: Submission failures go completely unnoticed. Users believe their report was submitted when it was not.
 
-### ERR-05
+### TODO: ERR-05
 [SEVERITY: Medium]  
 File / Area: `mobile/src/screens/LeaderboardScreen.tsx:28-31`  
 Issue: Uses `.then()` chain with no `.catch()`. If the API call rejects, an unhandled promise rejection occurs.  
 Why it matters: React Native will show a red-screen error in dev; in production, the error is swallowed and the screen may be stuck in a loading state.
 
-### ERR-06
+### TODO:  cERR-06
 [SEVERITY: Medium]  
 File / Area: `backend/docker-entrypoint.sh:19-22`  
 Issue: After exhausting all migration retries, the script prints a warning but continues to start the application with `exec "$@"`. The app runs with a potentially broken or missing schema.  

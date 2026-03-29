@@ -5,14 +5,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.logging import logger
-from app.core.database import engine, SessionLocal
-from app.models.base import Base
-from app.models.venue import Venue
-from app.models.deal import Deal
-from app.models.happy_hour import HappyHourSchedule
-from app.models.user import User
-from app.models.submission import Submission
-from app.models.point_transaction import PointTransaction
+from app.core.database import SessionLocal
 from app.api.v1 import venues, deals
 from app.api.v1 import auth, submissions, points, leaderboard
 from app.api.admin import router as admin_router
@@ -20,13 +13,15 @@ from app.api.admin import router as admin_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: create tables and seed data if empty
-    logger.info("Starting Golden Hour API", version="1.0.0", environment=settings.ENVIRONMENT)
+    # Startup: seed data if empty
+    logger.info(
+        "Starting Golden Hour API", version="1.0.0", environment=settings.ENVIRONMENT
+    )
 
-    Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:
         from scripts.import_csv import seed_if_empty
+
         seed_if_empty(db)
         logger.info("Database seeding completed")
     except Exception as e:
@@ -48,6 +43,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+
 # Exception handler for structured error logging
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
@@ -58,23 +54,26 @@ async def global_exception_handler(request: Request, exc: Exception):
         request_url=str(request.url),
         request_method=request.method,
         client_host=request.client.host if request.client else None,
-        traceback=True
+        traceback=True,
     ).error("unhandled_exception")
 
     return {
-        "error": "Internal server error", 
+        "error": "Internal server error",
         "detail": "An unexpected error occurred",
-        "trace_id": str(id(exc))
-}
+        "trace_id": str(id(exc)),
+    }
 
-# CORS middleware for mobile app
+
+# CORS middleware — origins loaded from ALLOWED_ORIGINS env var (comma-separated)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # TODO: Restrict in production
+    allow_origins=[o.strip() for o in settings.ALLOWED_ORIGINS.split(",")],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
 # Request logging middleware
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
@@ -98,7 +97,7 @@ async def log_requests(request: Request, call_next):
             method=request.method,
             url=str(request.url),
             status_code=response.status_code,
-            duration_ms=round(duration_ms, 2)
+            duration_ms=round(duration_ms, 2),
         ).info("request_completed")
         return response
     except Exception as exc:
@@ -110,9 +109,10 @@ async def log_requests(request: Request, call_next):
             duration_ms=round(duration_ms, 2),
             exception_type=type(exc).__name__,
             exception_message=str(exc),
-            traceback=True
+            traceback=True,
         ).error("request_failed")
         raise
+
 
 # Public v1 routers
 app.include_router(venues.router, prefix=settings.API_V1_PREFIX)
@@ -130,11 +130,7 @@ app.include_router(admin_router, prefix=settings.API_V1_PREFIX)
 
 @app.get("/")
 async def root():
-    return {
-        "message": "Golden Hour API",
-        "version": "1.0.0",
-        "docs": "/docs"
-    }
+    return {"message": "Golden Hour API", "version": "1.0.0", "docs": "/docs"}
 
 
 @app.get("/health")

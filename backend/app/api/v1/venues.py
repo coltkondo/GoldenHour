@@ -5,8 +5,10 @@ from uuid import UUID
 import time
 
 from app.core.database import get_db
+from app.core.security import require_admin
 from app.models.venue import Venue
 from app.models.happy_hour import HappyHourSchedule
+from app.models.user import User
 from app.schemas.venue import VenueResponse, VenueCreate, VenueWithDeals
 from app.schemas.happy_hour import HappyHourScheduleResponse
 from app.services.search import bounding_box, haversine_distance
@@ -15,27 +17,29 @@ from app.core.logging import logger
 
 router = APIRouter(prefix="/venues", tags=["venues"])
 
+
 @router.get("/", response_model=List[VenueResponse])
 async def list_venues(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100),
     neighborhood: Optional[str] = None,
     active_only: bool = True,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     List all venues with optional filtering.
     """
     query = db.query(Venue)
-    
+
     if active_only:
         query = query.filter(Venue.active == True)
-    
+
     if neighborhood:
         query = query.filter(Venue.neighborhood == neighborhood)
-    
+
     venues = query.offset(skip).limit(limit).all()
     return venues
+
 
 @router.get("/nearby", response_model=List[VenueResponse])
 async def get_nearby_venues(
@@ -43,23 +47,33 @@ async def get_nearby_venues(
     longitude: float = Query(..., ge=-180, le=180),
     radius_meters: int = Query(1000, ge=100, le=10000),
     limit: int = Query(20, ge=1, le=50),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
-    logger.bind(latitude=latitude, longitude=longitude, radius=radius_meters, limit=limit).info("geospatial_search_started")
+    logger.bind(
+        latitude=latitude, longitude=longitude, radius=radius_meters, limit=limit
+    ).info("geospatial_search_started")
 
     start_time = time.time()
-    min_lat, max_lat, min_lng, max_lng = bounding_box(latitude, longitude, radius_meters)
+    min_lat, max_lat, min_lng, max_lng = bounding_box(
+        latitude, longitude, radius_meters
+    )
 
-    candidates = db.query(Venue).filter(
-        Venue.active == True,
-        Venue.latitude >= min_lat,
-        Venue.latitude <= max_lat,
-        Venue.longitude >= min_lng,
-        Venue.longitude <= max_lng,
-    ).all()
+    candidates = (
+        db.query(Venue)
+        .filter(
+            Venue.active == True,
+            Venue.latitude >= min_lat,
+            Venue.latitude <= max_lat,
+            Venue.longitude >= min_lng,
+            Venue.longitude <= max_lng,
+        )
+        .all()
+    )
 
     elapsed_query_ms = (time.time() - start_time) * 1000
-    logger.bind(candidate_count=len(candidates), elapsed_query_ms=round(elapsed_query_ms, 2)).debug("bounding_box_query_complete")
+    logger.bind(
+        candidate_count=len(candidates), elapsed_query_ms=round(elapsed_query_ms, 2)
+    ).debug("bounding_box_query_complete")
 
     nearby = []
     for v in candidates:
@@ -74,16 +88,14 @@ async def get_nearby_venues(
     logger.bind(
         results_count=len(result),
         elapsed_total_ms=round(elapsed_total_ms, 2),
-        elapsed_filter_ms=round(elapsed_total_ms - elapsed_query_ms, 2)
+        elapsed_filter_ms=round(elapsed_total_ms - elapsed_query_ms, 2),
     ).info("geospatial_search_completed")
 
     return result
 
+
 @router.get("/{venue_id}", response_model=VenueResponse)
-async def get_venue(
-    venue_id: UUID,
-    db: Session = Depends(get_db)
-):
+async def get_venue(venue_id: UUID, db: Session = Depends(get_db)):
     """
     Get a specific venue by ID.
     """
@@ -96,10 +108,7 @@ async def get_venue(
 
 
 @router.get("/{venue_id}/schedules", response_model=List[HappyHourScheduleResponse])
-async def get_venue_schedules(
-    venue_id: UUID,
-    db: Session = Depends(get_db)
-):
+async def get_venue_schedules(venue_id: UUID, db: Session = Depends(get_db)):
     """
     Get all happy hour schedules for a venue.
     """
@@ -109,36 +118,43 @@ async def get_venue_schedules(
 
     schedules = (
         db.query(HappyHourSchedule)
-        .filter(HappyHourSchedule.venue_id == venue_id, HappyHourSchedule.active == True)
+        .filter(
+            HappyHourSchedule.venue_id == venue_id, HappyHourSchedule.active == True
+        )
         .order_by(HappyHourSchedule.day_of_week, HappyHourSchedule.start_time)
         .all()
     )
     return schedules
 
+
 @router.post("/", response_model=VenueResponse, status_code=201)
 async def create_venue(
     venue: VenueCreate,
-    db: Session = Depends(get_db)
+    _admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
 ):
     """
-    Create a new venue.
+    Create a new venue. Requires admin role.
     """
     db_venue = Venue(**venue.model_dump())
-    
+
     db.add(db_venue)
     db.commit()
     db.refresh(db_venue)
-    
+
     return db_venue
+
 
 @router.get("/neighborhoods/list", response_model=List[str])
 async def list_neighborhoods(db: Session = Depends(get_db)):
     """
     Get list of all neighborhoods with active venues.
     """
-    neighborhoods = db.query(Venue.neighborhood).filter(
-        Venue.active == True,
-        Venue.neighborhood.isnot(None)
-    ).distinct().all()
-    
+    neighborhoods = (
+        db.query(Venue.neighborhood)
+        .filter(Venue.active == True, Venue.neighborhood.isnot(None))
+        .distinct()
+        .all()
+    )
+
     return [n[0] for n in neighborhoods]

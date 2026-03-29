@@ -1,4 +1,12 @@
-from sqlalchemy import Column, String, Text, Integer, DateTime, Enum as SAEnum, ForeignKey
+from sqlalchemy import (
+    Column,
+    String,
+    Text,
+    Integer,
+    DateTime,
+    Enum as SAEnum,
+    ForeignKey,
+)
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 import uuid
@@ -13,9 +21,14 @@ class Submission(Base, TimestampMixin):
 
     submission_type = Column(
         SAEnum(
-            "new_deal", "deal_update", "deal_expired",
-            "new_bar", "bar_closed", "bar_update",
+            "new_deal",
+            "deal_update",
+            "deal_expired",
+            "new_bar",
+            "bar_closed",
+            "bar_update",
             name="submission_type_enum",
+            create_type=False,
         ),
         nullable=False,
     )
@@ -25,7 +38,13 @@ class Submission(Base, TimestampMixin):
     related_deal_id = Column(UUID(as_uuid=True), ForeignKey("deals.id"), nullable=True)
 
     status = Column(
-        SAEnum("pending", "approved", "rejected", name="submission_status_enum"),
+        SAEnum(
+            "pending",
+            "approved",
+            "rejected",
+            name="submission_status_enum",
+            create_type=False,
+        ),
         nullable=False,
         default="pending",
     )
@@ -34,8 +53,12 @@ class Submission(Base, TimestampMixin):
     reviewed_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     reviewed_at = Column(DateTime, nullable=True)
 
-    submitter = relationship("User", foreign_keys=[user_id], back_populates="submissions")
-    reviewer = relationship("User", foreign_keys=[reviewed_by], back_populates="reviewed_submissions")
+    submitter = relationship(
+        "User", foreign_keys=[user_id], back_populates="submissions"
+    )
+    reviewer = relationship(
+        "User", foreign_keys=[reviewed_by], back_populates="reviewed_submissions"
+    )
     venue = relationship("Venue", foreign_keys=[related_bar_id])
     deal = relationship("Deal", foreign_keys=[related_deal_id])
     point_transactions = relationship("PointTransaction", back_populates="submission")

@@ -1,6 +1,7 @@
 """
 Admin Venue management — full CRUD with soft delete, search, and filtering.
 """
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func, or_
@@ -8,11 +9,15 @@ from typing import List, Optional
 from uuid import UUID
 
 from app.core.database import get_db
+from app.core.security import require_admin
 from app.models.venue import Venue
 from app.models.deal import Deal
+from app.models.user import User
 from app.schemas.venue import VenueResponse, VenueCreate, VenueUpdate, VenueWithDeals
 
-router = APIRouter(prefix="/venues", tags=["admin-venues"])
+router = APIRouter(
+    prefix="/venues", tags=["admin-venues"], dependencies=[Depends(require_admin)]
+)
 
 
 @router.get("/", response_model=List[VenueWithDeals])
@@ -63,7 +68,9 @@ async def list_venues(
     # Attach deal counts
     result = []
     for venue in venues:
-        deals_count = db.query(func.count(Deal.id)).filter(Deal.venue_id == venue.id).scalar()
+        deals_count = (
+            db.query(func.count(Deal.id)).filter(Deal.venue_id == venue.id).scalar()
+        )
         active_deals_count = (
             db.query(func.count(Deal.id))
             .filter(Deal.venue_id == venue.id, Deal.active == True)

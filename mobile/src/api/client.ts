@@ -21,7 +21,6 @@ apiClient.interceptors.request.use(
     } catch {
       // no token stored; continue unauthenticated
     }
-    console.log('API Request:', config);
     return config;
   },
   (error) => Promise.reject(error)
@@ -31,7 +30,9 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error('API Error:', error.response?.data || error.message);
+    if (__DEV__) {
+      console.error('API Error:', error.response?.status, error.message);
+    }
     return Promise.reject(error);
   }
 );
