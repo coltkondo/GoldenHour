@@ -20,6 +20,12 @@ class Settings(BaseSettings):
     # API
     API_V1_PREFIX: str = "/api/v1"
     PROJECT_NAME: str = "Golden Hour API"
+    # Logging
+    LOG_LEVEL: str = "INFO"
+    LOG_FORMAT: str = "console"  # "console" for dev, "json" for prod
+    LOG_FILE: str | None = None  # File path or None for console only
+    LOG_ROTATION: str = "500 MB"
+    LOG_RETENTION: str = "10 days"
     
     # Optional: Maps and external services
     GOOGLE_MAPS_API_KEY: Optional[str] = None

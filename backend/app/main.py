@@ -1,8 +1,10 @@
+import time
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
+from app.core.logging import logger
 from app.core.database import engine, SessionLocal
 from app.models.base import Base
 from app.models.venue import Venue
@@ -19,16 +21,24 @@ from app.api.admin import router as admin_router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: create tables and seed data if empty
+    logger.info("Starting Golden Hour API", version="1.0.0", environment=settings.ENVIRONMENT)
+
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:
         from scripts.import_csv import seed_if_empty
         seed_if_empty(db)
+        logger.info("Database seeding completed")
     except Exception as e:
-        print(f"Auto-seed note: {e}")
+        logger.exception("Auto-seed failed", error=str(e))
     finally:
         db.close()
+
+    logger.info("API startup complete", docs="/docs", health="/health")
     yield
+
+    # Shutdown
+    logger.info("Shutting down Golden Hour API")
 
 
 app = FastAPI(
@@ -38,6 +48,25 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Exception handler for structured error logging
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Catch all unhandled exceptions and log with context."""
+    logger.bind(
+        exception_type=type(exc).__name__,
+        exception_message=str(exc),
+        request_url=str(request.url),
+        request_method=request.method,
+        client_host=request.client.host if request.client else None,
+        traceback=True
+    ).error("unhandled_exception")
+
+    return {
+        "error": "Internal server error", 
+        "detail": "An unexpected error occurred",
+        "trace_id": str(id(exc))
+}
+
 # CORS middleware for mobile app
 app.add_middleware(
     CORSMiddleware,
@@ -46,6 +75,44 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# Request logging middleware
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    """Log all requests with timing and contextual info."""
+    start_time = time.time()
+    request_id = str(id(request))
+
+    logger.bind(
+        request_id=request_id,
+        method=request.method,
+        url=str(request.url),
+        user_agent=request.headers.get("user-agent"),
+        client_ip=request.client.host if request.client else None,
+    ).info("request_started")
+
+    try:
+        response = await call_next(request)
+        duration_ms = (time.time() - start_time) * 1000
+        logger.bind(
+            request_id=request_id,
+            method=request.method,
+            url=str(request.url),
+            status_code=response.status_code,
+            duration_ms=round(duration_ms, 2)
+        ).info("request_completed")
+        return response
+    except Exception as exc:
+        duration_ms = (time.time() - start_time) * 1000
+        logger.bind(
+            request_id=request_id,
+            method=request.method,
+            url=str(request.url),
+            duration_ms=round(duration_ms, 2),
+            exception_type=type(exc).__name__,
+            exception_message=str(exc),
+            traceback=True
+        ).error("request_failed")
+        raise
 
 # Public v1 routers
 app.include_router(venues.router, prefix=settings.API_V1_PREFIX)

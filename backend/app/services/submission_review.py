@@ -14,46 +14,69 @@ from app.models.venue import Venue
 from app.models.deal import Deal
 from app.models.point_transaction import PointTransaction
 from app.schemas.submission import ReviewAction, SubmissionResponse
+from app.core.logging import logger
 
 
-def review_submission(
-    submission_id,
-    action: ReviewAction,
-    reviewer: User,
-    db: Session,
-) -> SubmissionResponse:
+
+def review_submission(submission_id, action: ReviewAction, reviewer: User, db: Session) -> SubmissionResponse:
+    logger.bind(
+        submission_id=str(submission_id),
+        reviewer_id=str(reviewer.id),
+        reviewer_role=reviewer.role,
+        action=action.status
+    ).info("review_action_initiated")
+
     sub = db.query(Submission).filter(Submission.id == submission_id).first()
     if not sub:
+        logger.bind(submission_id=str(submission_id)).warning("submission_not_found")
         raise HTTPException(status_code=404, detail="Submission not found")
+    
     if sub.status != "pending":
+        logger.bind(submission_id=str(submission_id), current_status=sub.status).warning("submission_already_reviewed")
         raise HTTPException(status_code=409, detail="Submission has already been reviewed")
 
-    sub.status = action.status
-    sub.admin_notes = action.admin_notes
-    sub.reviewed_by = reviewer.id
-    sub.reviewed_at = datetime.utcnow()
+    try:
+        sub.status = action.status
+        sub.admin_notes = action.admin_notes
+        sub.reviewed_by = reviewer.id
+        sub.reviewed_at = datetime.utcnow()
 
-    if action.status == "approved":
-        _apply_submission(sub, db)
-        points = POINTS_CONFIG.get(sub.submission_type, 0)
-        sub.points_awarded = points
+        if action.status == "approved":
+            logger.bind(submission_id=str(sub.id), submission_type=sub.submission_type).info("approving_submission")
+            _apply_submission(sub, db)
+            logger.bind(submission_id=str(sub.id)).info("submission_applied")
+            
+            points = POINTS_CONFIG.get(sub.submission_type, 0)
+            sub.points_awarded = points
 
-        # Credit points to submitter
-        submitter = db.query(User).filter(User.id == sub.user_id).first()
-        if submitter and points > 0:
-            submitter.points_balance += points
-            tx = PointTransaction(
-                user_id=submitter.id,
-                submission_id=sub.id,
-                points=points,
-                transaction_type="submission_approved",
-                description=f"Approved: {sub.submission_type.replace('_', ' ').title()}",
-            )
-            db.add(tx)
+            if points > 0:
+                submitter = db.query(User).filter(User.id == sub.user_id).first()
+                if submitter:
+                    submitter.points_balance += points
+                    tx = PointTransaction(
+                        user_id=submitter.id,
+                        submission_id=sub.id,
+                        points=points,
+                        transaction_type="submission_approved",
+                        description=f"Approved: {sub.submission_type.replace('_', ' ').title()}",
+                    )
+                    db.add(tx)
+                    logger.bind(
+                        user_id=str(submitter.id),
+                        submission_id=str(sub.id),
+                        points=points
+                    ).info("points_awarded")
 
-    db.commit()
-    db.refresh(sub)
-    return SubmissionResponse.from_orm_with_username(sub)
+        db.commit()
+        db.refresh(sub)
+        return SubmissionResponse.from_orm_with_username(sub)
+    except Exception as e:
+        logger.bind(
+            submission_id=str(submission_id),
+            error=str(e),
+            traceback=True
+        ).error("submission_review_failed")
+        raise
 
 
 def _apply_submission(sub: Submission, db: Session) -> None:

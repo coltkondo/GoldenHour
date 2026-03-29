@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from uuid import UUID
+import time
 
 from app.core.database import get_db
 from app.models.venue import Venue
@@ -9,6 +10,7 @@ from app.models.happy_hour import HappyHourSchedule
 from app.schemas.venue import VenueResponse, VenueCreate, VenueWithDeals
 from app.schemas.happy_hour import HappyHourScheduleResponse
 from app.services.search import bounding_box, haversine_distance
+from app.core.logging import logger
 
 
 router = APIRouter(prefix="/venues", tags=["venues"])
@@ -43,11 +45,9 @@ async def get_nearby_venues(
     limit: int = Query(20, ge=1, le=50),
     db: Session = Depends(get_db)
 ):
-    """
-    Find venues within a radius of a given location.
-    Radius is in meters (default 1km, max 10km).
-    """
-    # Compute rough bounding box then filter and compute exact distances in Python
+    logger.bind(latitude=latitude, longitude=longitude, radius=radius_meters, limit=limit).info("geospatial_search_started")
+
+    start_time = time.time()
     min_lat, max_lat, min_lng, max_lng = bounding_box(latitude, longitude, radius_meters)
 
     candidates = db.query(Venue).filter(
@@ -58,7 +58,9 @@ async def get_nearby_venues(
         Venue.longitude <= max_lng,
     ).all()
 
-    # compute distances and filter
+    elapsed_query_ms = (time.time() - start_time) * 1000
+    logger.bind(candidate_count=len(candidates), elapsed_query_ms=round(elapsed_query_ms, 2)).debug("bounding_box_query_complete")
+
     nearby = []
     for v in candidates:
         dist = haversine_distance(latitude, longitude, v.latitude, v.longitude)
@@ -66,7 +68,16 @@ async def get_nearby_venues(
             nearby.append((v, dist))
 
     nearby.sort(key=lambda t: t[1])
-    return [t[0] for t in nearby[:limit]]
+    result = [t[0] for t in nearby[:limit]]
+
+    elapsed_total_ms = (time.time() - start_time) * 1000
+    logger.bind(
+        results_count=len(result),
+        elapsed_total_ms=round(elapsed_total_ms, 2),
+        elapsed_filter_ms=round(elapsed_total_ms - elapsed_query_ms, 2)
+    ).info("geospatial_search_completed")
+
+    return result
 
 @router.get("/{venue_id}", response_model=VenueResponse)
 async def get_venue(
