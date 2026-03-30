@@ -2,6 +2,7 @@
 Import Penn State State College venues, deals, and schedules from CSV files.
 Run with: cd backend && python -m scripts.import_csv
 """
+
 import sys
 import csv
 from pathlib import Path
@@ -44,14 +45,20 @@ def parse_float(val: str):
         return None
 
 
-def parse_time(val: str) -> time:
-    """Parse time string like '21:00' or '0:00' into a time object."""
+def parse_time(val: str, is_end: bool = False) -> time:
+    """Parse time string like '21:00' or '0:00' into a time object.
+    When is_end=True, converts midnight (0:00) to 23:59 for DB constraint.
+    """
     val = val.strip()
     parts = val.split(":")
     hour = int(parts[0])
     minute = int(parts[1]) if len(parts) > 1 else 0
     # Handle hour=24 as 23:59
     if hour >= 24:
+        hour = 23
+        minute = 59
+    # Handle midnight (0:00) used as end-of-day: clamp to 23:59
+    if is_end and hour == 0 and minute == 0:
         hour = 23
         minute = 59
     return time(hour, minute)
@@ -101,12 +108,18 @@ def import_data(db: Session):
 
             # Parse tags from comma-separated string
             tags_raw = row.get("tags", "")
-            tags = [t.strip() for t in tags_raw.split(",") if t.strip()] if tags_raw else None
+            tags = (
+                [t.strip() for t in tags_raw.split(",") if t.strip()]
+                if tags_raw
+                else None
+            )
 
             venue = Venue(
                 name=row["name"].strip(),
                 nickname=row.get("nickname", "").strip() or None,
-                address=row["address"].strip() if row.get("address") else f"State College, PA",
+                address=row["address"].strip()
+                if row.get("address")
+                else f"State College, PA",
                 latitude=lat,
                 longitude=lng,
                 phone=row.get("phone", "").strip() or None,
@@ -149,7 +162,11 @@ def import_data(db: Session):
 
             # Calculate discount percentage if both prices exist
             discount_pct = None
-            if deal_price is not None and original_price is not None and original_price > 0:
+            if (
+                deal_price is not None
+                and original_price is not None
+                and original_price > 0
+            ):
                 discount_pct = round((1 - deal_price / original_price) * 100, 1)
 
             deal = Deal(
@@ -216,7 +233,7 @@ def import_data(db: Session):
             venue_id=group["venue_uuid"],
             day_of_week=group["day"],
             start_time=parse_time(group["start"]),
-            end_time=parse_time(group["end"]),
+            end_time=parse_time(group["end"], is_end=True),
             deal_ids=group["deal_ids"],
             active=group["is_active"],
         )
