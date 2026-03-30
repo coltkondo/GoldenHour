@@ -42,6 +42,7 @@ export const HappyHourScreen = () => {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [schedules, setSchedules] = useState<HappyHourSchedule[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [newReview, setNewReview] = useState('');
   const [selectedRating, setSelectedRating] = useState(0);
   const [reportModalVisible, setReportModalVisible] = useState(false);
@@ -62,7 +63,7 @@ export const HappyHourScreen = () => {
       setDeals(venueDeals);
       setSchedules(venueSchedules);
     } catch {
-      // Data may not be available
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -186,6 +187,18 @@ export const HappyHourScreen = () => {
           onClose={() => setReportModalVisible(false)}
           venue={venue}
         />
+
+        {loadError && (
+          <View style={[styles.errorCard, { backgroundColor: 'rgba(239, 68, 68, 0.1)', borderColor: '#EF4444', marginHorizontal: 20, marginTop: 16 }]}>
+            <Ionicons name="warning" size={24} color="#EF4444" />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.errorTitle}>Couldn't load deals</Text>
+              <Text style={[styles.errorSub, { color: theme.colors.textMuted }]}>
+                Check your connection and try again
+              </Text>
+            </View>
+          </View>
+        )}
 
         <GradientBackground style={styles.bodyGradient}>
           {/* Active Deals */}
@@ -488,6 +501,26 @@ const styles = StyleSheet.create({
   bodyGradient: {
     paddingHorizontal: 20,
     paddingTop: 24,
+  },
+
+  // Error
+  errorCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 14,
+    gap: 12,
+  },
+  errorTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#EF4444',
+  },
+  errorSub: {
+    fontSize: 12,
+    fontWeight: '500',
+    marginTop: 2,
   },
 
   // Sections

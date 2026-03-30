@@ -47,6 +47,7 @@ export const ExplorerScreen = () => {
   const [venues, setVenues] = useState<Venue[]>([]);
   const [todayDeals, setTodayDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
   const today = new Date().getDay();
@@ -66,7 +67,7 @@ export const ExplorerScreen = () => {
       setVenues(venueData);
       setTodayDeals(dealData);
     } catch {
-      // Data may not be available
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -134,6 +135,19 @@ export const ExplorerScreen = () => {
             Discover happy hours in Happy Valley
           </Text>
         </View>
+
+        {/* Load Error */}
+        {loadError && (
+          <View style={[styles.errorCard, { backgroundColor: 'rgba(239, 68, 68, 0.1)', borderColor: '#EF4444' }]}>
+            <Ionicons name="warning" size={24} color="#EF4444" />
+            <View style={styles.errorContent}>
+              <Text style={styles.errorTitle}>Couldn't load data</Text>
+              <Text style={[styles.errorDesc, { color: theme.colors.textMuted }]}>
+                Check your connection and pull down to retry
+              </Text>
+            </View>
+          </View>
+        )}
 
         {/* Stats Card */}
         <View style={[styles.statsCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
@@ -377,6 +391,30 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+
+  // Error
+  errorCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 14,
+    marginBottom: 16,
+    gap: 12,
+  },
+  errorContent: {
+    flex: 1,
+  },
+  errorTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#EF4444',
+  },
+  errorDesc: {
+    fontSize: 12,
+    fontWeight: '500',
+    marginTop: 2,
   },
 
   // Header

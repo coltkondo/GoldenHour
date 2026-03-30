@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from app.core.config import settings
 from app.core.logging import logger
 from app.core.database import SessionLocal
@@ -57,11 +58,14 @@ async def global_exception_handler(request: Request, exc: Exception):
         traceback=True,
     ).error("unhandled_exception")
 
-    return {
-        "error": "Internal server error",
-        "detail": "An unexpected error occurred",
-        "trace_id": str(id(exc)),
-    }
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": "Internal server error",
+            "detail": "An unexpected error occurred",
+            "trace_id": str(id(exc)),
+        },
+    )
 
 
 # CORS middleware — origins loaded from ALLOWED_ORIGINS env var (comma-separated)

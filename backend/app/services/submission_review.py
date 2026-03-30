@@ -112,6 +112,7 @@ def review_submission(
         db.refresh(sub)
         return SubmissionResponse.from_orm_with_username(sub)
     except Exception as e:
+        db.rollback()
         logger.bind(
             submission_id=str(submission_id), error=str(e), traceback=True
         ).error("submission_review_failed")

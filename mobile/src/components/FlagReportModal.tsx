@@ -52,11 +52,13 @@ export const FlagReportModal = ({ visible, onClose, venue, deal }: FlagReportMod
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
+  const [error, setError] = useState(false);
 
   function reset() {
     setSelectedType(null);
     setNotes('');
     setDone(false);
+    setError(false);
   }
 
   function handleClose() {
@@ -67,6 +69,7 @@ export const FlagReportModal = ({ visible, onClose, venue, deal }: FlagReportMod
   async function handleSubmit() {
     if (!selectedType) return;
     setLoading(true);
+    setError(false);
     try {
       await submissionsAPI.submit({
         submission_type: selectedType,
@@ -80,7 +83,7 @@ export const FlagReportModal = ({ visible, onClose, venue, deal }: FlagReportMod
       });
       setDone(true);
     } catch {
-      // silently fail — user gets no destructive error for a flag
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -168,6 +171,13 @@ export const FlagReportModal = ({ visible, onClose, venue, deal }: FlagReportMod
                 />
               )}
 
+              {error && (
+                <View style={styles.errorBanner}>
+                  <Ionicons name="warning" size={16} color="#EF4444" />
+                  <Text style={styles.errorText}>Submission failed. Please try again.</Text>
+                </View>
+              )}
+
               <TouchableOpacity
                 style={[styles.submitBtn, !selectedType && styles.submitBtnDisabled]}
                 onPress={handleSubmit}
@@ -233,6 +243,21 @@ const styles = StyleSheet.create({
   },
   submitBtnDisabled: { opacity: 0.4 },
   submitBtnText: { color: '#fff', fontWeight: '800', fontSize: 16 },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 12,
+  },
+  errorText: {
+    color: '#EF4444',
+    fontSize: 13,
+    fontWeight: '600',
+    flex: 1,
+  },
   doneContainer: { alignItems: 'center', paddingVertical: 24 },
   doneEmoji: { fontSize: 48, marginBottom: 12 },
   doneTitle: { fontSize: 22, fontWeight: '900', marginBottom: 8 },

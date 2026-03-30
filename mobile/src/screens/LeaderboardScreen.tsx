@@ -23,12 +23,20 @@ export const LeaderboardScreen = () => {
   const navigation = useNavigation<any>();
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
-    leaderboardAPI.getTop().then(data => {
-      setEntries(data);
-      setLoading(false);
-    });
+    const load = async () => {
+      try {
+        const data = await leaderboardAPI.getTop();
+        setEntries(data);
+      } catch {
+        setLoadError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
   }, []);
 
   const myEntry = entries.find(e => e.user_id === user?.id);
@@ -47,6 +55,13 @@ export const LeaderboardScreen = () => {
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Leaderboard</Text>
         </View>
+
+        {loadError && (
+          <View style={styles.errorBanner}>
+            <Ionicons name="warning" size={20} color="#EF4444" />
+            <Text style={styles.errorText}>Couldn't load leaderboard</Text>
+          </View>
+        )}
 
         {/* My rank banner */}
         {myEntry && (
@@ -139,6 +154,16 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 20 },
   backBtn: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center' },
   headerTitle: { fontSize: 24, fontWeight: '900', letterSpacing: -0.5 },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+  },
+  errorText: { color: '#EF4444', fontSize: 13, fontWeight: '600' },
   myRankBanner: {
     borderRadius: 16,
     padding: 16,

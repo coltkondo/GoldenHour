@@ -12,9 +12,8 @@ for i in $(seq 1 $MAX_ATTEMPTS); do
     fi
 
     if [ "$i" -eq "$MAX_ATTEMPTS" ]; then
-        echo "[WARNING] Failed to run migrations after $MAX_ATTEMPTS attempts."
-        echo "[WARNING] Starting anyway — database schema may be incomplete."
-        break
+        echo "[FATAL] Failed to run migrations after $MAX_ATTEMPTS attempts. Aborting."
+        exit 1
     fi
 
     echo "Attempt $i/$MAX_ATTEMPTS: migration failed, retrying in 3 seconds..."
