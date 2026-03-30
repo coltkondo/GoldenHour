@@ -4,7 +4,7 @@ Admin Venue management — full CRUD with soft delete, search, and filtering.
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, select
 from typing import List, Optional
 from uuid import UUID
 
@@ -65,20 +65,29 @@ async def list_venues(
 
     venues = query.offset(skip).limit(limit).all()
 
-    # Attach deal counts
+    if not venues:
+        return []
+
+    # Batch-load deal counts via two correlated subqueries (1 query total).
+    venue_ids = [v.id for v in venues]
+    counts = (
+        db.query(
+            Deal.venue_id,
+            func.count(Deal.id).label("deals_count"),
+            func.count(Deal.id).filter(Deal.active == True).label("active_deals_count"),
+        )
+        .filter(Deal.venue_id.in_(venue_ids))
+        .group_by(Deal.venue_id)
+        .all()
+    )
+    count_map = {c.venue_id: (c.deals_count, c.active_deals_count) for c in counts}
+
     result = []
     for venue in venues:
-        deals_count = (
-            db.query(func.count(Deal.id)).filter(Deal.venue_id == venue.id).scalar()
-        )
-        active_deals_count = (
-            db.query(func.count(Deal.id))
-            .filter(Deal.venue_id == venue.id, Deal.active == True)
-            .scalar()
-        )
+        dc, adc = count_map.get(venue.id, (0, 0))
         venue_data = VenueWithDeals.model_validate(venue)
-        venue_data.deals_count = deals_count
-        venue_data.active_deals_count = active_deals_count
+        venue_data.deals_count = dc
+        venue_data.active_deals_count = adc
         result.append(venue_data)
 
     return result

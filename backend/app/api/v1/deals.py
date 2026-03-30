@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import and_
+from sqlalchemy import and_, func
 from typing import List, Optional
 from uuid import UUID
 from datetime import datetime, time
@@ -48,26 +48,19 @@ async def get_todays_deals(db: Session = Depends(get_db)):
     """
     today = datetime.now().weekday()  # 0=Monday
 
-    deal_ids = (
-        db.query(HappyHourSchedule.deal_ids)
+    deals = (
+        db.query(Deal)
         .filter(
-            HappyHourSchedule.day_of_week == today,
-            HappyHourSchedule.active == True,
+            Deal.active == True,
+            Deal.id.in_(
+                db.query(func.unnest(HappyHourSchedule.deal_ids)).filter(
+                    HappyHourSchedule.day_of_week == today,
+                    HappyHourSchedule.active == True,
+                )
+            ),
         )
         .all()
     )
-
-    # Flatten deal_ids arrays from schedules
-    all_deal_ids = set()
-    for (ids,) in deal_ids:
-        if ids:
-            for did in ids:
-                all_deal_ids.add(did)
-
-    if not all_deal_ids:
-        return []
-
-    deals = db.query(Deal).filter(Deal.id.in_(all_deal_ids), Deal.active == True).all()
     return deals
 
 

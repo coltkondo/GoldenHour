@@ -19,7 +19,15 @@ def sanitize_record(record: Dict[str, Any]) -> Dict[str, Any]:
         extra = sanitized["extra"].copy()
 
         # Redact sensitive headers
-        sensitive_keys = ["password", "token", "auth", "authorization", "jwt", "secret", "key"]
+        sensitive_keys = [
+            "password",
+            "token",
+            "auth",
+            "authorization",
+            "jwt",
+            "secret",
+            "key",
+        ]
         for key in sensitive_keys:
             if key in extra:
                 extra[key] = "[REDACTED]"
@@ -30,6 +38,7 @@ def sanitize_record(record: Dict[str, Any]) -> Dict[str, Any]:
             if url and isinstance(url, str):
                 # Mask password in connection string
                 import re
+
                 masked = re.sub(r"//[^:]+:[^@]+", "//***:***@", url)
                 extra["database_url"] = masked
 
@@ -120,18 +129,6 @@ def configure_logging(
             encoding="utf-8",
             enqueue=True,  # Thread-safe
         )
-
-    # Configure Uvicorn/FastAPI loggers
-    # Add intercept handler to capture existing logging statements
-    class InterceptHandler:
-        def write(self, message):
-            logger.info(message.strip())
-
-        def flush(self):
-            pass
-
-    # Intercept stdout/stderr
-    sys.stdout = InterceptHandler()
 
 
 # Auto-configure on import using environment variables

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import func, text
 from typing import List, Optional
 from uuid import UUID
 import time
@@ -11,7 +12,6 @@ from app.models.happy_hour import HappyHourSchedule
 from app.models.user import User
 from app.schemas.venue import VenueResponse, VenueCreate, VenueWithDeals
 from app.schemas.happy_hour import HappyHourScheduleResponse
-from app.services.search import bounding_box, haversine_distance
 from app.core.logging import logger
 
 
@@ -54,44 +54,39 @@ async def get_nearby_venues(
     ).info("geospatial_search_started")
 
     start_time = time.time()
-    min_lat, max_lat, min_lng, max_lng = bounding_box(
-        latitude, longitude, radius_meters
+
+    # Use PostGIS ST_DWithin for index-accelerated distance filtering
+    user_point = func.ST_SetSRID(func.ST_MakePoint(longitude, latitude), 4326)
+    venue_point = func.ST_SetSRID(
+        func.ST_MakePoint(Venue.longitude, Venue.latitude), 4326
     )
 
-    candidates = (
+    venues = (
         db.query(Venue)
         .filter(
             Venue.active == True,
-            Venue.latitude >= min_lat,
-            Venue.latitude <= max_lat,
-            Venue.longitude >= min_lng,
-            Venue.longitude <= max_lng,
+            func.ST_DWithin(
+                func.geography(venue_point),
+                func.geography(user_point),
+                radius_meters,
+            ),
         )
+        .order_by(
+            func.ST_Distance(
+                func.geography(venue_point),
+                func.geography(user_point),
+            )
+        )
+        .limit(limit)
         .all()
     )
 
-    elapsed_query_ms = (time.time() - start_time) * 1000
-    logger.bind(
-        candidate_count=len(candidates), elapsed_query_ms=round(elapsed_query_ms, 2)
-    ).debug("bounding_box_query_complete")
+    elapsed_ms = (time.time() - start_time) * 1000
+    logger.bind(results_count=len(venues), elapsed_ms=round(elapsed_ms, 2)).info(
+        "geospatial_search_completed"
+    )
 
-    nearby = []
-    for v in candidates:
-        dist = haversine_distance(latitude, longitude, v.latitude, v.longitude)
-        if dist <= radius_meters:
-            nearby.append((v, dist))
-
-    nearby.sort(key=lambda t: t[1])
-    result = [t[0] for t in nearby[:limit]]
-
-    elapsed_total_ms = (time.time() - start_time) * 1000
-    logger.bind(
-        results_count=len(result),
-        elapsed_total_ms=round(elapsed_total_ms, 2),
-        elapsed_filter_ms=round(elapsed_total_ms - elapsed_query_ms, 2),
-    ).info("geospatial_search_completed")
-
-    return result
+    return venues
 
 
 @router.get("/{venue_id}", response_model=VenueResponse)

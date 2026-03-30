@@ -1,11 +1,31 @@
-from sqlalchemy import Column, String, Float, Boolean, Text, Integer, ARRAY
+from sqlalchemy import (
+    Column,
+    String,
+    Float,
+    Boolean,
+    Text,
+    Integer,
+    ARRAY,
+    CheckConstraint,
+)
 from sqlalchemy.dialects.postgresql import UUID
 
 import uuid
 from .base import Base, TimestampMixin
 
+
 class Venue(Base, TimestampMixin):
     __tablename__ = "venues"
+    __table_args__ = (
+        CheckConstraint(
+            "latitude IS NULL OR (latitude >= -90 AND latitude <= 90)",
+            name="ck_venues_latitude_range",
+        ),
+        CheckConstraint(
+            "longitude IS NULL OR (longitude >= -180 AND longitude <= 180)",
+            name="ck_venues_longitude_range",
+        ),
+    )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String(255), nullable=False, index=True)
@@ -23,7 +43,9 @@ class Venue(Base, TimestampMixin):
     # Categorization
     neighborhood = Column(String(100), index=True)
     venue_type = Column(String(50))  # "bar", "restaurant", "rooftop", etc.
-    tags = Column(ARRAY(String), nullable=True)  # ["Sports Bar", "College Bar", "Live Music"]
+    tags = Column(
+        ARRAY(String), nullable=True
+    )  # ["Sports Bar", "College Bar", "Live Music"]
 
     # Venue attributes
     cash_only = Column(Boolean, default=False)
