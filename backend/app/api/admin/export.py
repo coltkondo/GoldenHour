@@ -1,9 +1,11 @@
 """
 Admin data export — CSV downloads for backup.
+Streams rows via generator to avoid loading entire tables into memory.
 """
 
 import csv
 import io
+from typing import Generator
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
@@ -12,21 +14,22 @@ from app.core.database import get_db
 from app.core.security import require_admin
 from app.models.venue import Venue
 from app.models.deal import Deal
-from app.models.user import User
 
 router = APIRouter(
     prefix="/export", tags=["admin-export"], dependencies=[Depends(require_admin)]
 )
 
+BATCH_SIZE = 500
 
-@router.get("/venues.csv")
-async def export_venues_csv(db: Session = Depends(get_db)):
-    """Export all venues as CSV."""
-    venues = db.query(Venue).order_by(Venue.name).all()
 
-    output = io.StringIO()
-    writer = csv.writer(output)
-    writer.writerow(
+def _csv_row(fields: list) -> bytes:
+    buf = io.StringIO()
+    csv.writer(buf).writerow(fields)
+    return buf.getvalue().encode("utf-8")
+
+
+def _venue_rows(db: Session) -> Generator[bytes, None, None]:
+    yield _csv_row(
         [
             "id",
             "name",
@@ -47,8 +50,8 @@ async def export_venues_csv(db: Session = Depends(get_db)):
             "updated_at",
         ]
     )
-    for v in venues:
-        writer.writerow(
+    for v in db.query(Venue).order_by(Venue.name).yield_per(BATCH_SIZE):
+        yield _csv_row(
             [
                 str(v.id),
                 v.name,
@@ -70,22 +73,9 @@ async def export_venues_csv(db: Session = Depends(get_db)):
             ]
         )
 
-    output.seek(0)
-    return StreamingResponse(
-        iter([output.getvalue()]),
-        media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=venues.csv"},
-    )
 
-
-@router.get("/deals.csv")
-async def export_deals_csv(db: Session = Depends(get_db)):
-    """Export all deals as CSV."""
-    deals = db.query(Deal).order_by(Deal.title).all()
-
-    output = io.StringIO()
-    writer = csv.writer(output)
-    writer.writerow(
+def _deal_rows(db: Session) -> Generator[bytes, None, None]:
+    yield _csv_row(
         [
             "id",
             "venue_id",
@@ -104,8 +94,8 @@ async def export_deals_csv(db: Session = Depends(get_db)):
             "updated_at",
         ]
     )
-    for d in deals:
-        writer.writerow(
+    for d in db.query(Deal).order_by(Deal.title).yield_per(BATCH_SIZE):
+        yield _csv_row(
             [
                 str(d.id),
                 str(d.venue_id),
@@ -125,9 +115,22 @@ async def export_deals_csv(db: Session = Depends(get_db)):
             ]
         )
 
-    output.seek(0)
+
+@router.get("/venues.csv")
+async def export_venues_csv(db: Session = Depends(get_db)):
+    """Export all venues as CSV."""
     return StreamingResponse(
-        iter([output.getvalue()]),
+        _venue_rows(db),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=venues.csv"},
+    )
+
+
+@router.get("/deals.csv")
+async def export_deals_csv(db: Session = Depends(get_db)):
+    """Export all deals as CSV."""
+    return StreamingResponse(
+        _deal_rows(db),
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=deals.csv"},
     )

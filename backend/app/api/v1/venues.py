@@ -1,16 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import func, text
+from sqlalchemy import func
 from typing import List, Optional
 from uuid import UUID
 import time
 
 from app.core.database import get_db
-from app.core.security import require_admin
 from app.models.venue import Venue
 from app.models.happy_hour import HappyHourSchedule
-from app.models.user import User
-from app.schemas.venue import VenueResponse, VenueCreate, VenueWithDeals
+from app.schemas.venue import VenueResponse
 from app.schemas.happy_hour import HappyHourScheduleResponse
 from app.core.logging import logger
 
@@ -120,24 +118,6 @@ async def get_venue_schedules(venue_id: UUID, db: Session = Depends(get_db)):
         .all()
     )
     return schedules
-
-
-@router.post("/", response_model=VenueResponse, status_code=201)
-async def create_venue(
-    venue: VenueCreate,
-    _admin: User = Depends(require_admin),
-    db: Session = Depends(get_db),
-):
-    """
-    Create a new venue. Requires admin role.
-    """
-    db_venue = Venue(**venue.model_dump())
-
-    db.add(db_venue)
-    db.commit()
-    db.refresh(db_venue)
-
-    return db_venue
 
 
 @router.get("/neighborhoods/list", response_model=List[str])

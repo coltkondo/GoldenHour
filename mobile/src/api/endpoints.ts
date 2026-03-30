@@ -104,12 +104,12 @@ export const submissionsAPI = {
   },
 
   adminGetAll: async (params?: { status?: string; submission_type?: string }) => {
-    const response = await apiClient.get<Submission[]>('/submissions/', { params });
+    const response = await apiClient.get<Submission[]>('/admin/submissions/', { params });
     return response.data;
   },
 
   review: async (id: string, action: { status: string; admin_notes?: string }) => {
-    const response = await apiClient.patch<Submission>(`/submissions/${id}/review`, action);
+    const response = await apiClient.patch<Submission>(`/admin/submissions/${id}/review`, action);
     return response.data;
   },
 };

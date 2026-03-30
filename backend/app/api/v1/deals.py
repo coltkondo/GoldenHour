@@ -6,12 +6,10 @@ from uuid import UUID
 from datetime import datetime, time
 
 from app.core.database import get_db
-from app.core.security import require_admin
 from app.models.deal import Deal
 from app.models.venue import Venue
 from app.models.happy_hour import HappyHourSchedule
-from app.models.user import User
-from app.schemas.deal import DealResponse, DealCreate
+from app.schemas.deal import DealResponse
 from app.services.search import bounding_box, haversine_distance
 
 
@@ -140,25 +138,3 @@ async def get_deal(deal_id: UUID, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Deal not found")
 
     return deal
-
-
-@router.post("/", response_model=DealResponse, status_code=201)
-async def create_deal(
-    deal: DealCreate,
-    _admin: User = Depends(require_admin),
-    db: Session = Depends(get_db),
-):
-    """
-    Create a new deal. Requires admin role.
-    """
-    # Verify venue exists
-    venue = db.query(Venue).filter(Venue.id == deal.venue_id).first()
-    if not venue:
-        raise HTTPException(status_code=404, detail="Venue not found")
-
-    db_deal = Deal(**deal.model_dump())
-    db.add(db_deal)
-    db.commit()
-    db.refresh(db_deal)
-
-    return db_deal

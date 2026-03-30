@@ -61,9 +61,3 @@ def get_user_points(
         points_balance=user.points_balance,
         transactions=txs,
     )
-
-
-@router.post("/redeem")
-def redeem_points(_current_user: User = Depends(get_current_user)):
-    """Placeholder for future voucher redemption."""
-    raise HTTPException(status_code=501, detail="Redemption not yet implemented")

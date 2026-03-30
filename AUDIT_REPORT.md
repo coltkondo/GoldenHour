@@ -177,19 +177,19 @@ Why it matters: Time-related bugs in multi-timezone contexts. `updated_at` silen
 
 ## 4. Performance
 
-### TODO: PERF-01
+### PERF-01
 [SEVERITY: High]  
 File / Area: `backend/app/api/admin/venues.py:66-71`  
 Issue: N+1 query pattern in the venue list endpoint. For each venue returned, two additional `COUNT` queries are executed to get `deals_count` and `active_deals_count`. With 200 venues, this is 401 queries (1 + 200 * 2).  
 Why it matters: Response times scale linearly with data size. At moderate venue counts, this endpoint will dominate database load and take seconds to respond.
 
-### TODO: PERF-02
+### PERF-02
 [SEVERITY: High]  
 File / Area: `backend/app/api/v1/venues.py:66` (`haversine_distance`)  
 Issue: The `nearby` endpoint fetches all candidates from the bounding box into Python memory, then computes haversine distance for each one in a Python loop. No `ST_DWithin` or PostGIS spatial index is used.  
 Why it matters: As venue count grows, this becomes an O(n) Python loop over every candidate. PostGIS spatial indexes would reduce this to an O(log n) index scan. At ~1000+ venues, response times will degrade noticeably.
 
-### TODO: PERF-03
+### PERF-03
 [SEVERITY: Medium]  
 File / Area: `backend/app/core/database.py:6-9`  
 Issue: No connection pool size configuration. SQLAlchemy defaults to `pool_size=5, max_overflow=10`. Under concurrent load (multiple mobile users, admin dashboard), the pool will exhaust quickly.  
@@ -201,7 +201,7 @@ File / Area: `backend/app/core/logging.py:86-107`
 Issue: `sys.stdout` is replaced with a custom `InterceptHandler` that calls `logger.info(message.strip())` for every `print()` statement and library stdout write. This adds loguru overhead to all stdout I/O.  
 Why it matters: Performance degradation for any library that writes to stdout (e.g., subprocess output, health checks, third-party dependencies). Also breaks any code that depends on `print()` behavior.
 
-### TODO: PERF-05
+### PERF-05
 [SEVERITY: Low]  
 File / Area: `backend/app/api/v1/deals.py:48-62` (`get_todays_deals`)  
 Issue: Fetches all schedule rows for today, iterates in Python to flatten `deal_ids` arrays, then does a second query with `IN (...)`. Two round trips where one could suffice with a subquery or join.  
@@ -239,19 +239,19 @@ Why it matters: As the user base grows, this query becomes increasingly expensiv
 
 ## 6. API Design
 
-### TODO: API-01
+### API-01
 [SEVERITY: High]  
 File / Area: `backend/app/api/admin/submissions.py`, `backend/app/api/v1/submissions.py`  
 Issue: Duplicate submission review endpoints exist at both `PATCH /api/v1/submissions/{id}/review` and `PATCH /api/v1/admin/submissions/{id}/review`. Both call the same `review_submission` service function. The v1 version uses `require_admin`, but its existence alongside the admin-prefixed version is confusing.  
 Why it matters: API consumers do not know which endpoint to use. Bug fixes must be applied in two places. The v1 route suggests user-facing access, but it requires admin.
 
-### TODO: API-02
+### API-02
 [SEVERITY: Medium]  
 File / Area: `backend/app/api/v1/venues.py:118-133` (`POST /venues/`)  
 Issue: The public `POST /venues/` endpoint returns 201 with the created venue. There is no authentication, no review workflow, and no indication that this is a "contribution" versus an "admin creation." The proper contribution path is `POST /submissions/`.  
 Why it matters: Two parallel paths to create the same resource with different authorization models. Confusing for API consumers and undermines the submission/points system.
 
-### TODO: API-03
+### API-03
 [SEVERITY: Medium]  
 File / Area: `backend/app/api/v1/points.py:63-67` (`POST /redeem`)  
 Issue: Returns 501 "Redemption not yet implemented" — a placeholder endpoint exposed in the public API.  
