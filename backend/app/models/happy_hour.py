@@ -42,7 +42,7 @@ class HappyHourSchedule(Base, TimestampMixin):
     active = Column(Boolean, default=True)
 
     # Relationships
-    venue = relationship("Venue", backref="schedules")
+    venue = relationship("Venue", back_populates="schedules")
 
     def __repr__(self):
         return f"<HappyHour {self.venue_id} Day:{self.day_of_week} {self.start_time}-{self.end_time}>"

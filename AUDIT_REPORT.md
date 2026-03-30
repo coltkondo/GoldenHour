@@ -257,7 +257,7 @@ File / Area: `backend/app/api/v1/points.py:63-67` (`POST /redeem`)
 Issue: Returns 501 "Redemption not yet implemented" — a placeholder endpoint exposed in the public API.  
 Why it matters: Dead endpoints in production confuse API consumers and mobile app users who discover them.
 
-### TODO: API-04
+### API-04
 [SEVERITY: Low]  
 File / Area: `backend/app/api/admin/export.py:16-44`  
 Issue: CSV export endpoints stream the entire database in a single response with no pagination, filtering, or streaming optimization. The entire result set is loaded into memory via `io.StringIO`.  
@@ -313,25 +313,25 @@ Why it matters: No compile-time type safety between API responses and UI compone
 
 ## 8. Observability
 
-### OBS-01
+### TODO: OBS-01
 [SEVERITY: High]  
 File / Area: `backend/app/main.py:37-40` (`/health`)  
 Issue: The health endpoint always returns `{"status": "healthy"}` regardless of database connectivity. It does not execute a `SELECT 1` or check Redis.  
 Why it matters: Load balancers and orchestrators (Railway, Render) will route traffic to a backend that cannot serve requests. Failed database connections are invisible to health checks.
 
-### OBS-02
+### TODO: OBS-02
 [SEVERITY: Medium]  
 File / Area: `backend/app/main.py:47`  
 Issue: `trace_id: str(id(exc))` uses Python's built-in `id()` which returns a memory address. It is not a UUID, not unique across requests, and changes if the object is garbage-collected and the address is reused.  
 Why it matters: Cannot correlate error responses with log entries. Support tickets with "trace_id: 140234567890" are unsearchable.
 
-### OBS-03
+### TODO: OBS-03
 [SEVERITY: Medium]  
 File / Area: `backend/app/api/v1/venues.py`, `backend/app/api/v1/deals.py`  
 Issue: No request-level metrics (latency percentiles, error rates, throughput). The request logging middleware records individual request durations but does not aggregate them. No integration with Prometheus, StatsD, or any metrics system.  
 Why it matters: Cannot detect performance degradation, set up alerts, or identify slow endpoints without manually parsing log files.
 
-### OBS-04
+### TODO: OBS-04
 [SEVERITY: Low]  
 File / Area: `backend/app/core/logging.py:77`  
 Issue: `logger.bind(traceback=True)` is used but `traceback=True` is not a standard loguru parameter. Loguru uses `logger.exception()` or `exc_info=True` for exception tracebacks.  
@@ -341,49 +341,49 @@ Why it matters: Tracebacks may not appear in logs when expected, making error di
 
 ## 9. Deployment Readiness
 
-### DEP-01
+### TODO: DEP-01
 [SEVERITY: Critical]  
 File / Area: `backend/app/main.py:26`  
 Issue: `Base.metadata.create_all(bind=engine)` runs on every startup. This creates tables that don't exist but does not modify existing ones. Combined with Alembic migrations, this causes schema drift — `create_all` may create a column that Alembic later tries to `ALTER TABLE ADD` (causing "column already exists" errors).  
 Why it matters: Migration failures on deploy. If `create_all` and Alembic diverge, deployments become unpredictable and may require manual intervention.
 
-### DEP-02
+### TODO: DEP-02
 [SEVERITY: High]  
 File / Area: `backend/Dockerfile`  
 Issue: No `.dockerignore` file. `COPY . .` copies everything from `backend/` into the image, including `__pycache__/`, `.env` files (if present), `.git` data, and IDE configuration. If a developer has a `.env` with real secrets, it gets baked into the Docker image.  
 Why it matters: Secret leakage through Docker image layers. Anyone who pulls the image can extract `.env` contents.
 
-### DEP-03
+### TODO: DEP-03
 [SEVERITY: High]  
 File / Area: `backend/Dockerfile`  
 Issue: The container runs as root. No `USER` directive creates a non-root application user.  
 Why it matters: Container escape vulnerabilities grant root access to the host. Most container security scanners flag this as a high finding.
 
-### DEP-04
+### TODO: DEP-04
 [SEVERITY: High]  
 File / Area: `backend/Dockerfile`  
 Issue: No `HEALTHCHECK` instruction. The `docker-compose.yml` uses `depends_on` with `condition: service_healthy` for `db` and `redis`, but the `backend` service itself has no health check for orchestrators.  
 Why it matters: Railway/Render cannot determine if the backend is actually healthy. Crashed-but-running containers continue to receive traffic.
 
-### DEP-05
+### TODO: DEP-05
 [SEVERITY: High]  
 File / Area: `backend/app/core/config.py:12`  
 Issue: `DEBUG: bool = True` is the default. If the `DEBUG` environment variable is not set in production, SQLAlchemy `echo=True` dumps every SQL statement to stdout (performance + data leak), and the app runs in debug mode.  
 Why it matters: Production database queries with sensitive data (password hashes, tokens) appear in logs. Performance degradation from excessive logging.
 
-### DEP-06
+### TODO: DEP-06
 [SEVERITY: Medium]  
 File / Area: `docker-compose.yml:22,27,49`  
 Issue: `--reload` is in the `command:` for the backend service. The Dockerfile `CMD` does NOT include `--reload` (production-safe), but `docker-compose.yml` overrides it. If someone uses the compose file in production, they get hot-reload.  
 Why it matters: Hot-reload in production is a security risk (file watcher overhead) and stability risk (unexpected restarts on file changes).
 
-### DEP-07
+### TODO: DEP-07
 [SEVERITY: Medium]  
 File / Area: `mobile/src/config/constants.ts:15`  
 Issue: The production API URL `https://goldenhour-production.up.railway.app/api/v1` is hardcoded in source. Changing the production URL requires a new mobile app build and app store submission.  
 Why it matters: Infrastructure changes (domain migration, failover) require a full mobile release cycle. Should be in an Expo config or environment variable.
 
-### DEP-08
+### TODO: DEP-08
 [SEVERITY: Low]  
 File / Area: `backend/requirements.txt`  
 Issue: `passlib[bcrypt]==1.7.4` is declared but `security.py` imports `bcrypt` directly. `bcrypt` is not listed as a direct dependency. If `passlib` is ever removed, the import breaks. Transitive dependencies (lines 37-50) are pinned individually, which is fragile.  

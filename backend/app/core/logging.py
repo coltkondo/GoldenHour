@@ -4,9 +4,9 @@ Uses loguru for simplified structured logging with sensitive data sanitization.
 """
 
 import sys
-import os
 from typing import Dict, Any
 from loguru import logger
+from app.core.config import settings
 
 
 def sanitize_record(record: Dict[str, Any]) -> Dict[str, Any]:
@@ -69,30 +69,9 @@ def configure_logging(
 
     # Determine format based on environment or explicit format param
     if format == "json":
-        # Production JSON format for log aggregation
-        def json_format(record):
-            sanitized = sanitize_record(record)
-            return (
-                "{{"
-                '"timestamp": "{time}", '
-                '"level": "{level}", '
-                '"message": "{message}", '
-                '"module": "{name}", '
-                '"function": "{function}", '
-                '"line": {line}, '
-                '"extra": {extra}'
-                "}}\n"
-            ).format(
-                time=record["time"].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                level=record["level"].name,
-                message=record["message"].replace('"', '\\"'),
-                name=record["name"],
-                function=record["function"],
-                line=record["line"],
-                extra=str(sanitized.get("extra", {})).replace('"', '\\"'),
-            )
-
-        logger.add(sys.stdout, format=json_format, level=level)
+        # Use loguru's built-in serializer for valid JSON output.
+        # Handles all special characters (newlines, quotes, unicode) correctly.
+        logger.add(sys.stdout, level=level, serialize=True)
 
     else:
         # Development console format with colors
@@ -131,12 +110,12 @@ def configure_logging(
         )
 
 
-# Auto-configure on import using environment variables
+# Auto-configure on import using settings from config.py
 if __name__ != "__main__":  # Don't configure when imported as module
     configure_logging(
-        level=os.getenv("LOG_LEVEL", "INFO"),
-        format=os.getenv("LOG_FORMAT", "console"),
-        log_file=os.getenv("LOG_FILE", None),
-        rotation=os.getenv("LOG_ROTATION", "500 MB"),
-        retention=os.getenv("LOG_RETENTION", "10 days"),
+        level=settings.LOG_LEVEL,
+        format=settings.LOG_FORMAT,
+        log_file=settings.LOG_FILE,
+        rotation=settings.LOG_ROTATION,
+        retention=settings.LOG_RETENTION,
     )

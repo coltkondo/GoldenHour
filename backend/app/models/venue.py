@@ -9,6 +9,7 @@ from sqlalchemy import (
     CheckConstraint,
 )
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 
 import uuid
 from .base import Base, TimestampMixin
@@ -61,6 +62,10 @@ class Venue(Base, TimestampMixin):
     verified = Column(Boolean, default=False)
     active = Column(Boolean, default=True)
     description = Column(Text)
+
+    # Relationships
+    deals = relationship("Deal", back_populates="venue")
+    schedules = relationship("HappyHourSchedule", back_populates="venue")
 
     def __repr__(self):
         return f"<Venue {self.name} ({self.neighborhood})>"

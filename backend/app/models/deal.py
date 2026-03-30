@@ -58,7 +58,7 @@ class Deal(Base, TimestampMixin):
     source = Column(String(50), default="manual")  # "manual", "import", "user"
 
     # Relationships
-    venue = relationship("Venue", backref="deals")
+    venue = relationship("Venue", back_populates="deals")
 
     def __repr__(self):
         return f"<Deal {self.title} at {self.venue_id}>"
