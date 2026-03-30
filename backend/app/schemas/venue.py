@@ -4,6 +4,7 @@ from typing import Optional, List
 from datetime import datetime
 from uuid import UUID
 
+
 class VenueBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
     nickname: Optional[str] = None
@@ -21,15 +22,17 @@ class VenueBase(BaseModel):
     price_level: Optional[int] = Field(None, ge=1, le=4)
     rating: Optional[float] = Field(None, ge=0, le=5)
 
+
 class VenueCreate(VenueBase):
     pass
+
 
 class VenueUpdate(BaseModel):
     name: Optional[str] = None
     nickname: Optional[str] = None
     address: Optional[str] = None
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
+    latitude: Optional[float] = Field(None, ge=-90, le=90)
+    longitude: Optional[float] = Field(None, ge=-180, le=180)
     phone: Optional[str] = None
     website: Optional[str] = None
     neighborhood: Optional[str] = None
@@ -43,6 +46,7 @@ class VenueUpdate(BaseModel):
     active: Optional[bool] = None
     verified: Optional[bool] = None
 
+
 class VenueResponse(VenueBase):
     id: UUID
     verified: bool
@@ -52,6 +56,7 @@ class VenueResponse(VenueBase):
 
     class Config:
         from_attributes = True
+
 
 class VenueWithDeals(VenueResponse):
     deals_count: int = 0

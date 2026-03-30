@@ -85,37 +85,37 @@ Why it matters: Poor UX leading to weak account security. Backend also only enfo
 
 ## 2. Error Handling
 
-### TODO: ERR-01
+### ERR-01
 [SEVERITY: Critical]  
 File / Area: `backend/app/main.py:43-52`  
 Issue: The global exception handler returns a plain Python `dict` instead of a `JSONResponse` with status code 500. FastAPI may auto-convert it, but the response will not have the correct HTTP status code (should be 500, may default to 200).  
 Why it matters: Unhandled server errors appear as successful responses to clients and monitoring systems. Error tracking and alerting will miss failures.
 
-### TODO: ERR-02
+### ERR-02
 [SEVERITY: High]  
 File / Area: `backend/app/services/submission_review.py:73-79`  
 Issue: The `except` block logs the error but **does not call `db.rollback()`** before re-raising. SQLAlchemy's session may be left in an inconsistent state with partial mutations applied.  
 Why it matters: Subsequent requests on the same session or connection can encounter dirty state, phantom data, or constraint violations from the aborted transaction.
 
-### TODO: ERR-03
+### ERR-03
 [SEVERITY: High]  
 File / Area: `mobile/src/screens/ExplorerScreen.tsx:68`, `mobile/src/screens/HappyHourScreen.tsx:64`  
 Issue: Empty `catch` blocks with no error feedback to the user. The UI silently shows stale or empty data.  
 Why it matters: Users cannot distinguish between "no results" and "server error." Silent failures erode trust and make debugging impossible.
 
-### TODO: ERR-04
+### ERR-04
 [SEVERITY: Medium]  
 File / Area: `mobile/src/components/FlagReportModal.tsx:82-83`  
 Issue: `catch` block contains only a comment "silently fail" with no user notification or logging.  
 Why it matters: Submission failures go completely unnoticed. Users believe their report was submitted when it was not.
 
-### TODO: ERR-05
+### ERR-05
 [SEVERITY: Medium]  
 File / Area: `mobile/src/screens/LeaderboardScreen.tsx:28-31`  
 Issue: Uses `.then()` chain with no `.catch()`. If the API call rejects, an unhandled promise rejection occurs.  
 Why it matters: React Native will show a red-screen error in dev; in production, the error is swallowed and the screen may be stuck in a loading state.
 
-### TODO:  cERR-06
+### ERR-06
 [SEVERITY: Medium]  
 File / Area: `backend/docker-entrypoint.sh:19-22`  
 Issue: After exhausting all migration retries, the script prints a warning but continues to start the application with `exec "$@"`. The app runs with a potentially broken or missing schema.  
@@ -177,31 +177,31 @@ Why it matters: Time-related bugs in multi-timezone contexts. `updated_at` silen
 
 ## 4. Performance
 
-### PERF-01
+### TODO: PERF-01
 [SEVERITY: High]  
 File / Area: `backend/app/api/admin/venues.py:66-71`  
 Issue: N+1 query pattern in the venue list endpoint. For each venue returned, two additional `COUNT` queries are executed to get `deals_count` and `active_deals_count`. With 200 venues, this is 401 queries (1 + 200 * 2).  
 Why it matters: Response times scale linearly with data size. At moderate venue counts, this endpoint will dominate database load and take seconds to respond.
 
-### PERF-02
+### TODO: PERF-02
 [SEVERITY: High]  
 File / Area: `backend/app/api/v1/venues.py:66` (`haversine_distance`)  
 Issue: The `nearby` endpoint fetches all candidates from the bounding box into Python memory, then computes haversine distance for each one in a Python loop. No `ST_DWithin` or PostGIS spatial index is used.  
 Why it matters: As venue count grows, this becomes an O(n) Python loop over every candidate. PostGIS spatial indexes would reduce this to an O(log n) index scan. At ~1000+ venues, response times will degrade noticeably.
 
-### PERF-03
+### TODO: PERF-03
 [SEVERITY: Medium]  
 File / Area: `backend/app/core/database.py:6-9`  
 Issue: No connection pool size configuration. SQLAlchemy defaults to `pool_size=5, max_overflow=10`. Under concurrent load (multiple mobile users, admin dashboard), the pool will exhaust quickly.  
 Why it matters: Connection pool exhaustion causes request timeouts. Users see 503 errors during normal traffic spikes.
 
-### PERF-04
+### TODO: PERF-04
 [SEVERITY: Medium]  
 File / Area: `backend/app/core/logging.py:86-107`  
 Issue: `sys.stdout` is replaced with a custom `InterceptHandler` that calls `logger.info(message.strip())` for every `print()` statement and library stdout write. This adds loguru overhead to all stdout I/O.  
 Why it matters: Performance degradation for any library that writes to stdout (e.g., subprocess output, health checks, third-party dependencies). Also breaks any code that depends on `print()` behavior.
 
-### PERF-05
+### TODO: PERF-05
 [SEVERITY: Low]  
 File / Area: `backend/app/api/v1/deals.py:48-62` (`get_todays_deals`)  
 Issue: Fetches all schedule rows for today, iterates in Python to flatten `deal_ids` arrays, then does a second query with `IN (...)`. Two round trips where one could suffice with a subquery or join.  
@@ -211,25 +211,25 @@ Why it matters: Minor overhead at current scale, but the pattern does not scale 
 
 ## 5. Scalability
 
-### SCALE-01
+### TODO: SCALE-01
 [SEVERITY: High]  
 File / Area: `backend/app/core/cache.py`  
 Issue: Redis is installed and the service is running, but the cache module is completely empty. No caching is implemented for any endpoint. Every request hits the database.  
 Why it matters: Under load, the database becomes the bottleneck. Read-heavy endpoints like `/venues`, `/deals/active`, and `/leaderboard` would benefit enormously from even simple TTL caching.
 
-### SCALE-02
+### TODO: SCALE-02
 [SEVERITY: High]  
 File / Area: `backend/app/main.py:72-87` (middleware)  
 Issue: No rate limiting on any endpoint. Login, registration, and all API endpoints are unthrottled.  
 Why it matters: Brute-force attacks on `/auth/login` are trivial. DDoS on any endpoint can exhaust database connections or CPU. No protection against credential stuffing.
 
-### SCALE-03
+### TODO: SCALE-03
 [SEVERITY: Medium]  
 File / Area: `backend/app/main.py:43`  
 Issue: `trace_id` uses `str(id(exc))` which is Python's memory address. `request_id` uses `str(id(request))` which is similarly meaningless for tracing. These IDs are not unique across requests and cannot be correlated with any external system.  
 Why it matters: Impossible to correlate logs with specific requests in production. Debugging incidents requires manual timestamp correlation.
 
-### SCALE-04
+### TODO: SCALE-04
 [SEVERITY: Medium]  
 File / Area: `backend/app/api/v1/leaderboard.py`  
 Issue: The leaderboard query scans all users with `points_balance > 0` and performs an outer join with a subquery of approved submissions. No pagination beyond `limit`, and no caching.  
@@ -239,25 +239,25 @@ Why it matters: As the user base grows, this query becomes increasingly expensiv
 
 ## 6. API Design
 
-### API-01
+### TODO: API-01
 [SEVERITY: High]  
 File / Area: `backend/app/api/admin/submissions.py`, `backend/app/api/v1/submissions.py`  
 Issue: Duplicate submission review endpoints exist at both `PATCH /api/v1/submissions/{id}/review` and `PATCH /api/v1/admin/submissions/{id}/review`. Both call the same `review_submission` service function. The v1 version uses `require_admin`, but its existence alongside the admin-prefixed version is confusing.  
 Why it matters: API consumers do not know which endpoint to use. Bug fixes must be applied in two places. The v1 route suggests user-facing access, but it requires admin.
 
-### API-02
+### TODO: API-02
 [SEVERITY: Medium]  
 File / Area: `backend/app/api/v1/venues.py:118-133` (`POST /venues/`)  
 Issue: The public `POST /venues/` endpoint returns 201 with the created venue. There is no authentication, no review workflow, and no indication that this is a "contribution" versus an "admin creation." The proper contribution path is `POST /submissions/`.  
 Why it matters: Two parallel paths to create the same resource with different authorization models. Confusing for API consumers and undermines the submission/points system.
 
-### API-03
+### TODO: API-03
 [SEVERITY: Medium]  
 File / Area: `backend/app/api/v1/points.py:63-67` (`POST /redeem`)  
 Issue: Returns 501 "Redemption not yet implemented" — a placeholder endpoint exposed in the public API.  
 Why it matters: Dead endpoints in production confuse API consumers and mobile app users who discover them.
 
-### API-04
+### TODO: API-04
 [SEVERITY: Low]  
 File / Area: `backend/app/api/admin/export.py:16-44`  
 Issue: CSV export endpoints stream the entire database in a single response with no pagination, filtering, or streaming optimization. The entire result set is loaded into memory via `io.StringIO`.  

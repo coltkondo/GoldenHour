@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, Text, DateTime, Enum as SAEnum, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 from .base import Base
 
@@ -27,7 +27,11 @@ class PointTransaction(Base):
         nullable=False,
     )
     description = Column(Text, nullable=False, default="")
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
 
     user = relationship("User", back_populates="point_transactions")
     submission = relationship("Submission", back_populates="point_transactions")

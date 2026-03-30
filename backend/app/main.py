@@ -1,7 +1,8 @@
 import time
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app.core.config import settings
@@ -49,6 +50,9 @@ app = FastAPI(
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     """Catch all unhandled exceptions and log with context."""
+    # Let FastAPI handle validation errors and HTTPExceptions normally
+    if isinstance(exc, (RequestValidationError, HTTPException)):
+        raise exc
     logger.bind(
         exception_type=type(exc).__name__,
         exception_message=str(exc),

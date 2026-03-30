@@ -3,7 +3,7 @@ Shared logic for approving/rejecting a submission.
 Called by both the v1 submissions router and the admin submissions router.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
@@ -61,7 +61,12 @@ def review_submission(
         action=action.status,
     ).info("review_action_initiated")
 
-    sub = db.query(Submission).filter(Submission.id == submission_id).first()
+    sub = (
+        db.query(Submission)
+        .filter(Submission.id == submission_id)
+        .with_for_update()
+        .first()
+    )
     if not sub:
         logger.bind(submission_id=str(submission_id)).warning("submission_not_found")
         raise HTTPException(status_code=404, detail="Submission not found")
@@ -78,7 +83,7 @@ def review_submission(
         sub.status = action.status
         sub.admin_notes = action.admin_notes
         sub.reviewed_by = reviewer.id
-        sub.reviewed_at = datetime.utcnow()
+        sub.reviewed_at = datetime.now(timezone.utc)
 
         if action.status == "approved":
             logger.bind(
@@ -91,7 +96,12 @@ def review_submission(
             sub.points_awarded = points
 
             if points > 0:
-                submitter = db.query(User).filter(User.id == sub.user_id).first()
+                submitter = (
+                    db.query(User)
+                    .filter(User.id == sub.user_id)
+                    .with_for_update()
+                    .first()
+                )
                 if submitter:
                     submitter.points_balance += points
                     tx = PointTransaction(
