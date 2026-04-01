@@ -26,6 +26,8 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+console.log('API Client initialized with base URL:', API_URL);
+
 // Response interceptor for error handling
 apiClient.interceptors.response.use(
   (response) => response,

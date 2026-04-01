@@ -20,7 +20,7 @@ function AppContent() {
   return (
     <>
       <RootNavigator />
-      <StatusBar style={theme.colors.statusBarStyle} />
+      <StatusBar style="dark" />
     </>
   );
 }

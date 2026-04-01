@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../theme';
+import { AppIcon } from '../icons';
 
 interface ErrorMessageProps {
   message: string;
@@ -10,18 +10,19 @@ interface ErrorMessageProps {
 
 export const ErrorMessage: React.FC<ErrorMessageProps> = ({ message, onRetry }) => {
   const { theme } = useTheme();
+  const d = theme.derived;
 
   return (
     <View style={styles.container}>
-      <Ionicons name="warning" size={48} color={theme.colors.primary} />
-      <Text style={[styles.message, { color: theme.colors.text }]}>{message}</Text>
+      <AppIcon name="warningCircle" size={48} role="brand" />
+      <Text style={[styles.message, { color: d.text }]}>{message}</Text>
       {onRetry && (
         <TouchableOpacity
-          style={[styles.retryButton, { backgroundColor: theme.colors.primary }]}
+          style={[styles.retryButton, { backgroundColor: d.primary }]}
           onPress={onRetry}
           activeOpacity={0.8}
         >
-          <Text style={styles.retryText}>Try Again</Text>
+          <Text style={[styles.retryText, { color: d.buttonPrimaryText }]}>Try Again</Text>
         </TouchableOpacity>
       )}
     </View>
@@ -48,7 +49,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   retryText: {
-    color: '#FFFFFF',
     fontSize: 15,
     fontWeight: '700',
   },

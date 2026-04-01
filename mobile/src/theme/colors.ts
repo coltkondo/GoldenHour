@@ -1,181 +1,246 @@
-// Golden Hour - Time-Based Color System
-// Colors shift throughout the day to match the mood
+// Golden Hour — Color System (Light + Dark)
 
-export type TimePeriod = 'lateNight' | 'morning' | 'afternoon' | 'goldenHour' | 'evening';
+export type ThemeMode = 'light' | 'dark';
 
 export interface ColorPalette {
-  primary: string;
-  primaryLight: string;
-  secondary: string;
-  accent: string;
   background: string;
-  backgroundGradient: string[];
   surface: string;
-  surfaceElevated: string;
+  primary: string;
+  secondary: string;
+  text: string;
+  cardBackground?: string;
+  cardBorder?: string;
+  cardBackgroundAlt?: string;
+  buttonPrimary?: string;
+  buttonPrimaryText?: string;
+  buttonSecondary?: string;
+  buttonSecondaryText?: string;
+  inputBackground?: string;
+  inputBorder?: string;
+  inputPlaceholder?: string;
+  badgeBackground?: string;
+  badgeText?: string;
+  filterActive?: string;
+  filterActiveForeground?: string;
+  filterInactive?: string;
+  filterInactiveText?: string;
+  selectedSurface?: string;
+  selectedBorder?: string;
+  selectedText?: string;
+  tabBar?: string;
+  tabBarActive?: string;
+  tabBarInactive?: string;
+  navPill?: string;
+  border?: string;
+  borderStrong?: string;
+  divider?: string;
+  surfaceAlt?: string;
+  surfaceDeep?: string;
+  success?: string;
+  error?: string;
+  warning?: string;
+  live?: string;
+  textSecondary?: string;
+  textMuted?: string;
+  textHint?: string;
+  toastBackground?: string;
+  discovery?: string;
+}
+
+const dark: ColorPalette = {
+  background: '#0D0D0D',
+  surface: '#1E1E1E',
+  primary: '#F5A623',
+  secondary: '#2DD4A0',
+  text: '#F0EDE6',
+  cardBackground: '#1A1A1A',
+  cardBorder: '#2A2A2A',
+  cardBackgroundAlt: '#1E1E1E',
+  buttonPrimary: '#F5A623',
+  buttonPrimaryText: '#0D0D0D',
+  buttonSecondary: '#2A2A2A',
+  buttonSecondaryText: '#F5A623',
+  inputBackground: '#1E1E1E',
+  inputBorder: '#2A2A2A',
+  inputPlaceholder: '#6B6B6B',
+  badgeBackground: '#F5A623',
+  badgeText: '#0D0D0D',
+  filterActive: '#F5A623',
+  filterActiveForeground: '#0D0D0D',
+  filterInactive: '#2A2A2A',
+  filterInactiveText: '#6B6B6B',
+  selectedSurface: 'rgba(245,166,35,0.12)',
+  selectedBorder: 'rgba(245,166,35,0.3)',
+  tabBar: '#0D0D0D',
+  tabBarActive: '#F5A623',
+  tabBarInactive: '#6B6B6B',
+  navPill: '#0D0D0D',
+  border: '#2A2A2A',
+  borderStrong: '#2A2A2A',
+  divider: '#2A2A2A',
+  surfaceAlt: '#1E1E1E',
+  surfaceDeep: '#1E1E1E',
+  success: '#2DD4A0',
+  error: '#FF6B35',
+  warning: '#F4A261',
+  live: '#2DD4A0',
+  textSecondary: '#6B6B6B',
+  textMuted: '#6B6B6B',
+  textHint: '#6B6B6B',
+  toastBackground: '#1E1B4B',
+  discovery: '#5B9BD5',
+};
+
+const light: ColorPalette = {
+  background: '#FAF9F6',
+  surface: '#FFFFFF',
+  primary: '#C77D1A',
+  secondary: '#1EA87A',
+  text: '#1A1A1A',
+  cardBackground: '#FFFFFF',
+  cardBorder: '#E5E2DC',
+  cardBackgroundAlt: '#F5F3EF',
+  buttonPrimary: '#C77D1A',
+  buttonPrimaryText: '#FFFFFF',
+  buttonSecondary: '#F0EDE6',
+  buttonSecondaryText: '#C77D1A',
+  inputBackground: '#FFFFFF',
+  inputBorder: '#E5E2DC',
+  inputPlaceholder: '#9B978E',
+  badgeBackground: '#C77D1A',
+  badgeText: '#FFFFFF',
+  filterActive: '#C77D1A',
+  filterActiveForeground: '#FFFFFF',
+  filterInactive: '#E5E2DC',
+  filterInactiveText: '#9B978E',
+  selectedSurface: 'rgba(199,125,26,0.1)',
+  selectedBorder: 'rgba(199,125,26,0.3)',
+  tabBar: '#FAF9F6',
+  tabBarActive: '#C77D1A',
+  tabBarInactive: '#9B978E',
+  navPill: '#FAF9F6',
+  border: '#E5E2DC',
+  borderStrong: '#D4D0C8',
+  divider: '#E5E2DC',
+  surfaceAlt: '#F5F3EF',
+  surfaceDeep: '#F0EDE6',
+  success: '#1EA87A',
+  error: '#E04E2A',
+  warning: '#C77D1A',
+  live: '#1EA87A',
+  textSecondary: '#9B978E',
+  textMuted: '#9B978E',
+  textHint: '#9B978E',
+  toastBackground: '#F0EDE6',
+  discovery: '#4A8BC2',
+};
+
+export const colorPalettes: Record<ThemeMode, ColorPalette> = {
+  dark,
+  light,
+};
+
+export function getColors(mode: ThemeMode): ColorPalette {
+  return colorPalettes[mode];
+}
+
+export interface DerivedTokens {
+  background: string;
+  surface: string;
+  primary: string;
+  secondary: string;
   text: string;
   textSecondary: string;
   textMuted: string;
-  textOnPrimary: string;
+  textHint: string;
   border: string;
+  borderStrong: string;
+  divider: string;
+  surfaceAlt: string;
+  surfaceDeep: string;
+  cardBackground: string;
+  cardBackgroundAlt: string;
+  cardBorder: string;
+  buttonPrimary: string;
+  buttonPrimaryText: string;
+  buttonSecondary: string;
+  buttonSecondaryText: string;
+  inputBackground: string;
+  inputBorder: string;
+  inputPlaceholder: string;
+  badgeBackground: string;
+  badgeText: string;
+  filterActive: string;
+  filterActiveForeground: string;
+  filterInactive: string;
+  filterInactiveText: string;
+  selectedSurface: string;
+  selectedBorder: string;
   tabBar: string;
   tabBarActive: string;
   tabBarInactive: string;
-  cardBackground: string;
-  cardBorder: string;
-  statusBarStyle: 'light' | 'dark';
-  mapStyle: 'dark' | 'light';
+  navPill: string;
+  success: string;
+  error: string;
+  warning: string;
+  live: string;
+  toastBackground: string;
+  discovery: string;
 }
 
-// 12am - 6am: Indigo/Dark Purple + White/Light Grey
-const lateNightColors: ColorPalette = {
-  primary: '#7C4DFF',
-  primaryLight: '#B388FF',
-  secondary: '#CE93D8',
-  accent: '#E040FB',
-  background: '#1A0533',
-  backgroundGradient: ['#0D0019', '#1A0533', '#311B92', '#4A148C'],
-  surface: '#2D1B4E',
-  surfaceElevated: '#3D2B5E',
-  text: '#F3E5F5',
-  textSecondary: '#CE93D8',
-  textMuted: '#9575CD',
-  textOnPrimary: '#FFFFFF',
-  border: '#4A148C',
-  tabBar: '#1A0533',
-  tabBarActive: '#E040FB',
-  tabBarInactive: '#7C4DFF',
-  cardBackground: '#2D1B4E',
-  cardBorder: '#4A148C',
-  statusBarStyle: 'light',
-  mapStyle: 'dark',
-};
-
-// 6am - 12pm: Soft blue + soft yellow
-const morningColors: ColorPalette = {
-  primary: '#42A5F5',
-  primaryLight: '#90CAF9',
-  secondary: '#FFD54F',
-  accent: '#FF6B35',
-  background: '#E8F4FD',
-  backgroundGradient: ['#E3F2FD', '#BBDEFB', '#FFF9C4', '#FFF3E0'],
-  surface: '#FFFFFF',
-  surfaceElevated: '#F5F9FF',
-  text: '#1A237E',
-  textSecondary: '#3F51B5',
-  textMuted: '#7986CB',
-  textOnPrimary: '#FFFFFF',
-  border: '#BBDEFB',
-  tabBar: '#FFFFFF',
-  tabBarActive: '#1976D2',
-  tabBarInactive: '#90CAF9',
-  cardBackground: '#FFFFFF',
-  cardBorder: '#E3F2FD',
-  statusBarStyle: 'dark',
-  mapStyle: 'light',
-};
-
-// 12pm - 5pm: Comfort blue + gold
-const afternoonColors: ColorPalette = {
-  primary: '#1976D2',
-  primaryLight: '#64B5F6',
-  secondary: '#FFB300',
-  accent: '#FF6B35',
-  background: '#F0F7FF',
-  backgroundGradient: ['#E3F2FD', '#90CAF9', '#FFE082', '#FFF8E1'],
-  surface: '#FFFFFF',
-  surfaceElevated: '#F5F9FF',
-  text: '#0D47A1',
-  textSecondary: '#1565C0',
-  textMuted: '#64B5F6',
-  textOnPrimary: '#FFFFFF',
-  border: '#90CAF9',
-  tabBar: '#FFFFFF',
-  tabBarActive: '#0D47A1',
-  tabBarInactive: '#90CAF9',
-  cardBackground: '#FFFFFF',
-  cardBorder: '#E3F2FD',
-  statusBarStyle: 'dark',
-  mapStyle: 'light',
-};
-
-// 5pm - 8pm: Deep orange (PRIMARY - golden hour!)
-const goldenHourColors: ColorPalette = {
-  primary: '#FF6B35',
-  primaryLight: '#FF8A50',
-  secondary: '#FFB74D',
-  accent: '#FFD700',
-  background: '#1A0A00',
-  backgroundGradient: ['#BF360C', '#E65100', '#FF6B35', '#FF8A50', '#FFB74D'],
-  surface: 'rgba(255, 255, 255, 0.12)',
-  surfaceElevated: 'rgba(255, 255, 255, 0.18)',
-  text: '#FFFFFF',
-  textSecondary: '#FFE0B2',
-  textMuted: '#FFCC80',
-  textOnPrimary: '#FFFFFF',
-  border: 'rgba(255, 255, 255, 0.2)',
-  tabBar: 'rgba(26, 10, 0, 0.95)',
-  tabBarActive: '#FFD700',
-  tabBarInactive: '#FF8A50',
-  cardBackground: 'rgba(255, 255, 255, 0.12)',
-  cardBorder: 'rgba(255, 183, 77, 0.3)',
-  statusBarStyle: 'light',
-  mapStyle: 'dark',
-};
-
-// 8pm - 12am: Navy + gold
-const eveningColors: ColorPalette = {
-  primary: '#1B3A5C',
-  primaryLight: '#2C5282',
-  secondary: '#FFD700',
-  accent: '#FF6B35',
-  background: '#0D1B2A',
-  backgroundGradient: ['#050D18', '#0D1B2A', '#1B2838', '#1B3A5C'],
-  surface: '#1B3A5C',
-  surfaceElevated: '#2C5282',
-  text: '#F0E6D3',
-  textSecondary: '#B8C9DB',
-  textMuted: '#6B8299',
-  textOnPrimary: '#FFFFFF',
-  border: '#2C5282',
-  tabBar: '#0D1B2A',
-  tabBarActive: '#FFD700',
-  tabBarInactive: '#6B8299',
-  cardBackground: '#1B3A5C',
-  cardBorder: '#2C5282',
-  statusBarStyle: 'light',
-  mapStyle: 'dark',
-};
-
-export const colorPalettes: Record<TimePeriod, ColorPalette> = {
-  lateNight: lateNightColors,
-  morning: morningColors,
-  afternoon: afternoonColors,
-  goldenHour: goldenHourColors,
-  evening: eveningColors,
-};
-
-export function getTimePeriod(date: Date = new Date()): TimePeriod {
-  const hour = date.getHours();
-
-  if (hour >= 0 && hour < 6) return 'lateNight';
-  if (hour >= 6 && hour < 12) return 'morning';
-  if (hour >= 12 && hour < 17) return 'afternoon';
-  if (hour >= 17 && hour < 20) return 'goldenHour';
-  return 'evening';
+export function deriveTokens(c: ColorPalette): DerivedTokens {
+  const fallback = dark;
+  return {
+    background: c.background ?? fallback.background!,
+    surface: c.surface ?? fallback.surface!,
+    primary: c.primary ?? fallback.primary!,
+    secondary: c.secondary ?? fallback.secondary!,
+    text: c.text ?? fallback.text!,
+    textSecondary: c.textSecondary ?? fallback.textSecondary!,
+    textMuted: c.textMuted ?? fallback.textMuted!,
+    textHint: c.textHint ?? fallback.textHint!,
+    border: c.border ?? fallback.border!,
+    borderStrong: c.borderStrong ?? fallback.borderStrong!,
+    divider: c.divider ?? fallback.divider!,
+    surfaceAlt: c.surfaceAlt ?? fallback.surfaceAlt!,
+    surfaceDeep: c.surfaceDeep ?? fallback.surfaceDeep!,
+    cardBackground: c.cardBackground ?? fallback.cardBackground!,
+    cardBackgroundAlt: c.cardBackgroundAlt ?? fallback.cardBackgroundAlt!,
+    cardBorder: c.cardBorder ?? fallback.cardBorder!,
+    buttonPrimary: c.buttonPrimary ?? fallback.buttonPrimary!,
+    buttonPrimaryText: c.buttonPrimaryText ?? fallback.buttonPrimaryText!,
+    buttonSecondary: c.buttonSecondary ?? fallback.buttonSecondary!,
+    buttonSecondaryText: c.buttonSecondaryText ?? fallback.buttonSecondaryText!,
+    inputBackground: c.inputBackground ?? fallback.inputBackground!,
+    inputBorder: c.inputBorder ?? fallback.inputBorder!,
+    inputPlaceholder: c.inputPlaceholder ?? fallback.inputPlaceholder!,
+    badgeBackground: c.badgeBackground ?? fallback.badgeBackground!,
+    badgeText: c.badgeText ?? fallback.badgeText!,
+    filterActive: c.filterActive ?? fallback.filterActive!,
+    filterActiveForeground: c.filterActiveForeground ?? fallback.filterActiveForeground!,
+    filterInactive: c.filterInactive ?? fallback.filterInactive!,
+    filterInactiveText: c.filterInactiveText ?? fallback.filterInactiveText!,
+    selectedSurface: c.selectedSurface ?? fallback.selectedSurface!,
+    selectedBorder: c.selectedBorder ?? fallback.selectedBorder!,
+    tabBar: c.tabBar ?? fallback.tabBar!,
+    tabBarActive: c.tabBarActive ?? fallback.tabBarActive!,
+    tabBarInactive: c.tabBarInactive ?? fallback.tabBarInactive!,
+    navPill: c.navPill ?? fallback.navPill!,
+    success: c.success ?? fallback.success!,
+    error: c.error ?? fallback.error!,
+    warning: c.warning ?? fallback.warning!,
+    live: c.live ?? fallback.live!,
+    toastBackground: c.toastBackground ?? fallback.toastBackground!,
+    discovery: c.discovery ?? fallback.discovery!,
+  };
 }
 
-export function getColors(date?: Date): ColorPalette {
-  return colorPalettes[getTimePeriod(date)];
-}
-
-// Brand colors that stay constant regardless of time
 export const brand = {
+  gold: '#F5A623',
+  amber: '#F4A261',
   orange: '#FF6B35',
-  orangeLight: '#FF8A50',
-  gold: '#FFD700',
-  white: '#FFFFFF',
-  black: '#0A0A0A',
-  success: '#4CAF50',
-  error: '#FF3B30',
-  warning: '#FFB300',
+  green: '#2DD4A0',
+  blue: '#5B9BD5',
+  error: '#FF6B35',
+  success: '#2DD4A0',
 };

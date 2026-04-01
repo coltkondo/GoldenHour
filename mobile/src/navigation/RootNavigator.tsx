@@ -30,7 +30,7 @@ function AppNavigator() {
   if (loading) {
     return (
       <View style={{ flex: 1, backgroundColor: '#0f1117', justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#FF6B35" />
+        <ActivityIndicator size="large" color="#F5A623" />
       </View>
     );
   }

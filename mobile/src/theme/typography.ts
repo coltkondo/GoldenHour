@@ -109,6 +109,49 @@ export const typography = {
     lineHeight: 16,
     textTransform: 'uppercase',
   } as TextStyle,
+
+  // New design system tokens
+  wordmark: {
+    fontSize: 19,
+    fontWeight: '700',
+    letterSpacing: -0.5,
+    lineHeight: 24,
+  } as TextStyle,
+
+  sectionLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    letterSpacing: 0,
+    lineHeight: 18,
+  } as TextStyle,
+
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: -0.3,
+    lineHeight: 24,
+  } as TextStyle,
+
+  price: {
+    fontSize: 13,
+    fontWeight: '700',
+    letterSpacing: 0,
+    lineHeight: 18,
+  } as TextStyle,
+
+  micro: {
+    fontSize: 10,
+    fontWeight: '400',
+    letterSpacing: 0.2,
+    lineHeight: 14,
+  } as TextStyle,
+
+  label: {
+    fontSize: 11,
+    fontWeight: '500',
+    letterSpacing: 0.3,
+    lineHeight: 14,
+  } as TextStyle,
 };
 
 export const spacing = {

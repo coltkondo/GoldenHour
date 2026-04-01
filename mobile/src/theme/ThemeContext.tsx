@@ -1,10 +1,16 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { ColorPalette, TimePeriod, getTimePeriod, getColors } from './colors';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ColorPalette, ThemeMode, getColors, deriveTokens } from './colors';
 import { typography, spacing, borderRadius } from './typography';
+
+const THEME_STORAGE_KEY = '@goldenhour_theme';
+
+export type DerivedColors = ReturnType<typeof deriveTokens>;
 
 export interface Theme {
   colors: ColorPalette;
-  timePeriod: TimePeriod;
+  derived: DerivedColors;
+  mode: ThemeMode;
   typography: typeof typography;
   spacing: typeof spacing;
   borderRadius: typeof borderRadius;
@@ -12,48 +18,59 @@ export interface Theme {
 
 interface ThemeContextValue {
   theme: Theme;
-  timePeriod: TimePeriod;
-  forceTimePeriod: (period: TimePeriod | null) => void;
+  mode: ThemeMode;
+  setMode: (mode: ThemeMode) => void;
+  toggleMode: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [forcedPeriod, setForcedPeriod] = useState<TimePeriod | null>(null);
-  const [currentPeriod, setCurrentPeriod] = useState<TimePeriod>(getTimePeriod());
+  const [mode, setModeState] = useState<ThemeMode>('dark');
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    // Check time every minute to update theme
-    const interval = setInterval(() => {
-      const newPeriod = getTimePeriod();
-      if (newPeriod !== currentPeriod) {
-        setCurrentPeriod(newPeriod);
+    (async () => {
+      try {
+        const stored = await AsyncStorage.getItem(THEME_STORAGE_KEY);
+        if (stored === 'light' || stored === 'dark') {
+          setModeState(stored);
+        }
+      } catch {
+        // ignore
+      } finally {
+        setLoaded(true);
       }
-    }, 60000);
+    })();
+  }, []);
 
-    return () => clearInterval(interval);
-  }, [currentPeriod]);
+  const setMode = useCallback((newMode: ThemeMode) => {
+    setModeState(newMode);
+    AsyncStorage.setItem(THEME_STORAGE_KEY, newMode).catch(() => {});
+  }, []);
 
-  const activePeriod = forcedPeriod || currentPeriod;
+  const toggleMode = useCallback(() => {
+    setMode((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  }, []);
+
+  const baseColors = getColors(mode);
+  const derived = deriveTokens(baseColors);
 
   const theme: Theme = {
-    colors: getColors(
-      forcedPeriod
-        ? periodToDate(forcedPeriod)
-        : undefined
-    ),
-    timePeriod: activePeriod,
+    colors: baseColors,
+    derived,
+    mode,
     typography,
     spacing,
     borderRadius,
   };
 
-  const forceTimePeriod = useCallback((period: TimePeriod | null) => {
-    setForcedPeriod(period);
-  }, []);
+  if (!loaded) {
+    return null;
+  }
 
   return (
-    <ThemeContext.Provider value={{ theme, timePeriod: activePeriod, forceTimePeriod }}>
+    <ThemeContext.Provider value={{ theme, mode, setMode, toggleMode }}>
       {children}
     </ThemeContext.Provider>
   );
@@ -65,17 +82,4 @@ export function useTheme(): ThemeContextValue {
     throw new Error('useTheme must be used within a ThemeProvider');
   }
   return context;
-}
-
-// Helper to create a representative date for a forced time period
-function periodToDate(period: TimePeriod): Date {
-  const date = new Date();
-  switch (period) {
-    case 'lateNight': date.setHours(3, 0); break;
-    case 'morning': date.setHours(9, 0); break;
-    case 'afternoon': date.setHours(14, 0); break;
-    case 'goldenHour': date.setHours(18, 0); break;
-    case 'evening': date.setHours(22, 0); break;
-  }
-  return date;
 }

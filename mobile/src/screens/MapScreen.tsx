@@ -1,19 +1,61 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, ActivityIndicator, Text, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ActivityIndicator, Text, TouchableOpacity, Platform } from 'react-native';
 import MapView, { Region } from 'react-native-maps';
-import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { useTheme } from '../theme';
+import { useTheme, ThemeMode } from '../theme';
 import { useLocation } from '../hooks/useLocation';
 import { venuesAPI } from '../api/endpoints';
 import { Venue } from '../types/api';
 import { VenueBottomSheet } from '../components/VenueBottomSheet';
 import { VenueMarker } from '../components/Map/VenueMarker';
-import { GradientBackground } from '../components/common/GradientBackground';
+import { AppIcon } from '../components/icons';
+
+const darkMapStyle = [
+  { elementType: 'geometry', stylers: [{ color: '#1a1a1a' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#0d0d0d' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#6b6b6b' }] },
+  { featureType: 'administrative', elementType: 'geometry.stroke', stylers: [{ color: '#2a2a2a' }] },
+  { featureType: 'administrative.land_parcel', elementType: 'labels.text.fill', stylers: [{ color: '#555555' }] },
+  { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#1a1a1a' }] },
+  { featureType: 'poi', elementType: 'labels.text.fill', stylers: [{ color: '#555555' }] },
+  { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#161616' }] },
+  { featureType: 'poi.park', elementType: 'labels.text.fill', stylers: [{ color: '#555555' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#222222' }] },
+  { featureType: 'road.arterial', elementType: 'geometry', stylers: [{ color: '#2a2a2a' }] },
+  { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#2e2e2e' }] },
+  { featureType: 'road.highway', elementType: 'geometry.stroke', stylers: [{ color: '#1a1a1a' }] },
+  { featureType: 'road.local', elementType: 'labels.text.fill', stylers: [{ color: '#555555' }] },
+  { featureType: 'transit', elementType: 'geometry', stylers: [{ color: '#1a1a1a' }] },
+  { featureType: 'transit.station', elementType: 'labels.text.fill', stylers: [{ color: '#555555' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0f0f0f' }] },
+  { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#444444' }] },
+];
+
+const lightMapStyle = [
+  { elementType: 'geometry', stylers: [{ color: '#f5f3ef' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#faf9f6' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#6b6b6b' }] },
+  { featureType: 'administrative', elementType: 'geometry.stroke', stylers: [{ color: '#e5e2dc' }] },
+  { featureType: 'administrative.land_parcel', elementType: 'labels.text.fill', stylers: [{ color: '#9b978e' }] },
+  { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#f0ede6' }] },
+  { featureType: 'poi', elementType: 'labels.text.fill', stylers: [{ color: '#9b978e' }] },
+  { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#e8e5df' }] },
+  { featureType: 'poi.park', elementType: 'labels.text.fill', stylers: [{ color: '#7a7770' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#ffffff' }] },
+  { featureType: 'road.arterial', elementType: 'geometry', stylers: [{ color: '#f7f5f0' }] },
+  { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#f0ede6' }] },
+  { featureType: 'road.highway', elementType: 'geometry.stroke', stylers: [{ color: '#e5e2dc' }] },
+  { featureType: 'road.local', elementType: 'labels.text.fill', stylers: [{ color: '#9b978e' }] },
+  { featureType: 'transit', elementType: 'geometry', stylers: [{ color: '#f0ede6' }] },
+  { featureType: 'transit.station', elementType: 'labels.text.fill', stylers: [{ color: '#9b978e' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#d4e8f0' }] },
+  { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#7a9aae' }] },
+];
 
 export const MapScreen = () => {
   const mapRef = useRef<MapView>(null);
-  const { theme } = useTheme();
+  const { theme, mode } = useTheme();
+  const d = theme.derived;
   const navigation = useNavigation<any>();
   const { location, loading: locationLoading, error: locationError } = useLocation();
   const [venues, setVenues] = useState<Venue[]>([]);
@@ -38,11 +80,7 @@ export const MapScreen = () => {
   const loadNearbyVenues = async () => {
     try {
       setLoading(true);
-      const nearbyVenues = await venuesAPI.getNearby(
-        location.latitude,
-        location.longitude,
-        10000
-      );
+      const nearbyVenues = await venuesAPI.getNearby(location.latitude, location.longitude, 10000);
       setVenues(nearbyVenues);
       setVisibleVenues(nearbyVenues);
     } catch (err) {
@@ -55,12 +93,8 @@ export const MapScreen = () => {
 
   const filterVisibleVenues = (region: Region) => {
     const visible = venues.filter(venue => {
-      const latInBounds =
-        venue.latitude >= region.latitude - region.latitudeDelta / 2 &&
-        venue.latitude <= region.latitude + region.latitudeDelta / 2;
-      const lonInBounds =
-        venue.longitude >= region.longitude - region.longitudeDelta / 2 &&
-        venue.longitude <= region.longitude + region.longitudeDelta / 2;
+      const latInBounds = venue.latitude >= region.latitude - region.latitudeDelta / 2 && venue.latitude <= region.latitude + region.latitudeDelta / 2;
+      const lonInBounds = venue.longitude >= region.longitude - region.longitudeDelta / 2 && venue.longitude <= region.longitude + region.longitudeDelta / 2;
       return latInBounds && lonInBounds;
     });
     setVisibleVenues(visible);
@@ -73,15 +107,12 @@ export const MapScreen = () => {
   const handleVenueCardPress = (venue: Venue) => {
     setSelectedVenueId(venue.id);
     if (mapRef.current) {
-      mapRef.current.animateToRegion(
-        {
-          latitude: venue.latitude,
-          longitude: venue.longitude,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
-        },
-        500
-      );
+      mapRef.current.animateToRegion({
+        latitude: venue.latitude,
+        longitude: venue.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      }, 500);
     }
   };
 
@@ -89,89 +120,66 @@ export const MapScreen = () => {
     setSelectedVenueId(venue.id);
   };
 
-  const handleVenueDetail = (venue: Venue) => {
-    navigation.navigate('HappyHour', { venue });
-  };
-
   const recenterMap = () => {
     if (mapRef.current && location) {
-      mapRef.current.animateToRegion(
-        {
-          ...location,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05,
-        },
-        500
-      );
+      mapRef.current.animateToRegion({ ...location, latitudeDelta: 0.05, longitudeDelta: 0.05 }, 500);
     }
   };
 
   if (locationLoading || loading) {
     return (
-      <GradientBackground>
-        <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color={theme.colors.text} />
-          <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>
-            Loading happy hours...
-          </Text>
+      <View style={[styles.centerContainer, { backgroundColor: d.background }]}>
+        <View style={[styles.loadingSpinner, { backgroundColor: d.filterInactive }]}>
+          <ActivityIndicator size="large" color={d.primary} />
         </View>
-      </GradientBackground>
+        <Text style={[styles.loadingText, { color: d.text }]}>Finding happy hours nearby</Text>
+      </View>
     );
   }
 
   if (locationError || error) {
     return (
-      <GradientBackground>
-        <View style={styles.centerContainer}>
-          <Text style={styles.errorEmoji}>😵</Text>
-          <Text style={[styles.errorText, { color: theme.colors.text }]}>
-            {locationError || error}
-          </Text>
-        </View>
-      </GradientBackground>
+      <View style={[styles.centerContainer, { backgroundColor: d.background }]}>
+        <Text style={[styles.errorText, { color: d.text }]}>{locationError || error}</Text>
+      </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: d.background }]}>
       <MapView
         ref={mapRef}
         style={styles.map}
         initialRegion={location}
         showsUserLocation
         showsMyLocationButton={false}
+        showsCompass={false}
+        showsScale={false}
+        showsTraffic={false}
+        showsBuildings={false}
+        showsIndoors={false}
         onRegionChangeComplete={handleRegionChangeComplete}
+        customMapStyle={mode === 'dark' ? darkMapStyle : undefined}
+        mapType="standard"
       >
         {venues.map((venue) => (
-          <VenueMarker
-            key={venue.id}
-            venue={venue}
-            isSelected={selectedVenueId === venue.id}
-            onPress={handleMarkerPress}
-          />
+          <VenueMarker key={venue.id} venue={venue} isSelected={selectedVenueId === venue.id} onPress={handleMarkerPress} themeColors={d} />
         ))}
       </MapView>
 
-      {/* Top overlay - venue count pill */}
       <View style={styles.topOverlay}>
-        <View style={[styles.venueCount, { backgroundColor: theme.colors.tabBar }]}>
-          <Text style={styles.fireEmoji}>🔥</Text>
-          <Text style={[styles.venueCountText, { color: theme.colors.text }]}>
-            {visibleVenues.length} Happy Hours
+        <View style={[styles.venueCountChip, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+          <AppIcon name="location" size={12} role="brand" />
+          <Text style={[styles.venueCountText, { color: d.text }]}>
+            {visibleVenues.length} happy hours nearby
           </Text>
         </View>
       </View>
 
-      {/* Recenter button */}
-      <TouchableOpacity
-        style={[styles.recenterButton, { backgroundColor: theme.colors.tabBar }]}
-        onPress={recenterMap}
-        activeOpacity={0.8}
-      >
-        <Ionicons name="locate" size={22} color={theme.colors.primary} />
+      <TouchableOpacity style={[styles.recenterButton, { backgroundColor: d.cardBackground, borderColor: d.border }]} onPress={recenterMap} activeOpacity={0.8}>
+        <AppIcon name="crosshair" size={18} role="brand" />
       </TouchableOpacity>
 
-      {/* Bottom Sheet */}
       {location && (
         <VenueBottomSheet
           venues={visibleVenues}
@@ -186,71 +194,14 @@ export const MapScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  map: {
-    flex: 1,
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  errorEmoji: {
-    fontSize: 48,
-    marginBottom: 12,
-  },
-  errorText: {
-    fontSize: 16,
-    textAlign: 'center',
-    fontWeight: '600',
-  },
-  topOverlay: {
-    position: 'absolute',
-    top: 60,
-    alignSelf: 'center',
-  },
-  venueCount: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  fireEmoji: {
-    fontSize: 16,
-    marginRight: 6,
-  },
-  venueCountText: {
-    fontSize: 14,
-    fontWeight: '700',
-    letterSpacing: -0.2,
-  },
-  recenterButton: {
-    position: 'absolute',
-    top: 110,
-    right: 16,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 4,
-  },
+  container: { flex: 1 },
+  map: { flex: 1 },
+  centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
+  loadingSpinner: { width: 56, height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
+  loadingText: { fontSize: 17, fontWeight: '700', letterSpacing: -0.3 },
+  errorText: { fontSize: 16, textAlign: 'center', fontWeight: '600' },
+  topOverlay: { position: 'absolute', top: Platform.OS === 'ios' ? 64 : 56, alignSelf: 'center', zIndex: 10 },
+  venueCountChip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 9, borderRadius: 16, borderWidth: 1 },
+  venueCountText: { fontSize: 12, fontWeight: '600', letterSpacing: 0.1 },
+  recenterButton: { position: 'absolute', top: Platform.OS === 'ios' ? 114 : 106, right: 16, width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center', borderWidth: 1, zIndex: 10 },
 });

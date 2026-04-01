@@ -1,5 +1,5 @@
 export { ThemeProvider, useTheme } from './ThemeContext';
-export type { Theme } from './ThemeContext';
-export { getColors, getTimePeriod, colorPalettes, brand } from './colors';
-export type { ColorPalette, TimePeriod } from './colors';
+export type { Theme, DerivedColors } from './ThemeContext';
+export { getColors, colorPalettes, deriveTokens, brand } from './colors';
+export type { ColorPalette, ThemeMode, DerivedTokens } from './colors';
 export { typography, spacing, borderRadius } from './typography';

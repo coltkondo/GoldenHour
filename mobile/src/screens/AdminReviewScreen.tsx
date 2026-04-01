@@ -10,17 +10,12 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { submissionsAPI } from '../api/endpoints';
 import type { Submission } from '../types/api';
-
-const STATUS_COLORS = {
-  pending: '#F59E0B',
-  approved: '#10B981',
-  rejected: '#EF4444',
-};
+import { AppIcon } from '../components/icons';
+import { StatusDot } from '../components/ui/StatusDot';
 
 const TYPE_LABELS: Record<string, string> = {
   new_deal: 'New Deal',
@@ -40,8 +35,15 @@ const AUTO_APPLY: Record<string, string> = {
   deal_update: 'Updates deal info',
 };
 
+const getStatusColor = (status: string) => {
+  if (status === 'approved') return '#2DD4A0';
+  if (status === 'rejected') return '#FF6B35';
+  return '#F5A623';
+};
+
 export const AdminReviewScreen = () => {
   const { theme } = useTheme();
+  const d = theme.derived;
   const navigation = useNavigation<any>();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,119 +93,75 @@ export const AdminReviewScreen = () => {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }}
-            tintColor={theme.colors.primary} />
-        }
-      >
+    <View style={[styles.container, { backgroundColor: d.background }]}>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor={d.primary} />}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
+            <AppIcon name="back" size={22} role="default" />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Review Queue</Text>
+          <Text style={[styles.headerTitle, { color: d.text }]}>Review Queue</Text>
         </View>
 
-        {/* Filter chips */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow}>
           {['pending', 'approved', 'rejected', ''].map(f => (
-            <TouchableOpacity
-              key={f}
-              style={[styles.filterChip,
-                { backgroundColor: statusFilter === f ? '#FF6B35' : theme.colors.surface,
-                  borderColor: statusFilter === f ? '#FF6B35' : theme.colors.border }]}
-              onPress={() => setStatusFilter(f)}
-            >
-              <Text style={[styles.filterChipText,
-                { color: statusFilter === f ? '#fff' : theme.colors.textMuted }]}>
-                {f === '' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
-              </Text>
+            <TouchableOpacity key={f} style={[styles.filterChip, { backgroundColor: statusFilter === f ? d.primary : d.cardBackground, borderColor: statusFilter === f ? d.primary : d.border }]} onPress={() => setStatusFilter(f)}>
+              <Text style={[styles.filterChipText, { color: statusFilter === f ? d.buttonPrimaryText : d.textMuted }]}>{f === '' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
 
         {loading ? (
-          <ActivityIndicator size="large" color={theme.colors.primary} style={{ marginTop: 40 }} />
+          <ActivityIndicator size="large" color={d.primary} style={{ marginTop: 40 }} />
         ) : submissions.length === 0 ? (
-          <View style={[styles.emptyState, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-            <Text style={styles.emptyEmoji}>✅</Text>
-            <Text style={[styles.emptyTitle, { color: theme.colors.text }]}>Queue is empty</Text>
+          <View style={[styles.emptyState, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+            <AppIcon name="correct" size={32} role="positive" />
+            <Text style={[styles.emptyText, { color: d.text }]}>Queue is empty</Text>
           </View>
         ) : (
           submissions.map(sub => {
             const expanded = expandedId === sub.id;
+            const statusColor = getStatusColor(sub.status);
             return (
-              <View key={sub.id} style={[styles.card, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
+              <View key={sub.id} style={[styles.card, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
                 <TouchableOpacity onPress={() => setExpandedId(expanded ? null : sub.id)} activeOpacity={0.8}>
                   <View style={styles.cardHeader}>
                     <View style={styles.cardLeft}>
-                      <View style={[styles.typePill, { backgroundColor: 'rgba(255,107,53,.15)' }]}>
-                        <Text style={styles.typePillText}>{TYPE_LABELS[sub.submission_type] ?? sub.submission_type}</Text>
+                      <View style={[styles.typePill, { backgroundColor: d.filterInactive }]}>
+                        <Text style={[styles.typePillText, { color: d.text }]}>{TYPE_LABELS[sub.submission_type] ?? sub.submission_type}</Text>
                       </View>
-                      <Text style={[styles.submitter, { color: theme.colors.textMuted }]}>
-                        by {sub.submitter_username}
-                      </Text>
+                      <Text style={[styles.submitter, { color: d.textMuted }]}>by {sub.submitter_username}</Text>
                     </View>
                     <View style={styles.cardRight}>
-                      <View style={[styles.statusDot, { backgroundColor: STATUS_COLORS[sub.status] }]} />
-                      <Ionicons
-                        name={expanded ? 'chevron-up' : 'chevron-down'}
-                        size={18}
-                        color={theme.colors.textMuted}
-                      />
+                      <StatusDot status={sub.status === 'pending' ? 'live' : sub.status === 'approved' ? 'live' : 'expiring'} size={8} pulse={false} />
+                      <AppIcon name="dropdown" size={16} role="muted" />
                     </View>
                   </View>
-                  <Text style={[styles.cardDate, { color: theme.colors.textMuted }]}>
-                    {new Date(sub.created_at).toLocaleDateString()}
-                  </Text>
+                  <Text style={[styles.cardDate, { color: d.textHint }]}>{new Date(sub.created_at).toLocaleDateString()}</Text>
                 </TouchableOpacity>
 
                 {expanded && (
                   <View style={styles.expandedContent}>
-                    <Text style={[styles.dataLabel, { color: theme.colors.textMuted }]}>Submitted Data</Text>
-                    <View style={[styles.jsonBlock, { backgroundColor: 'rgba(0,0,0,0.3)', borderColor: theme.colors.border }]}>
-                      <Text style={[styles.jsonText, { color: theme.colors.text }]}>
-                        {JSON.stringify(sub.submitted_data, null, 2)}
-                      </Text>
+                    <Text style={[styles.dataLabel, { color: d.textMuted }]}>Submitted Data</Text>
+                    <View style={[styles.jsonBlock, { backgroundColor: d.surface, borderColor: d.border }]}>
+                      <Text style={[styles.jsonText, { color: d.text }]}>{JSON.stringify(sub.submitted_data, null, 2)}</Text>
                     </View>
 
                     {sub.status === 'pending' && (
                       <>
-                        <View style={[styles.applyNote, { backgroundColor: 'rgba(255,107,53,.1)', borderColor: 'rgba(255,107,53,.3)' }]}>
-                          <Text style={[styles.applyNoteText, { color: theme.colors.text }]}>
-                            On approve: {AUTO_APPLY[sub.submission_type]}
-                          </Text>
+                        <View style={[styles.applyNote, { backgroundColor: d.filterInactive, borderColor: d.border }]}>
+                          <Text style={[styles.applyNoteText, { color: d.text }]}>On approve: {AUTO_APPLY[sub.submission_type]}</Text>
                         </View>
 
-                        <TextInput
-                          style={[styles.notesInput, { color: theme.colors.text, borderColor: theme.colors.border }]}
-                          placeholder="Admin notes (optional)"
-                          placeholderTextColor={theme.colors.textMuted}
-                          value={adminNotes[sub.id] ?? ''}
-                          onChangeText={v => setAdminNotes(prev => ({ ...prev, [sub.id]: v }))}
-                          multiline
-                        />
+                        <View style={[styles.notesInputContainer, { backgroundColor: d.surface, borderColor: d.border }]}>
+                          <TextInput style={[styles.notesInput, { color: d.text }]} placeholder="Admin notes (optional)" placeholderTextColor={d.textHint} value={adminNotes[sub.id] ?? ''} onChangeText={v => setAdminNotes(prev => ({ ...prev, [sub.id]: v }))} multiline />
+                        </View>
 
                         <View style={styles.reviewBtns}>
-                          <TouchableOpacity
-                            style={styles.approveBtn}
-                            onPress={() => handleReview(sub, 'approved')}
-                            disabled={reviewing === sub.id}
-                          >
-                            {reviewing === sub.id
-                              ? <ActivityIndicator color="#fff" size="small" />
-                              : <Text style={styles.reviewBtnText}>Approve</Text>}
+                          <TouchableOpacity style={[styles.approveBtn, { backgroundColor: d.primary }]} onPress={() => handleReview(sub, 'approved')} disabled={reviewing === sub.id}>
+                            {reviewing === sub.id ? <ActivityIndicator color={d.buttonPrimaryText} size="small" /> : <Text style={[styles.approveBtnText, { color: d.buttonPrimaryText }]}>Approve</Text>}
                           </TouchableOpacity>
-                          <TouchableOpacity
-                            style={styles.rejectBtn}
-                            onPress={() => handleReview(sub, 'rejected')}
-                            disabled={reviewing === sub.id}
-                          >
-                            <Text style={styles.reviewBtnText}>Reject</Text>
+                          <TouchableOpacity style={[styles.rejectBtn, { backgroundColor: 'rgba(255,107,53,0.12)', borderColor: d.error }]} onPress={() => handleReview(sub, 'rejected')} disabled={reviewing === sub.id}>
+                            <Text style={[styles.rejectBtnText, { color: d.error }]}>Reject</Text>
                           </TouchableOpacity>
                         </View>
                       </>
@@ -215,7 +173,7 @@ export const AdminReviewScreen = () => {
           })
         )}
 
-        <View style={{ height: 80 }} />
+        <View style={{ height: 140 }} />
       </ScrollView>
     </View>
   );
@@ -224,37 +182,34 @@ export const AdminReviewScreen = () => {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { flex: 1 },
-  scrollContent: { paddingHorizontal: 20, paddingTop: 60 },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 16 },
-  backBtn: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { fontSize: 24, fontWeight: '900', letterSpacing: -0.5 },
+  scrollContent: { paddingHorizontal: 16, paddingTop: 60 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
+  backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
+  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3 },
   filterRow: { marginBottom: 16 },
-  filterChip: { borderRadius: 20, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 7, marginRight: 8 },
-  filterChipText: { fontSize: 13, fontWeight: '700' },
-  emptyState: { borderRadius: 16, borderWidth: 1, padding: 32, alignItems: 'center' },
-  emptyEmoji: { fontSize: 40, marginBottom: 8 },
-  emptyTitle: { fontSize: 17, fontWeight: '800' },
-  card: { borderRadius: 14, borderWidth: 1, padding: 14, marginBottom: 10 },
+  filterChip: { borderRadius: 16, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 7, marginRight: 8 },
+  filterChipText: { fontSize: 12, fontWeight: '600' },
+  emptyState: { borderRadius: 16, borderWidth: 1, padding: 32, alignItems: 'center', marginTop: 20 },
+  emptyText: { fontSize: 16, fontWeight: '600', marginTop: 12 },
+  card: { borderRadius: 16, borderWidth: 1, padding: 14, marginBottom: 10 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   cardLeft: { gap: 6 },
   cardRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   typePill: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, alignSelf: 'flex-start' },
-  typePillText: { color: '#FF6B35', fontSize: 12, fontWeight: '700' },
-  submitter: { fontSize: 12, fontWeight: '500' },
-  statusDot: { width: 8, height: 8, borderRadius: 4 },
-  cardDate: { fontSize: 11, fontWeight: '500', marginTop: 6 },
+  typePillText: { fontSize: 11, fontWeight: '600' },
+  submitter: { fontSize: 11, fontWeight: '500' },
+  cardDate: { fontSize: 10, fontWeight: '500', marginTop: 6 },
   expandedContent: { marginTop: 14, gap: 10 },
-  dataLabel: { fontSize: 12, fontWeight: '600' },
+  dataLabel: { fontSize: 11, fontWeight: '600' },
   jsonBlock: { borderRadius: 10, borderWidth: 1, padding: 12 },
-  jsonText: { fontFamily: 'monospace', fontSize: 12, lineHeight: 18 },
+  jsonText: { fontFamily: 'monospace', fontSize: 11, lineHeight: 16 },
   applyNote: { borderRadius: 10, borderWidth: 1, padding: 12 },
-  applyNoteText: { fontSize: 13, fontWeight: '600' },
-  notesInput: {
-    borderWidth: 1, borderRadius: 10, padding: 12, fontSize: 14, minHeight: 60, textAlignVertical: 'top',
-    backgroundColor: 'rgba(255,255,255,0.04)',
-  },
+  applyNoteText: { fontSize: 12, fontWeight: '500' },
+  notesInputContainer: { borderRadius: 10, borderWidth: 1 },
+  notesInput: { padding: 12, fontSize: 13, minHeight: 60, textAlignVertical: 'top' },
   reviewBtns: { flexDirection: 'row', gap: 10 },
-  approveBtn: { flex: 1, backgroundColor: '#10B981', borderRadius: 12, paddingVertical: 12, alignItems: 'center' },
-  rejectBtn: { flex: 1, backgroundColor: '#EF4444', borderRadius: 12, paddingVertical: 12, alignItems: 'center' },
-  reviewBtnText: { color: '#fff', fontWeight: '800', fontSize: 15 },
+  approveBtn: { flex: 1, borderRadius: 14, paddingVertical: 12, alignItems: 'center' },
+  approveBtnText: { fontWeight: '700', fontSize: 14 },
+  rejectBtn: { flex: 1, borderRadius: 14, paddingVertical: 12, alignItems: 'center', borderWidth: 1 },
+  rejectBtnText: { fontWeight: '700', fontSize: 14 },
 });

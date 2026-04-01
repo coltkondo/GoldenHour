@@ -12,12 +12,13 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   size = 'large',
 }) => {
   const { theme } = useTheme();
+  const d = theme.derived;
 
   return (
     <View style={styles.container}>
-      <ActivityIndicator size={size} color={theme.colors.primary} />
+      <ActivityIndicator size={size} color={d.primary} />
       {message && (
-        <Text style={[styles.message, { color: theme.colors.textSecondary }]}>
+        <Text style={[styles.message, { color: d.textSecondary }]}>
           {message}
         </Text>
       )}

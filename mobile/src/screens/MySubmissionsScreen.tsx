@@ -8,19 +8,12 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { useAuth } from '../context/AuthContext';
 import { submissionsAPI } from '../api/endpoints';
 import type { Submission } from '../types/api';
-
-const STATUS_COLORS = {
-  pending: '#F59E0B',
-  approved: '#10B981',
-  rejected: '#EF4444',
-};
+import { AppIcon } from '../components/icons';
 
 const TYPE_LABELS: Record<string, string> = {
   new_deal: 'New Deal',
@@ -31,8 +24,21 @@ const TYPE_LABELS: Record<string, string> = {
   bar_update: 'Bar Update',
 };
 
+const getStatusColor = (status: string) => {
+  if (status === 'approved') return '#2DD4A0';
+  if (status === 'rejected') return '#FF6B35';
+  return '#F5A623';
+};
+
+const getStatusIconName = (status: string): 'clock' | 'correct' | 'x' => {
+  if (status === 'approved') return 'correct';
+  if (status === 'rejected') return 'x';
+  return 'clock';
+};
+
 export const MySubmissionsScreen = () => {
   const { theme } = useTheme();
+  const d = theme.derived;
   const { user } = useAuth();
   const navigation = useNavigation<any>();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -56,96 +62,66 @@ export const MySubmissionsScreen = () => {
     .reduce((sum, s) => sum + s.points_awarded, 0);
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={() => { setRefreshing(true); load(); }}
-            tintColor={theme.colors.primary}
-          />
-        }
-      >
-        {/* Header */}
+    <View style={[styles.container, { backgroundColor: d.background }]}>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor={d.primary} />}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
+            <AppIcon name="back" size={22} role="default" />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: theme.colors.text }]}>My Submissions</Text>
+          <Text style={[styles.headerTitle, { color: d.text }]}>My Submissions</Text>
         </View>
 
         {/* Points Banner */}
-        <LinearGradient
-          colors={['#FF6B35', '#FFD700']}
-          style={styles.pointsBanner}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <Text style={styles.pointsLabel}>TOTAL POINTS</Text>
-          <Text style={styles.pointsNumber}>{user?.points_balance ?? 0}</Text>
-          <Text style={styles.pointsEarned}>{totalPoints} earned from submissions</Text>
-        </LinearGradient>
+        <View style={[styles.pointsBanner, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+          <AppIcon name="points" size={24} role="brand" />
+          <Text style={[styles.pointsNumber, { color: d.primary }]}>{user?.points_balance ?? 0}</Text>
+          <Text style={[styles.pointsLabel, { color: d.textMuted }]}>Total Points</Text>
+          <Text style={[styles.pointsEarned, { color: d.textMuted }]}>{totalPoints} earned from submissions</Text>
+        </View>
 
-        {/* Stats row */}
+        {/* Stats Row */}
         <View style={styles.statsRow}>
           {(['pending', 'approved', 'rejected'] as const).map(status => (
-            <View key={status} style={[styles.statCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-              <Text style={[styles.statNum, { color: STATUS_COLORS[status] }]}>
-                {submissions.filter(s => s.status === status).length}
-              </Text>
-              <Text style={[styles.statLabel, { color: theme.colors.textMuted }]}>
-                {status.charAt(0).toUpperCase() + status.slice(1)}
-              </Text>
+            <View key={status} style={styles.statItem}>
+              <Text style={[styles.statNum, { color: getStatusColor(status) }]}>{submissions.filter(s => s.status === status).length}</Text>
+              <Text style={[styles.statLabel, { color: d.textMuted }]}>{status.charAt(0).toUpperCase() + status.slice(1)}</Text>
             </View>
           ))}
         </View>
 
-        {/* List */}
         {loading ? (
-          <ActivityIndicator size="large" color={theme.colors.primary} style={{ marginTop: 40 }} />
+          <ActivityIndicator size="large" color={d.primary} style={{ marginTop: 40 }} />
         ) : submissions.length === 0 ? (
-          <View style={[styles.emptyState, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-            <Text style={styles.emptyEmoji}>📮</Text>
-            <Text style={[styles.emptyTitle, { color: theme.colors.text }]}>No submissions yet</Text>
-            <Text style={[styles.emptySub, { color: theme.colors.textMuted }]}>
-              Spot a deal or bar? Submit it and earn points!
-            </Text>
+          <View style={[styles.emptyState, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+            <Text style={[styles.emptyText, { color: d.text }]}>No submissions yet</Text>
+            <Text style={[styles.emptySubtext, { color: d.textMuted }]}>Spot a deal or bar? Submit it and earn points!</Text>
           </View>
         ) : (
-          submissions.map(sub => (
-            <View
-              key={sub.id}
-              style={[styles.subCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
-            >
-              <View style={styles.subHeader}>
-                <Text style={[styles.subType, { color: theme.colors.text }]}>
-                  {TYPE_LABELS[sub.submission_type] ?? sub.submission_type}
-                </Text>
-                <View style={[styles.statusPill, { backgroundColor: `${STATUS_COLORS[sub.status]}22` }]}>
-                  <Text style={[styles.statusText, { color: STATUS_COLORS[sub.status] }]}>
-                    {sub.status.charAt(0).toUpperCase() + sub.status.slice(1)}
-                  </Text>
+          submissions.map(sub => {
+            const statusColor = getStatusColor(sub.status);
+            return (
+              <View key={sub.id} style={[styles.subCard, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+                <View style={styles.subHeader}>
+                  <Text style={[styles.subType, { color: d.text }]}>{TYPE_LABELS[sub.submission_type] ?? sub.submission_type}</Text>
+                  <View style={[styles.statusPill, { backgroundColor: `${statusColor}15`, borderColor: statusColor }]}>
+                    <AppIcon name={getStatusIconName(sub.status)} size={14} color={statusColor} />
+                    <Text style={[styles.statusText, { color: statusColor }]}>{sub.status.charAt(0).toUpperCase() + sub.status.slice(1)}</Text>
+                  </View>
                 </View>
+                <Text style={[styles.subDate, { color: d.textMuted }]}>{new Date(sub.created_at).toLocaleDateString()}</Text>
+                {sub.points_awarded > 0 && (
+                  <View style={styles.pointsRow}>
+                    <AppIcon name="points" size={12} role="brand" />
+                    <Text style={[styles.pointsAwarded, { color: d.primary }]}>+{sub.points_awarded} pts</Text>
+                  </View>
+                )}
+                {sub.admin_notes && <Text style={[styles.adminNotes, { color: d.textMuted }]}>Note: {sub.admin_notes}</Text>}
               </View>
-              <Text style={[styles.subDate, { color: theme.colors.textMuted }]}>
-                {new Date(sub.created_at).toLocaleDateString()}
-              </Text>
-              {sub.points_awarded > 0 && (
-                <Text style={styles.pointsAwarded}>+{sub.points_awarded} pts</Text>
-              )}
-              {sub.admin_notes && (
-                <Text style={[styles.adminNotes, { color: theme.colors.textMuted }]}>
-                  Note: {sub.admin_notes}
-                </Text>
-              )}
-            </View>
-          ))
+            );
+          })
         )}
 
-        <View style={{ height: 80 }} />
+        <View style={{ height: 140 }} />
       </ScrollView>
     </View>
   );
@@ -154,45 +130,28 @@ export const MySubmissionsScreen = () => {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { flex: 1 },
-  scrollContent: { paddingHorizontal: 20, paddingTop: 60 },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 20 },
-  backBtn: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { fontSize: 24, fontWeight: '900', letterSpacing: -0.5 },
-  pointsBanner: {
-    borderRadius: 20,
-    padding: 24,
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  pointsLabel: { color: 'rgba(255,255,255,0.8)', fontSize: 11, fontWeight: '800', letterSpacing: 2 },
-  pointsNumber: { color: '#fff', fontSize: 56, fontWeight: '900', letterSpacing: -2, lineHeight: 64 },
-  pointsEarned: { color: 'rgba(255,255,255,0.8)', fontSize: 13, fontWeight: '600' },
-  statsRow: { flexDirection: 'row', gap: 8, marginBottom: 20 },
-  statCard: { flex: 1, borderRadius: 12, borderWidth: 1, padding: 12, alignItems: 'center' },
-  statNum: { fontSize: 22, fontWeight: '900', letterSpacing: -0.5 },
-  statLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 0.5, marginTop: 2 },
-  emptyState: {
-    borderRadius: 16,
-    borderWidth: 1,
-    padding: 32,
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  emptyEmoji: { fontSize: 40, marginBottom: 10 },
-  emptyTitle: { fontSize: 17, fontWeight: '800' },
-  emptySub: { fontSize: 14, textAlign: 'center', marginTop: 4 },
-  subCard: {
-    borderRadius: 14,
-    borderWidth: 1,
-    padding: 14,
-    marginBottom: 10,
-    gap: 4,
-  },
+  scrollContent: { paddingHorizontal: 16, paddingTop: 60 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20 },
+  backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
+  headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3 },
+  pointsBanner: { borderRadius: 16, padding: 24, alignItems: 'center', marginBottom: 20, borderWidth: 1, gap: 4 },
+  pointsLabel: { fontSize: 12, fontWeight: '500' },
+  pointsNumber: { fontSize: 48, fontWeight: '800', letterSpacing: -2, lineHeight: 56 },
+  pointsEarned: { fontSize: 13, fontWeight: '500' },
+  statsRow: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 20, paddingVertical: 8 },
+  statItem: { alignItems: 'center' },
+  statNum: { fontSize: 20, fontWeight: '700', letterSpacing: -0.5 },
+  statLabel: { fontSize: 10, fontWeight: '500', marginTop: 4 },
+  emptyState: { borderRadius: 16, borderWidth: 1, padding: 32, alignItems: 'center', marginTop: 20 },
+  emptyText: { fontSize: 16, fontWeight: '600' },
+  emptySubtext: { fontSize: 13, fontWeight: '500', textAlign: 'center', marginTop: 4 },
+  subCard: { borderRadius: 16, borderWidth: 1, padding: 14, marginBottom: 10, gap: 6 },
   subHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  subType: { fontSize: 15, fontWeight: '700' },
-  statusPill: { borderRadius: 10, paddingHorizontal: 10, paddingVertical: 3 },
-  statusText: { fontSize: 12, fontWeight: '700' },
-  subDate: { fontSize: 12, fontWeight: '500' },
-  pointsAwarded: { color: '#10B981', fontSize: 14, fontWeight: '700' },
-  adminNotes: { fontSize: 12, fontStyle: 'italic', marginTop: 2 },
+  subType: { fontSize: 14, fontWeight: '600' },
+  statusPill: { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1 },
+  statusText: { fontSize: 11, fontWeight: '600' },
+  subDate: { fontSize: 11, fontWeight: '500' },
+  pointsRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  pointsAwarded: { fontSize: 13, fontWeight: '700' },
+  adminNotes: { fontSize: 12, fontWeight: '500', fontStyle: 'italic', marginTop: 2 },
 });

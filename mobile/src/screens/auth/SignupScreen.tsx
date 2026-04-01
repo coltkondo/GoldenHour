@@ -10,12 +10,14 @@ import {
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '../../theme';
 import { useAuth } from '../../context/AuthContext';
 import { authAPI } from '../../api/endpoints';
 
 export const SignupScreen = () => {
+  const { theme } = useTheme();
+  const d = theme.derived;
   const { login } = useAuth();
   const navigation = useNavigation<any>();
   const [username, setUsername] = useState('');
@@ -26,37 +28,15 @@ export const SignupScreen = () => {
 
   async function handleSignup() {
     setError('');
-    if (username.trim().length < 3) {
-      setError('Username must be at least 3 characters');
-      return;
-    }
-    if (!email.trim().includes('@')) {
-      setError('Please enter a valid email address');
-      return;
-    }
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters');
-      return;
-    }
-    if (!/[A-Z]/.test(password)) {
-      setError('Password must contain at least one uppercase letter');
-      return;
-    }
-    if (!/[a-z]/.test(password)) {
-      setError('Password must contain at least one lowercase letter');
-      return;
-    }
-    if (!/[0-9]/.test(password)) {
-      setError('Password must contain at least one digit');
-      return;
-    }
+    if (username.trim().length < 3) { setError('Username must be at least 3 characters'); return; }
+    if (!email.trim().includes('@')) { setError('Please enter a valid email address'); return; }
+    if (password.length < 8) { setError('Password must be at least 8 characters'); return; }
+    if (!/[A-Z]/.test(password)) { setError('Password must contain at least one uppercase letter'); return; }
+    if (!/[a-z]/.test(password)) { setError('Password must contain at least one lowercase letter'); return; }
+    if (!/[0-9]/.test(password)) { setError('Password must contain at least one digit'); return; }
     setLoading(true);
     try {
-      const data = await authAPI.register({
-        username: username.trim(),
-        email: email.trim(),
-        password,
-      });
+      const data = await authAPI.register({ username: username.trim(), email: email.trim(), password });
       await login(data.access_token, data.user);
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Sign up failed — try again');
@@ -66,74 +46,34 @@ export const SignupScreen = () => {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <KeyboardAvoidingView style={[styles.container, { backgroundColor: d.background }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <LinearGradient
-          colors={['#FF6B35', '#FFD700']}
-          style={styles.logoGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <Text style={styles.logoEmoji}>🍻</Text>
-        </LinearGradient>
+        <View style={styles.logoContainer}>
+          <Text style={[styles.logoText, { color: d.text }]}>GLDNHR</Text>
+        </View>
 
-        <Text style={styles.title}>Join Golden Hour</Text>
-        <Text style={styles.subtitle}>Submit deals & earn points for prizes</Text>
+        <Text style={[styles.title, { color: d.text }]}>Join Golden Hour</Text>
+        <Text style={[styles.subtitle, { color: d.textMuted }]}>Submit deals & earn points for prizes</Text>
 
-        {error ? <View style={styles.errorBox}><Text style={styles.errorText}>{error}</Text></View> : null}
+        {error ? <View style={[styles.errorBox, { backgroundColor: `${brand.error}15`, borderColor: `${brand.error}40` }]}><Text style={[styles.errorText, { color: brand.error }]}>{error}</Text></View> : null}
 
         <View style={styles.form}>
-          <TextInput
-            style={styles.input}
-            placeholder="Username"
-            placeholderTextColor="#888"
-            value={username}
-            onChangeText={setUsername}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            placeholderTextColor="#888"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Password (8+ chars, upper, lower, digit)"
-            placeholderTextColor="#888"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
+          <View style={[styles.inputContainer, { backgroundColor: d.surface, borderColor: d.border }]}>
+            <TextInput style={[styles.input, { color: d.text }]} placeholder="Username" placeholderTextColor={d.textHint} value={username} onChangeText={setUsername} autoCapitalize="none" autoCorrect={false} />
+          </View>
+          <View style={[styles.inputContainer, { backgroundColor: d.surface, borderColor: d.border }]}>
+            <TextInput style={[styles.input, { color: d.text }]} placeholder="Email" placeholderTextColor={d.textHint} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" autoCorrect={false} />
+          </View>
+          <View style={[styles.inputContainer, { backgroundColor: d.surface, borderColor: d.border }]}>
+            <TextInput style={[styles.input, { color: d.text }]} placeholder="Password (8+ chars, upper, lower, digit)" placeholderTextColor={d.textHint} value={password} onChangeText={setPassword} secureTextEntry />
+          </View>
 
-          <TouchableOpacity
-            style={styles.signupBtn}
-            onPress={handleSignup}
-            disabled={loading}
-            activeOpacity={0.85}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.signupBtnText}>Create Account</Text>
-            )}
+          <TouchableOpacity style={[styles.signupBtn, { backgroundColor: d.text }]} onPress={handleSignup} disabled={loading} activeOpacity={0.85}>
+            {loading ? <ActivityIndicator color={d.background} /> : <Text style={[styles.signupBtnText, { color: d.background }]}>Create Account</Text>}
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.switchBtn}
-            onPress={() => navigation.navigate('Login')}
-          >
-            <Text style={styles.switchText}>
-              Already have an account? <Text style={styles.switchLink}>Sign In</Text>
-            </Text>
+          <TouchableOpacity style={styles.switchBtn} onPress={() => navigation.navigate('Login')}>
+            <Text style={[styles.switchText, { color: d.textMuted }]}>Already have an account? <Text style={[styles.switchLink, { color: d.text }]}>Sign In</Text></Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -141,66 +81,23 @@ export const SignupScreen = () => {
   );
 };
 
+const brand = { error: '#FF6B35' };
+
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0f1117' },
-  scroll: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 28,
-    paddingVertical: 60,
-  },
-  logoGradient: {
-    width: 80,
-    height: 80,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    alignSelf: 'center',
-    marginBottom: 20,
-  },
-  logoEmoji: { fontSize: 36 },
-  title: {
-    fontSize: 32,
-    fontWeight: '900',
-    color: '#FFF',
-    textAlign: 'center',
-    letterSpacing: -1,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#9ca3af',
-    textAlign: 'center',
-    marginTop: 6,
-    marginBottom: 32,
-  },
-  errorBox: {
-    backgroundColor: 'rgba(239,68,68,.15)',
-    borderWidth: 1,
-    borderColor: '#ef4444',
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 16,
-  },
-  errorText: { color: '#ef4444', fontSize: 14, textAlign: 'center' },
+  container: { flex: 1 },
+  scroll: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 20, paddingVertical: 60 },
+  logoContainer: { alignSelf: 'center', marginBottom: 24 },
+  logoText: { fontSize: 24, fontWeight: '700', letterSpacing: -0.5 },
+  title: { fontSize: 26, fontWeight: '700', textAlign: 'center', letterSpacing: -0.5 },
+  subtitle: { fontSize: 14, textAlign: 'center', marginTop: 6, marginBottom: 32 },
+  errorBox: { borderWidth: 0.5, borderRadius: 12, padding: 12, marginBottom: 16 },
+  errorText: { fontSize: 13, textAlign: 'center', fontWeight: '500' },
   form: { gap: 12 },
-  input: {
-    backgroundColor: '#1a1d27',
-    borderWidth: 1,
-    borderColor: '#2d3142',
-    borderRadius: 12,
-    padding: 14,
-    color: '#fff',
-    fontSize: 15,
-  },
-  signupBtn: {
-    backgroundColor: '#FF6B35',
-    borderRadius: 14,
-    paddingVertical: 15,
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  signupBtnText: { color: '#fff', fontSize: 16, fontWeight: '800' },
-  switchBtn: { alignItems: 'center', marginTop: 16 },
-  switchText: { color: '#9ca3af', fontSize: 14 },
-  switchLink: { color: '#FF6B35', fontWeight: '700' },
+  inputContainer: { borderRadius: 14, borderWidth: 0.5 },
+  input: { padding: 16, fontSize: 15 },
+  signupBtn: { borderRadius: 20, height: 48, justifyContent: 'center', alignItems: 'center', marginTop: 4 },
+  signupBtnText: { fontSize: 15, fontWeight: '600' },
+  switchBtn: { alignItems: 'center', marginTop: 20 },
+  switchText: { fontSize: 14, fontWeight: '500' },
+  switchLink: { fontWeight: '600' },
 });

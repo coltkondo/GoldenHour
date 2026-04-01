@@ -1,9 +1,8 @@
 import React from 'react';
-import { View, StyleSheet, Platform } from 'react-native';
+import { View, StyleSheet, Pressable, Platform, Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme';
+import { AppIcon } from '../components/icons';
 import { HomeScreen } from '../screens/HomeScreen';
 import { MapScreen } from '../screens/MapScreen';
 import { ExplorerScreen } from '../screens/ExplorerScreen';
@@ -11,98 +10,84 @@ import { ProfileScreen } from '../screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 
-export const TabNavigator = () => {
+const ThemedTabBar = ({ state, descriptors, navigation }: any) => {
   const { theme } = useTheme();
+  const d = theme.derived;
 
   return (
-    <Tab.Navigator
-      screenOptions={({ route }) => ({
-        headerShown: false,
-        tabBarStyle: {
-          backgroundColor: theme.colors.tabBar,
-          borderTopColor: theme.colors.border,
-          borderTopWidth: 1,
-          height: Platform.OS === 'ios' ? 88 : 64,
-          paddingBottom: Platform.OS === 'ios' ? 28 : 8,
-          paddingTop: 8,
-        },
-        tabBarActiveTintColor: theme.colors.tabBarActive,
-        tabBarInactiveTintColor: theme.colors.tabBarInactive,
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '700',
-          letterSpacing: 0.3,
-        },
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName: keyof typeof Ionicons.glyphMap = 'home';
+    <View style={[styles.tabBar, { backgroundColor: d.background, borderTopColor: d.border }]}>
+      {state.routes.map((route: any, index: number) => {
+        const { options } = descriptors[route.key];
+        const isFocused = state.index === index;
+        const label =
+          options.tabBarLabel !== undefined
+            ? options.tabBarLabel
+            : options.title !== undefined
+              ? options.title
+              : route.name;
 
-          switch (route.name) {
-            case 'HomeTab':
-              iconName = focused ? 'home' : 'home-outline';
-              break;
-            case 'MapTab':
-              iconName = focused ? 'map' : 'map-outline';
-              break;
-            case 'ExplorerTab':
-              iconName = focused ? 'compass' : 'compass-outline';
-              break;
-            case 'ProfileTab':
-              iconName = focused ? 'person' : 'person-outline';
-              break;
+        const onPress = () => {
+          const event = navigation.emit({
+            type: 'tabPress',
+            target: route.key,
+            canPreventDefault: true,
+          });
+          if (!isFocused && !event.defaultPrevented) {
+            navigation.navigate(route.name);
           }
+        };
 
-          if (focused) {
-            return (
-              <View style={styles.activeIconContainer}>
-                <LinearGradient
-                  colors={['#FF6B35', '#FFD700']}
-                  style={styles.activeIconGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                >
-                  <Ionicons name={iconName} size={22} color="#FFFFFF" />
-                </LinearGradient>
-              </View>
-            );
-          }
-
-          return <Ionicons name={iconName} size={22} color={color} />;
-        },
+        return (
+          <Pressable key={route.key} onPress={onPress} style={styles.tabItem}>
+            <AppIcon
+              name={route.name === 'HomeTab' ? 'home' : route.name === 'MapTab' ? 'location' : route.name === 'ExplorerTab' ? 'search' : 'profile'}
+              size={22}
+              role={isFocused ? 'brand' : 'muted'}
+            />
+            <Text style={[styles.tabLabel, { color: isFocused ? d.primary : d.textMuted }]} numberOfLines={1}>
+              {label}
+            </Text>
+          </Pressable>
+        );
       })}
+    </View>
+  );
+};
+
+export const TabNavigator = () => {
+  return (
+    <Tab.Navigator
+      tabBar={(props) => <ThemedTabBar {...props} />}
+      screenOptions={{
+        headerShown: false,
+      }}
     >
-      <Tab.Screen
-        name="HomeTab"
-        component={HomeScreen}
-        options={{ tabBarLabel: 'Home' }}
-      />
-      <Tab.Screen
-        name="MapTab"
-        component={MapScreen}
-        options={{ tabBarLabel: 'Map' }}
-      />
-      <Tab.Screen
-        name="ExplorerTab"
-        component={ExplorerScreen}
-        options={{ tabBarLabel: 'Explore' }}
-      />
-      <Tab.Screen
-        name="ProfileTab"
-        component={ProfileScreen}
-        options={{ tabBarLabel: 'Profile' }}
-      />
+      <Tab.Screen name="HomeTab" component={HomeScreen} options={{ tabBarLabel: 'Home' }} />
+      <Tab.Screen name="MapTab" component={MapScreen} options={{ tabBarLabel: 'Map' }} />
+      <Tab.Screen name="ExplorerTab" component={ExplorerScreen} options={{ tabBarLabel: 'Explore' }} />
+      <Tab.Screen name="ProfileTab" component={ProfileScreen} options={{ tabBarLabel: 'Profile' }} />
     </Tab.Navigator>
   );
 };
 
 const styles = StyleSheet.create({
-  activeIconContainer: {
-    marginTop: -2,
+  tabBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    height: Platform.OS === 'ios' ? 88 : 64,
+    paddingBottom: Platform.OS === 'ios' ? 28 : 0,
+    paddingTop: 8,
+    borderTopWidth: 0.5,
   },
-  activeIconGradient: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+  tabItem: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    gap: 4,
+  },
+  tabLabel: {
+    fontSize: 11,
+    fontWeight: '500',
   },
 });

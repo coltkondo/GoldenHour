@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTheme } from '../../theme';
 import { Deal } from '../../types/api';
+import { AppIcon, IconName } from '../icons';
 
 interface DealCardProps {
   deal: Deal;
@@ -10,26 +11,25 @@ interface DealCardProps {
   compact?: boolean;
 }
 
-const DEAL_ICONS: Record<string, string> = {
-  beer: '🍺',
-  wine: '🍷',
-  cocktail: '🍸',
-  food: '🍔',
-  wings: '🍗',
-  pizza: '🍕',
-  tacos: '🌮',
-  sushi: '🍣',
-  appetizer: '🧆',
-  drink: '🥃',
-  default: '🎉',
+const CATEGORY_ICON_MAP: Record<string, IconName> = {
+  beer: 'deals',
+  wine: 'wine',
+  cocktail: 'martini',
+  food: 'food',
+  wings: 'food',
+  pizza: 'food',
+  tacos: 'food',
+  sushi: 'food',
+  appetizer: 'food',
+  drink: 'martini',
 };
 
-function getDealIcon(category: string): string {
+function getDealIconName(category: string): IconName {
   const lower = category.toLowerCase();
-  for (const [key, icon] of Object.entries(DEAL_ICONS)) {
+  for (const [key, icon] of Object.entries(CATEGORY_ICON_MAP)) {
     if (lower.includes(key)) return icon;
   }
-  return DEAL_ICONS.default;
+  return 'martini';
 }
 
 function formatPrice(price: number | null): string {
@@ -44,22 +44,23 @@ export const DealCard: React.FC<DealCardProps> = ({
   compact = false,
 }) => {
   const { theme } = useTheme();
-  const icon = getDealIcon(deal.category);
+  const d = theme.derived;
+  const iconName = getDealIconName(deal.category);
 
   const dynamicStyles = {
     card: {
-      backgroundColor: theme.colors.cardBackground,
-      borderColor: theme.colors.cardBorder,
+      backgroundColor: d.cardBackground,
+      borderColor: d.cardBorder,
     },
-    title: { color: theme.colors.text },
-    description: { color: theme.colors.textSecondary },
-    venue: { color: theme.colors.textMuted },
-    priceBadge: { backgroundColor: theme.colors.primary },
+    title: { color: d.text },
+    description: { color: d.textSecondary },
+    venue: { color: d.textMuted },
+    priceBadge: { backgroundColor: d.primary },
     categoryBadge: {
-      backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.border,
+      backgroundColor: d.surface,
+      borderColor: d.border,
     },
-    categoryText: { color: theme.colors.textSecondary },
+    categoryText: { color: d.textSecondary },
   };
 
   if (compact) {
@@ -69,7 +70,9 @@ export const DealCard: React.FC<DealCardProps> = ({
         activeOpacity={0.8}
         onPress={() => onPress?.(deal)}
       >
-        <Text style={styles.compactIcon}>{icon}</Text>
+        <View style={[styles.compactIconContainer, { backgroundColor: d.filterInactive }]}>
+          <AppIcon name={iconName} size={20} role="brand" />
+        </View>
         <View style={styles.compactContent}>
           <Text style={[styles.compactTitle, dynamicStyles.title]} numberOfLines={1}>
             {deal.title}
@@ -95,10 +98,9 @@ export const DealCard: React.FC<DealCardProps> = ({
       activeOpacity={0.85}
       onPress={() => onPress?.(deal)}
     >
-      {/* Header with icon and category */}
       <View style={styles.header}>
-        <View style={styles.iconContainer}>
-          <Text style={styles.dealIcon}>{icon}</Text>
+        <View style={[styles.iconContainer, { backgroundColor: d.filterInactive }]}>
+          <AppIcon name={iconName} size={22} role="brand" />
         </View>
         <View style={styles.headerContent}>
           <Text style={[styles.dealTitle, dynamicStyles.title]} numberOfLines={2}>
@@ -120,14 +122,12 @@ export const DealCard: React.FC<DealCardProps> = ({
         )}
       </View>
 
-      {/* Description */}
       {deal.description && (
         <Text style={[styles.description, dynamicStyles.description]} numberOfLines={2}>
           {deal.description}
         </Text>
       )}
 
-      {/* Items tags */}
       {deal.items.length > 0 && (
         <View style={styles.itemsRow}>
           {deal.items.slice(0, 4).map((item, index) => (
@@ -143,7 +143,6 @@ export const DealCard: React.FC<DealCardProps> = ({
         </View>
       )}
 
-      {/* Discount badge */}
       {deal.discount_percentage != null && deal.discount_percentage > 0 && (
         <View style={styles.discountStrip}>
           <Text style={styles.discountText}>
@@ -171,13 +170,9 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: 'rgba(255, 107, 53, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
-  },
-  dealIcon: {
-    fontSize: 22,
   },
   headerContent: {
     flex: 1,
@@ -200,12 +195,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   priceText: {
-    color: '#FFFFFF',
+    color: '#0D0D0D',
     fontSize: 16,
     fontWeight: '800',
   },
   originalPrice: {
-    color: 'rgba(255,255,255,0.6)',
+    color: 'rgba(13,13,13,0.5)',
     fontSize: 11,
     fontWeight: '600',
     textDecorationLine: 'line-through',
@@ -242,18 +237,17 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     right: -28,
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#2DD4A0',
     paddingHorizontal: 28,
     paddingVertical: 4,
     transform: [{ rotate: '45deg' }],
   },
   discountText: {
-    color: '#FFFFFF',
+    color: '#0D0D0D',
     fontSize: 10,
     fontWeight: '800',
     letterSpacing: 0.5,
   },
-  // Compact variant
   compactCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -263,8 +257,12 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     marginBottom: 8,
   },
-  compactIcon: {
-    fontSize: 24,
+  compactIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 10,
   },
   compactContent: {

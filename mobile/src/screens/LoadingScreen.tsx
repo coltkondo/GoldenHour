@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Dimensions } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { View, Text, StyleSheet, Animated, Dimensions, TouchableOpacity, ScrollView } from 'react-native';
+import Svg, { Defs, RadialGradient, Stop, Rect as SvgRect } from 'react-native-svg';
+import { useTheme } from '../theme';
+import { AppIcon } from '../components/icons';
 
 const { width, height } = Dimensions.get('window');
 
@@ -8,231 +10,163 @@ interface LoadingScreenProps {
   onFinish: () => void;
 }
 
+const FEATURES = [
+  { icon: 'deals' as const, label: 'DEALS' },
+  { icon: 'events' as const, label: 'EVENTS' },
+  { icon: 'points' as const, label: 'POINTS' },
+  { icon: 'rewards' as const, label: 'REWARDS' },
+] as const;
+
 export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onFinish }) => {
-  const logoScale = useRef(new Animated.Value(0.3)).current;
-  const logoOpacity = useRef(new Animated.Value(0)).current;
+  const { theme } = useTheme();
+  const d = theme.derived;
+
+  const wordmarkOpacity = useRef(new Animated.Value(0)).current;
+  const wordmarkTranslateY = useRef(new Animated.Value(-30)).current;
   const taglineOpacity = useRef(new Animated.Value(0)).current;
   const taglineTranslateY = useRef(new Animated.Value(20)).current;
+  const featuresOpacity = useRef(new Animated.Value(0)).current;
+  const featuresTranslateY = useRef(new Animated.Value(30)).current;
+  const ctaOpacity = useRef(new Animated.Value(0)).current;
+  const ctaTranslateY = useRef(new Animated.Value(20)).current;
   const glowOpacity = useRef(new Animated.Value(0)).current;
-  const shimmerTranslate = useRef(new Animated.Value(-width)).current;
 
   useEffect(() => {
-    // Orchestrated animation sequence
     Animated.sequence([
-      // Phase 1: Logo fades in and scales up with a bounce
       Animated.parallel([
-        Animated.spring(logoScale, {
-          toValue: 1,
-          tension: 50,
-          friction: 7,
-          useNativeDriver: true,
-        }),
-        Animated.timing(logoOpacity, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
+        Animated.timing(glowOpacity, { toValue: 1, duration: 800, useNativeDriver: false }),
+        Animated.parallel([
+          Animated.spring(wordmarkOpacity, { toValue: 1, tension: 60, friction: 8, useNativeDriver: true }),
+          Animated.spring(wordmarkTranslateY, { toValue: 0, tension: 60, friction: 8, useNativeDriver: true }),
+        ]),
       ]),
-      // Phase 2: Glow effect pulses
-      Animated.timing(glowOpacity, {
-        toValue: 0.6,
-        duration: 400,
-        useNativeDriver: true,
-      }),
-      // Phase 3: Tagline slides up
       Animated.parallel([
-        Animated.timing(taglineOpacity, {
-          toValue: 1,
-          duration: 500,
-          useNativeDriver: true,
-        }),
-        Animated.spring(taglineTranslateY, {
-          toValue: 0,
-          tension: 80,
-          friction: 10,
-          useNativeDriver: true,
-        }),
+        Animated.timing(taglineOpacity, { toValue: 1, duration: 500, useNativeDriver: true }),
+        Animated.spring(taglineTranslateY, { toValue: 0, tension: 80, friction: 10, useNativeDriver: true }),
       ]),
-      // Phase 4: Shimmer across logo
-      Animated.timing(shimmerTranslate, {
-        toValue: width,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-      // Brief pause before transitioning
-      Animated.delay(400),
-    ]).start(() => {
-      onFinish();
-    });
+      Animated.parallel([
+        Animated.timing(featuresOpacity, { toValue: 1, duration: 500, useNativeDriver: true }),
+        Animated.spring(featuresTranslateY, { toValue: 0, tension: 80, friction: 10, useNativeDriver: true }),
+      ]),
+      Animated.parallel([
+        Animated.timing(ctaOpacity, { toValue: 1, duration: 500, useNativeDriver: true }),
+        Animated.spring(ctaTranslateY, { toValue: 0, tension: 80, friction: 10, useNativeDriver: true }),
+      ]),
+    ]).start();
   }, []);
 
   return (
-    <LinearGradient
-      colors={['#4A148C', '#7B1FA2', '#BF360C', '#E65100', '#FF6B35', '#FF8A50']}
-      style={styles.container}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0.5, y: 1 }}
-    >
-      {/* Ambient glow behind logo */}
-      <Animated.View style={[styles.glow, { opacity: glowOpacity }]} />
-
-      {/* Logo */}
-      <Animated.View
-        style={[
-          styles.logoContainer,
-          {
-            opacity: logoOpacity,
-            transform: [{ scale: logoScale }],
-          },
-        ]}
-      >
-        <Text style={styles.logoIcon}>🌅</Text>
-        <Text style={styles.logoText}>GOLDEN</Text>
-        <Text style={styles.logoTextAccent}>HOUR</Text>
-
-        {/* Shimmer overlay */}
-        <Animated.View
-          style={[
-            styles.shimmer,
-            { transform: [{ translateX: shimmerTranslate }] },
-          ]}
-        />
+    <View style={[styles.container, { backgroundColor: d.background }]}>
+      {/* Radial Glow */}
+      <Animated.View style={[styles.glowContainer, { opacity: glowOpacity }]}>
+        <Svg width={width} height={height} style={StyleSheet.absoluteFill}>
+          <Defs>
+            <RadialGradient id="glow" cx="50%" cy="35%" rx="50%" ry="40%">
+              <Stop offset="0%" stopColor="#F5A623" stopOpacity="0.12" />
+              <Stop offset="50%" stopColor="#F5A623" stopOpacity="0.04" />
+              <Stop offset="100%" stopColor="#0D0D0D" stopOpacity="0" />
+            </RadialGradient>
+          </Defs>
+          <SvgRect x="0" y="0" width={width} height={height} fill="url(#glow)" />
+        </Svg>
       </Animated.View>
 
-      {/* Tagline */}
-      <Animated.View
-        style={[
-          styles.taglineContainer,
-          {
-            opacity: taglineOpacity,
-            transform: [{ translateY: taglineTranslateY }],
-          },
-        ]}
-      >
-        <Text style={styles.tagline}>Happy Hours in Happy Valley</Text>
-        <View style={styles.taglineDivider} />
-        <Text style={styles.taglineSub}>Right Now. Right Here.</Text>
-      </Animated.View>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {/* Wordmark */}
+        <Animated.View style={[styles.wordmarkSection, { opacity: wordmarkOpacity, transform: [{ translateY: wordmarkTranslateY }] }]}>
+          <Text style={[styles.wordmark, { color: d.primary }]}>
+            GLDNHR
+            <Text style={[styles.degree, { color: d.primary }]}>°</Text>
+          </Text>
+        </Animated.View>
 
-      {/* Bottom pulse dots */}
-      <View style={styles.bottomDots}>
-        <PulseDot delay={0} />
-        <PulseDot delay={200} />
-        <PulseDot delay={400} />
-      </View>
-    </LinearGradient>
+        {/* Tagline */}
+        <Animated.View style={[styles.taglineSection, { opacity: taglineOpacity, transform: [{ translateY: taglineTranslateY }] }]}>
+          <Text style={[styles.taglineLine1, { color: d.text }]}>Find the best deals.</Text>
+          <Text style={[styles.taglineLine2, { color: d.text }]}>
+            Discover your{' '}
+            <Text style={[styles.taglineGold, { color: d.primary }]}>city</Text>.
+          </Text>
+        </Animated.View>
+
+        {/* Subtext */}
+        <Animated.View style={[styles.subtextSection, { opacity: taglineOpacity }]}>
+          <Text style={[styles.subtext, { color: d.textMuted }]}>
+            Your guide to happy hours, live deals, and hidden gems. Earn points for sharing intel and unlock rewards at venues near you.
+          </Text>
+        </Animated.View>
+
+        {/* Feature Icons */}
+        <Animated.View style={[styles.featuresSection, { opacity: featuresOpacity, transform: [{ translateY: featuresTranslateY }] }]}>
+          <View style={styles.featuresRow}>
+            {FEATURES.map(({ icon, label }) => (
+              <View key={label} style={styles.featureItem}>
+                <View style={[styles.featureIconBox, { backgroundColor: d.filterInactive }]}>
+                  <AppIcon name={icon} size={28} role="brand" />
+                </View>
+                <Text style={[styles.featureLabel, { color: d.textMuted }]}>{label}</Text>
+              </View>
+            ))}
+          </View>
+        </Animated.View>
+
+        {/* CTA Buttons */}
+        <Animated.View style={[styles.ctaSection, { opacity: ctaOpacity, transform: [{ translateY: ctaTranslateY }] }]}>
+          <TouchableOpacity style={[styles.primaryButton, { backgroundColor: d.primary }]} activeOpacity={0.85} onPress={onFinish}>
+            <Text style={[styles.primaryButtonText, { color: d.buttonPrimaryText }]}>GET STARTED</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={[styles.secondaryButton, { borderColor: d.border }]} activeOpacity={0.7} onPress={onFinish}>
+            <Text style={[styles.secondaryButtonText, { color: d.text }]}>I HAVE AN ACCOUNT</Text>
+          </TouchableOpacity>
+        </Animated.View>
+
+        {/* Fine Print */}
+        <View style={styles.finePrint}>
+          <Text style={[styles.finePrintText, { color: d.textHint }]}>v1.0.0 — STATE COLLEGE, PA</Text>
+        </View>
+      </ScrollView>
+    </View>
   );
 };
 
-const PulseDot: React.FC<{ delay: number }> = ({ delay }) => {
-  const opacity = useRef(new Animated.Value(0.3)).current;
-
-  useEffect(() => {
-    const pulse = Animated.loop(
-      Animated.sequence([
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration: 600,
-          delay,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacity, {
-          toValue: 0.3,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    pulse.start();
-    return () => pulse.stop();
-  }, []);
-
-  return <Animated.View style={[styles.dot, { opacity }]} />;
-};
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  glow: {
-    position: 'absolute',
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    backgroundColor: '#FF6B35',
-    shadowColor: '#FF6B35',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 80,
-    elevation: 20,
-  },
-  logoContainer: {
-    alignItems: 'center',
-    overflow: 'hidden',
-  },
-  logoIcon: {
-    fontSize: 64,
-    marginBottom: 12,
-  },
-  logoText: {
-    fontSize: 52,
-    fontWeight: '900',
-    color: '#FFFFFF',
-    letterSpacing: 8,
-    lineHeight: 56,
-  },
-  logoTextAccent: {
-    fontSize: 52,
-    fontWeight: '900',
-    color: '#FFD700',
-    letterSpacing: 12,
-    lineHeight: 56,
-    marginTop: -4,
-  },
-  shimmer: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    width: 60,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    transform: [{ skewX: '-20deg' }],
-  },
-  taglineContainer: {
-    alignItems: 'center',
-    marginTop: 32,
-  },
-  tagline: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    letterSpacing: 2,
-  },
-  taglineDivider: {
-    width: 40,
-    height: 2,
-    backgroundColor: '#FFD700',
-    marginVertical: 12,
-    borderRadius: 1,
-  },
-  taglineSub: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.8)',
-    letterSpacing: 3,
-    textTransform: 'uppercase',
-  },
-  bottomDots: {
-    position: 'absolute',
-    bottom: 80,
-    flexDirection: 'row',
-    gap: 8,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#FFFFFF',
-  },
+  container: { flex: 1 },
+  scrollContent: { flexGrow: 1, paddingHorizontal: 24, paddingTop: height * 0.12, paddingBottom: 40 },
+
+  /* Glow */
+  glowContainer: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+
+  /* Wordmark */
+  wordmarkSection: { alignItems: 'center', marginBottom: 48 },
+  wordmark: { fontSize: 48, fontWeight: '900', letterSpacing: 6 },
+  degree: { fontSize: 24, fontWeight: '900', position: 'relative', top: -16 },
+
+  /* Tagline */
+  taglineSection: { alignItems: 'center', marginBottom: 20 },
+  taglineLine1: { fontSize: 22, fontWeight: '700', letterSpacing: -0.3, textAlign: 'center' },
+  taglineLine2: { fontSize: 22, fontWeight: '700', letterSpacing: -0.3, textAlign: 'center' },
+  taglineGold: { fontWeight: '700' },
+
+  /* Subtext */
+  subtextSection: { alignItems: 'center', marginBottom: 48, paddingHorizontal: 8 },
+  subtext: { fontSize: 14, fontWeight: '400', lineHeight: 22, textAlign: 'center' },
+
+  /* Features */
+  featuresSection: { marginBottom: 48 },
+  featuresRow: { flexDirection: 'row', justifyContent: 'space-around' },
+  featureItem: { alignItems: 'center' },
+  featureIconBox: { width: 56, height: 56, borderRadius: 16, justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
+  featureLabel: { fontSize: 10, fontWeight: '600', letterSpacing: 1.5 },
+
+  /* CTAs */
+  ctaSection: { gap: 12, marginBottom: 40 },
+  primaryButton: { height: 52, borderRadius: 26, justifyContent: 'center', alignItems: 'center' },
+  primaryButtonText: { fontSize: 14, fontWeight: '800', letterSpacing: 1.5 },
+  secondaryButton: { height: 52, borderRadius: 26, justifyContent: 'center', alignItems: 'center', borderWidth: 1.5 },
+  secondaryButtonText: { fontSize: 14, fontWeight: '700', letterSpacing: 1.5 },
+
+  /* Fine Print */
+  finePrint: { alignItems: 'center' },
+  finePrintText: { fontSize: 10, fontWeight: '500', letterSpacing: 2 },
 });

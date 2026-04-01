@@ -12,10 +12,11 @@ interface MiniMapProps {
 
 export const MiniMap: React.FC<MiniMapProps> = ({ userLocation, venues, onPress }) => {
   const { theme } = useTheme();
+  const d = theme.derived;
 
   return (
     <TouchableOpacity
-      style={[styles.container, { borderColor: theme.colors.border }]}
+      style={[styles.container, { borderColor: d.border }]}
       activeOpacity={0.9}
       onPress={onPress}
     >
@@ -37,15 +38,13 @@ export const MiniMap: React.FC<MiniMapProps> = ({ userLocation, venues, onPress 
         pointerEvents="none"
         mapType="standard"
       >
-        {/* Radius circle */}
         <Circle
           center={userLocation}
           radius={1500}
-          fillColor="rgba(255, 107, 53, 0.08)"
-          strokeColor="rgba(255, 107, 53, 0.3)"
+          fillColor="rgba(245,166,35,0.08)"
+          strokeColor="rgba(245,166,35,0.3)"
           strokeWidth={1}
         />
-        {/* Venue dots */}
         {venues.slice(0, 20).map((venue) => (
           <Marker
             key={venue.id}
@@ -60,20 +59,17 @@ export const MiniMap: React.FC<MiniMapProps> = ({ userLocation, venues, onPress 
         ))}
       </MapView>
 
-      {/* Overlay with crosshair */}
       <View style={styles.overlay} pointerEvents="none">
         <View style={styles.ringOuter} />
         <View style={styles.crosshairH} />
         <View style={styles.crosshairV} />
       </View>
 
-      {/* Venue count badge */}
-      <View style={[styles.badge, { backgroundColor: theme.colors.primary }]}>
+      <View style={[styles.badge, { backgroundColor: d.primary }]}>
         <Text style={styles.badgeText}>{venues.length}</Text>
       </View>
 
-      {/* MAP label */}
-      <View style={[styles.expandLabel, { backgroundColor: theme.colors.primary }]}>
+      <View style={[styles.expandLabel, { backgroundColor: d.primary }]}>
         <Text style={styles.expandText}>MAP</Text>
       </View>
     </TouchableOpacity>
@@ -109,25 +105,25 @@ const styles = StyleSheet.create({
     height: MAP_SIZE - 6,
     borderRadius: (MAP_SIZE - 6) / 2,
     borderWidth: 1,
-    borderColor: 'rgba(255, 107, 53, 0.4)',
+    borderColor: 'rgba(245,166,35,0.4)',
   },
   crosshairH: {
     position: 'absolute',
     width: 16,
     height: 1,
-    backgroundColor: 'rgba(255, 107, 53, 0.5)',
+    backgroundColor: 'rgba(245,166,35,0.5)',
   },
   crosshairV: {
     position: 'absolute',
     width: 1,
     height: 16,
-    backgroundColor: 'rgba(255, 107, 53, 0.5)',
+    backgroundColor: 'rgba(245,166,35,0.5)',
   },
   miniDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#F5A623',
     borderWidth: 1,
     borderColor: '#FFFFFF',
   },
@@ -144,7 +140,7 @@ const styles = StyleSheet.create({
     borderColor: '#FFFFFF',
   },
   badgeText: {
-    color: '#FFFFFF',
+    color: '#0D0D0D',
     fontSize: 10,
     fontWeight: '900',
   },
@@ -157,7 +153,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   expandText: {
-    color: '#FFFFFF',
+    color: '#0D0D0D',
     fontSize: 8,
     fontWeight: '800',
     letterSpacing: 1.5,

@@ -8,60 +8,49 @@ import {
   Dimensions,
   ScrollView,
 } from 'react-native';
+import { useTheme } from '../theme';
 import { Venue } from '../types/api';
 import { VenueCard } from './Cards/VenueCard';
+import { AppIcon } from './icons';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const MINIMIZED_HEIGHT = 120;
 const EXPANDED_HEIGHT = SCREEN_HEIGHT * 0.5;
 const DRAG_THRESHOLD = 50;
-const VISIBLE_SCROLL_HEIGHT =
-   EXPANDED_HEIGHT + 20;
-
-const CARD_HEIGHT = 180; // Approximate height of each card
+const VISIBLE_SCROLL_HEIGHT = EXPANDED_HEIGHT + 20;
 
 interface VenueBottomSheetProps {
   venues: Venue[];
   allVenues: Venue[];
-  userLocation: {
-    latitude: number;
-    longitude: number;
-  };
+  userLocation: { latitude: number; longitude: number };
   selectedVenueId: string | null;
   onVenuePress: (venue: Venue) => void;
 }
 
-export const VenueBottomSheet: React.FC<VenueBottomSheetProps> = ({ 
+export const VenueBottomSheet: React.FC<VenueBottomSheetProps> = ({
   venues = [],
   allVenues = [],
   userLocation,
   selectedVenueId,
   onVenuePress,
 }) => {
+  const { theme } = useTheme();
+  const d = theme.derived;
   const [isExpanded, setIsExpanded] = useState(false);
-  const translateY = useRef(
-    new Animated.Value(SCREEN_HEIGHT - MINIMIZED_HEIGHT)
-  ).current;
+  const translateY = useRef(new Animated.Value(SCREEN_HEIGHT - MINIMIZED_HEIGHT)).current;
   const [isScrollEnabled, setIsScrollEnabled] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const venueRefs = useRef<{ [key: string]: number }>({});
 
-  // Auto-scroll to selected venue
   useEffect(() => {
     if (selectedVenueId && isExpanded && scrollViewRef.current) {
       const selectedIndex = venues.findIndex(v => v.id === selectedVenueId);
-      
       if (selectedIndex !== -1 && venueRefs.current[selectedVenueId] !== undefined) {
-        // Scroll to the position of the selected card
-        scrollViewRef.current.scrollTo({
-          y: venueRefs.current[selectedVenueId],
-          animated: true,
-        });
+        scrollViewRef.current.scrollTo({ y: venueRefs.current[selectedVenueId], animated: true });
       }
     }
   }, [selectedVenueId, isExpanded, venues]);
 
-  // Auto-expand when a venue is selected
   useEffect(() => {
     if (selectedVenueId && !isExpanded) {
       animateToPosition(true);
@@ -71,42 +60,21 @@ export const VenueBottomSheet: React.FC<VenueBottomSheetProps> = ({
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        // Only handle vertical drags
-        return Math.abs(gestureState.dy) > Math.abs(gestureState.dx);
-      },
-      onPanResponderGrant: () => {
-        // Disable scrolling when starting to drag the sheet
-        setIsScrollEnabled(false);
-      },
-      onPanResponderMove: (_, gestureState) => {
+      onMoveShouldSetPanResponder: (_, gs) => Math.abs(gs.dy) > Math.abs(gs.dx),
+      onPanResponderGrant: () => setIsScrollEnabled(false),
+      onPanResponderMove: (_, gs) => {
         const baseY = SCREEN_HEIGHT - (isExpanded ? EXPANDED_HEIGHT : MINIMIZED_HEIGHT);
-        const newY = baseY + gestureState.dy;
-        
-        // Clamp between expanded and minimized positions
-        const clampedY = Math.max(
-          SCREEN_HEIGHT - EXPANDED_HEIGHT,
-          Math.min(SCREEN_HEIGHT - MINIMIZED_HEIGHT, newY)
-        );
-        
+        const newY = baseY + gs.dy;
+        const clampedY = Math.max(SCREEN_HEIGHT - EXPANDED_HEIGHT, Math.min(SCREEN_HEIGHT - MINIMIZED_HEIGHT, newY));
         translateY.setValue(clampedY);
       },
-      onPanResponderRelease: (_, gestureState) => {
-        const { dy, vy } = gestureState;
-        
-        // Determine final position based on drag distance and velocity
+      onPanResponderRelease: (_, gs) => {
         let shouldExpand: boolean;
-        
-        if (Math.abs(vy) > 0.5) {
-          // Fast swipe - use velocity
-          shouldExpand = vy < 0;
+        if (Math.abs(gs.vy) > 0.5) {
+          shouldExpand = gs.vy < 0;
         } else {
-          // Slow drag - use threshold
-          shouldExpand = isExpanded
-            ? dy > -DRAG_THRESHOLD
-            : dy < DRAG_THRESHOLD;
+          shouldExpand = isExpanded ? gs.dy > -DRAG_THRESHOLD : gs.dy < DRAG_THRESHOLD;
         }
-
         animateToPosition(shouldExpand);
       },
     })
@@ -114,17 +82,9 @@ export const VenueBottomSheet: React.FC<VenueBottomSheetProps> = ({
 
   const animateToPosition = (expand: boolean) => {
     const targetY = SCREEN_HEIGHT - (expand ? EXPANDED_HEIGHT : MINIMIZED_HEIGHT);
-    
-    Animated.spring(translateY, {
-      toValue: targetY,
-      useNativeDriver: true,
-      damping: 20,
-      stiffness: 150,
-    }).start(() => {
+    Animated.spring(translateY, { toValue: targetY, useNativeDriver: true, damping: 20, stiffness: 150 }).start(() => {
       setIsExpanded(expand);
       setIsScrollEnabled(expand);
-      
-      // Reset scroll position when collapsing
       if (!expand && scrollViewRef.current) {
         scrollViewRef.current.scrollTo({ y: 0, animated: false });
       }
@@ -140,57 +100,28 @@ export const VenueBottomSheet: React.FC<VenueBottomSheetProps> = ({
   };
 
   return (
-    <Animated.View
-      style={[
-        styles.bottomSheet,
-        {
-          transform: [{ translateY }],
-        },
-      ]}
-    >
-      {/* Drag Handle Area - Always draggable */}
+    <Animated.View style={[styles.bottomSheet, { backgroundColor: d.cardBackground, transform: [{ translateY }] }]}>
       <View {...panResponder.panHandlers} style={styles.dragHandleContainer}>
-        <View style={styles.dragHandle} />
-        <Text style={styles.sheetTitle}>
-          {venues.length} Happy Hour{venues.length !== 1 ? 's' : ''} Nearby
-        </Text>
+        <View style={[styles.dragHandle, { backgroundColor: d.textMuted }]} />
+        <Text style={[styles.sheetTitle, { color: d.text }]}>{venues.length} Happy Hour{venues.length !== 1 ? 's' : ''} Nearby</Text>
         {venues.length !== allVenues.length && (
-          <Text style={styles.sheetSubtitle}>
-            ({allVenues.length} total in area)
-          </Text>
+          <Text style={[styles.sheetSubtitle, { color: d.textMuted }]}>{allVenues.length} total in area</Text>
         )}
       </View>
 
-      {/* Scrollable Venue List */}
-      <ScrollView
-        ref={scrollViewRef}
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        scrollEnabled={isScrollEnabled}
-        showsVerticalScrollIndicator={true}
-        bounces={false}
-      >
+      <ScrollView ref={scrollViewRef} style={styles.scrollView} contentContainerStyle={styles.scrollContent} scrollEnabled={isScrollEnabled} showsVerticalScrollIndicator={false} bounces={false}>
         {venues.length === 0 ? (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyEmoji}>🔍</Text>
-            <Text style={styles.emptyText}>No venues in this area</Text>
-            <Text style={styles.emptySubtext}>Try zooming out on the map</Text>
+            <View style={[styles.emptyIconContainer, { backgroundColor: d.filterInactive }]}>
+              <AppIcon name="search" size={32} role="muted" />
+            </View>
+            <Text style={[styles.emptyText, { color: d.text }]}>No venues in this area</Text>
+            <Text style={[styles.emptySubtext, { color: d.textMuted }]}>Try zooming out or panning the map</Text>
           </View>
         ) : (
-          venues.map((venue, index) => (
-            <View
-              key={venue.id}
-              onLayout={(event) => {
-                const { y } = event.nativeEvent.layout;
-                handleCardLayout(venue.id, y);
-              }}
-            >
-              <VenueCard
-                venue={venue}
-                userLocation={userLocation}
-                onPress={handleVenueCardPress}
-                isSelected={selectedVenueId === venue.id}
-              />
+          venues.map((venue) => (
+            <View key={venue.id} onLayout={(event) => { const { y } = event.nativeEvent.layout; handleCardLayout(venue.id, y); }}>
+              <VenueCard venue={venue} userLocation={userLocation} onPress={handleVenueCardPress} isSelected={selectedVenueId === venue.id} />
             </View>
           ))
         )}
@@ -200,69 +131,15 @@ export const VenueBottomSheet: React.FC<VenueBottomSheetProps> = ({
 };
 
 const styles = StyleSheet.create({
-  bottomSheet: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: SCREEN_HEIGHT,
-    backgroundColor: 'white',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 10,
-  },
-  dragHandleContainer: {
-    paddingTop: 12,
-    paddingBottom: 16,
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  dragHandle: {
-    width: 40,
-    height: 4,
-    backgroundColor: '#ddd',
-    borderRadius: 2,
-    marginBottom: 12,
-  },
-  sheetTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-  },
-  sheetSubtitle: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#999',
-    marginTop: 4,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: VISIBLE_SCROLL_HEIGHT,
-  },
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 60,
-  },
-  emptyEmoji: {
-    fontSize: 48,
-    marginBottom: 16,
-  },
-  emptyText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#666',
-    marginBottom: 8,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: '#999',
-  },
+  bottomSheet: { position: 'absolute', left: 0, right: 0, bottom: 0, height: SCREEN_HEIGHT, borderTopLeftRadius: 22, borderTopRightRadius: 22, shadowColor: '#000', shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 16 },
+  dragHandleContainer: { paddingTop: 12, paddingBottom: 16, alignItems: 'center', borderBottomWidth: 0.5, borderBottomColor: '#2A2A2A' },
+  dragHandle: { width: 40, height: 4, borderRadius: 2, marginBottom: 12 },
+  sheetTitle: { fontSize: 16, fontWeight: '600', letterSpacing: -0.2 },
+  sheetSubtitle: { fontSize: 12, fontWeight: '500', marginTop: 4 },
+  scrollView: { flex: 1 },
+  scrollContent: { paddingBottom: VISIBLE_SCROLL_HEIGHT, paddingTop: 8 },
+  emptyState: { alignItems: 'center', justifyContent: 'center', paddingVertical: 60, paddingHorizontal: 24 },
+  emptyIconContainer: { width: 64, height: 64, borderRadius: 32, justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
+  emptyText: { fontSize: 16, fontWeight: '600', marginBottom: 6 },
+  emptySubtext: { fontSize: 13, fontWeight: '500', textAlign: 'center' },
 });

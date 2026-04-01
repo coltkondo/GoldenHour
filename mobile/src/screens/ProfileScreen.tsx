@@ -7,210 +7,209 @@ import {
   TouchableOpacity,
   Switch,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { useTheme, TimePeriod } from '../theme';
-import { GradientBackground } from '../components/common/GradientBackground';
+import { useTheme } from '../theme';
 import { useAuth } from '../context/AuthContext';
+import { AppIcon } from '../components/icons';
 
 export const ProfileScreen = () => {
-  const { theme, timePeriod, forceTimePeriod } = useTheme();
   const { user, isAdmin, logout } = useAuth();
   const navigation = useNavigation<any>();
+  const { theme, mode, toggleMode } = useTheme();
+  const d = theme.derived;
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
+  const getInitials = () => {
+    const username = user?.username ?? 'Guest';
+    if (username.length >= 2) return username.substring(0, 2).toUpperCase();
+    return username.charAt(0).toUpperCase();
+  };
+
   return (
-    <GradientBackground>
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
+    <View style={[styles.container, { backgroundColor: d.background }]}>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Profile Header */}
         <View style={styles.profileHeader}>
-          <LinearGradient
-            colors={['#FF6B35', '#FFD700']}
-            style={styles.avatarGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <Text style={styles.avatarText}>
-              {(user?.username ?? 'G').charAt(0).toUpperCase()}
-            </Text>
-          </LinearGradient>
-          <Text style={[styles.userName, { color: theme.colors.text }]}>
-            {user?.username ?? 'Guest'}
-          </Text>
-          <Text style={[styles.userHandle, { color: theme.colors.textMuted }]}>
-            {user?.email ?? ''}
-          </Text>
+          <View style={[styles.avatar, { backgroundColor: d.filterInactive, borderColor: d.border }]}>
+            <Text style={[styles.avatarText, { color: d.primary }]}>{getInitials()}</Text>
+          </View>
+          <Text style={[styles.userName, { color: d.text }]}>{user?.username ?? 'Guest'}</Text>
+          <Text style={[styles.userEmail, { color: d.textMuted }]}>{user?.email ?? ''}</Text>
           {isAdmin && (
-            <View style={styles.adminBadge}>
-              <Ionicons name="shield-checkmark" size={14} color="#FF6B35" />
-              <Text style={styles.adminBadgeText}>Admin</Text>
+            <View style={[styles.adminBadge, { backgroundColor: 'rgba(45,212,160,0.12)', borderColor: d.live }]}>
+              <Text style={[styles.adminBadgeText, { color: d.live }]}>Admin</Text>
             </View>
           )}
         </View>
 
-        {/* Stats Grid */}
-        <View style={styles.statsGrid}>
-          <View style={[styles.statCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-            <Text style={[styles.statCardNum, { color: '#FF6B35' }]}>{user?.points_balance ?? 0}</Text>
-            <Text style={[styles.statCardLabel, { color: theme.colors.textMuted }]}>POINTS</Text>
+        {/* Stats Row */}
+        <View style={[styles.statsCard, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+          <View style={styles.statItem}>
+            <AppIcon name="points" size={16} role="brand" />
+            <Text style={[styles.statNum, { color: d.primary }]}>{user?.points_balance ?? 0}</Text>
+            <Text style={[styles.statLabel, { color: d.textMuted }]}>Points</Text>
           </View>
-          <View style={[styles.statCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-            <Text style={[styles.statCardNum, { color: theme.colors.text }]}>—</Text>
-            <Text style={[styles.statCardLabel, { color: theme.colors.textMuted }]}>RANK</Text>
+          <View style={[styles.statDivider, { backgroundColor: d.divider }]} />
+          <View style={styles.statItem}>
+            <Text style={[styles.statNum, { color: d.text }]}>—</Text>
+            <Text style={[styles.statLabel, { color: d.textMuted }]}>Rank</Text>
           </View>
-          <View style={[styles.statCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-            <Text style={[styles.statCardNum, { color: theme.colors.text }]}>—</Text>
-            <Text style={[styles.statCardLabel, { color: theme.colors.textMuted }]}>APPROVED</Text>
+          <View style={[styles.statDivider, { backgroundColor: d.divider }]} />
+          <View style={styles.statItem}>
+            <Text style={[styles.statNum, { color: d.live }]}>—</Text>
+            <Text style={[styles.statLabel, { color: d.textMuted }]}>Approved</Text>
           </View>
         </View>
 
-        {/* Actions */}
+        {/* Contribute Section */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Contribute</Text>
-          <View style={[styles.actionsList, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-            <TouchableOpacity style={styles.actionRow} onPress={() => navigation.navigate('QuickSubmit')} activeOpacity={0.7}>
-              <View style={styles.actionLeft}>
-                <LinearGradient colors={['#FF6B35', '#FFD700']} style={styles.actionIcon} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                  <Ionicons name="add" size={18} color="#FFF" />
-                </LinearGradient>
-                <Text style={[styles.actionLabel, { color: theme.colors.text }]}>Submit a Deal</Text>
+          <Text style={[styles.sectionLabel, { color: d.text }]}>CONTRIBUTE</Text>
+          <View style={[styles.card, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+            <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('QuickSubmit')} activeOpacity={0.7}>
+              <View style={styles.rowLeft}>
+                <View style={[styles.rowIcon, { backgroundColor: d.filterInactive }]}>
+                  <AppIcon name="plus" size={18} role="brand" />
+                </View>
+                <Text style={[styles.rowLabel, { color: d.text }]}>Submit a Deal</Text>
               </View>
-              <Ionicons name="chevron-forward" size={18} color={theme.colors.textMuted} />
+              <AppIcon name="chevronRight" size={16} role="muted" />
             </TouchableOpacity>
 
-            <View style={[styles.divider, { backgroundColor: theme.colors.border }]} />
+            <View style={[styles.separator, { backgroundColor: d.divider }]} />
 
-            <TouchableOpacity style={styles.actionRow} onPress={() => navigation.navigate('MySubmissions')} activeOpacity={0.7}>
-              <View style={styles.actionLeft}>
-                <View style={[styles.actionIcon, { backgroundColor: 'rgba(255,107,53,0.15)' }]}>
-                  <Ionicons name="list" size={18} color="#FF6B35" />
+            <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('MySubmissions')} activeOpacity={0.7}>
+              <View style={styles.rowLeft}>
+                <View style={[styles.rowIcon, { backgroundColor: d.filterInactive }]}>
+                  <AppIcon name="list" size={18} role="brand" />
                 </View>
-                <Text style={[styles.actionLabel, { color: theme.colors.text }]}>My Submissions</Text>
+                <Text style={[styles.rowLabel, { color: d.text }]}>My Submissions</Text>
               </View>
-              <Ionicons name="chevron-forward" size={18} color={theme.colors.textMuted} />
+              <AppIcon name="chevronRight" size={16} role="muted" />
             </TouchableOpacity>
 
-            <View style={[styles.divider, { backgroundColor: theme.colors.border }]} />
+            <View style={[styles.separator, { backgroundColor: d.divider }]} />
 
-            <TouchableOpacity style={styles.actionRow} onPress={() => navigation.navigate('Leaderboard')} activeOpacity={0.7}>
-              <View style={styles.actionLeft}>
-                <View style={[styles.actionIcon, { backgroundColor: 'rgba(255,215,0,0.15)' }]}>
-                  <Ionicons name="trophy" size={18} color="#FFD700" />
+            <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('Leaderboard')} activeOpacity={0.7}>
+              <View style={styles.rowLeft}>
+                <View style={[styles.rowIcon, { backgroundColor: d.filterInactive }]}>
+                  <AppIcon name="trophy" size={18} role="brand" />
                 </View>
-                <Text style={[styles.actionLabel, { color: theme.colors.text }]}>Leaderboard</Text>
+                <Text style={[styles.rowLabel, { color: d.text }]}>Leaderboard</Text>
               </View>
-              <Ionicons name="chevron-forward" size={18} color={theme.colors.textMuted} />
+              <AppIcon name="chevronRight" size={16} role="muted" />
             </TouchableOpacity>
 
             {isAdmin && (
               <>
-                <View style={[styles.divider, { backgroundColor: theme.colors.border }]} />
-                <TouchableOpacity style={styles.actionRow} onPress={() => navigation.navigate('AdminReview')} activeOpacity={0.7}>
-                  <View style={styles.actionLeft}>
-                    <View style={[styles.actionIcon, { backgroundColor: 'rgba(255,107,53,0.15)' }]}>
-                      <Ionicons name="shield-checkmark" size={18} color="#FF6B35" />
+                <View style={[styles.separator, { backgroundColor: d.divider }]} />
+                <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('AdminReview')} activeOpacity={0.7}>
+                  <View style={styles.rowLeft}>
+                    <View style={[styles.rowIcon, { backgroundColor: d.filterInactive }]}>
+                      <AppIcon name="shield" size={18} role="positive" />
                     </View>
-                    <Text style={[styles.actionLabel, { color: theme.colors.text }]}>Review Queue</Text>
+                    <Text style={[styles.rowLabel, { color: d.text }]}>Review Queue</Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={18} color={theme.colors.textMuted} />
+                  <AppIcon name="chevronRight" size={16} role="muted" />
                 </TouchableOpacity>
               </>
             )}
           </View>
         </View>
 
-        {/* Settings */}
+        {/* Appearance Section */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Settings</Text>
-          <View style={[styles.settingsCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-            <View style={styles.settingsRow}>
-              <View style={styles.settingsLeft}>
-                <Ionicons name="notifications" size={20} color={theme.colors.primary} />
-                <Text style={[styles.settingsLabel, { color: theme.colors.text }]}>Happy Hour Alerts</Text>
+          <Text style={[styles.sectionLabel, { color: d.text }]}>APPEARANCE</Text>
+          <View style={[styles.card, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+            <View style={styles.row}>
+              <View style={styles.rowLeft}>
+                <View style={[styles.rowIcon, { backgroundColor: d.filterInactive }]}>
+                  <AppIcon name={mode === 'dark' ? 'moon' : 'sun'} size={18} role="brand" />
+                </View>
+                <View>
+                  <Text style={[styles.rowLabel, { color: d.text }]}>Dark Mode</Text>
+                  <Text style={[styles.rowHint, { color: d.textMuted }]}>{mode === 'dark' ? 'On' : 'Off'}</Text>
+                </View>
+              </View>
+              <Switch
+                value={mode === 'dark'}
+                onValueChange={toggleMode}
+                trackColor={{ false: d.filterInactive, true: d.primary }}
+                thumbColor={d.background}
+              />
+            </View>
+          </View>
+        </View>
+
+        {/* Settings Section */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionLabel, { color: d.text }]}>SETTINGS</Text>
+          <View style={[styles.card, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+            <View style={styles.row}>
+              <View style={styles.rowLeft}>
+                <View style={[styles.rowIcon, { backgroundColor: d.filterInactive }]}>
+                  <AppIcon name="bell" size={18} role="brand" />
+                </View>
+                <Text style={[styles.rowLabel, { color: d.text }]}>Happy Hour Alerts</Text>
               </View>
               <Switch
                 value={notificationsEnabled}
                 onValueChange={setNotificationsEnabled}
-                trackColor={{ false: theme.colors.border, true: '#FF6B35' }}
-                thumbColor="#FFF"
+                trackColor={{ false: d.filterInactive, true: d.live }}
+                thumbColor={d.background}
               />
             </View>
+            <Text style={[styles.hintText, { color: d.textMuted }]}>Active 5pm – 9pm daily</Text>
 
-            <View style={[styles.settingsDivider, { backgroundColor: theme.colors.border }]} />
+            <View style={[styles.separator, { backgroundColor: d.divider }]} />
 
-            <View style={styles.settingsRow}>
-              <View style={styles.settingsLeft}>
-                <Ionicons name="color-palette" size={20} color={theme.colors.primary} />
-                <Text style={[styles.settingsLabel, { color: theme.colors.text }]}>Theme Preview</Text>
-              </View>
-            </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.themePreview} contentContainerStyle={styles.themePreviewContent}>
-              {(['lateNight', 'morning', 'afternoon', 'goldenHour', 'evening'] as TimePeriod[]).map((period) => {
-                const isActive = timePeriod === period;
-                const labels: Record<TimePeriod, string> = { lateNight: '12-6am', morning: '6am-12', afternoon: '12-5pm', goldenHour: '5-8pm', evening: '8pm-12' };
-                const gradients: Record<TimePeriod, [string, string]> = { lateNight: ['#4A148C', '#7C4DFF'], morning: ['#42A5F5', '#FFD54F'], afternoon: ['#1976D2', '#FFB300'], goldenHour: ['#FF6B35', '#FFD700'], evening: ['#0D1B2A', '#FFD700'] };
-                return (
-                  <TouchableOpacity key={period} onPress={() => forceTimePeriod(isActive ? null : period)} activeOpacity={0.8}>
-                    <LinearGradient colors={gradients[period]} style={[styles.themeChip, isActive && styles.themeChipActive]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                      <Text style={styles.themeChipText}>{labels[period]}</Text>
-                    </LinearGradient>
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-
-            <View style={[styles.settingsDivider, { backgroundColor: theme.colors.border }]} />
-
-            <TouchableOpacity style={styles.settingsRow} activeOpacity={0.7} onPress={logout}>
-              <View style={styles.settingsLeft}>
-                <Ionicons name="log-out" size={20} color="#EF4444" />
-                <Text style={[styles.settingsLabel, { color: '#EF4444' }]}>Sign Out</Text>
+            <TouchableOpacity style={styles.row} activeOpacity={0.7} onPress={logout}>
+              <View style={styles.rowLeft}>
+                <View style={[styles.rowIcon, { backgroundColor: 'rgba(255,107,53,0.12)' }]}>
+                  <AppIcon name="logout" size={18} role="urgent" />
+                </View>
+                <Text style={[styles.logoutLabel, { color: d.error }]}>Sign Out</Text>
               </View>
             </TouchableOpacity>
           </View>
         </View>
 
-        <View style={{ height: 100 }} />
+        <View style={{ height: 140 }} />
       </ScrollView>
-    </GradientBackground>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: { flex: 1 },
   scroll: { flex: 1 },
-  scrollContent: { paddingTop: 60, paddingHorizontal: 20 },
+  scrollContent: { paddingTop: 60, paddingHorizontal: 16 },
+
   profileHeader: { alignItems: 'center', marginBottom: 24 },
-  avatarGradient: { width: 80, height: 80, borderRadius: 40, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
-  avatarText: { fontSize: 32, fontWeight: '900', color: '#FFFFFF' },
-  userName: { fontSize: 24, fontWeight: '900', letterSpacing: -0.5 },
-  userHandle: { fontSize: 14, fontWeight: '600', marginTop: 2 },
-  adminBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,107,53,0.15)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, marginTop: 8 },
-  adminBadgeText: { color: '#FF6B35', fontSize: 12, fontWeight: '800' },
-  statsGrid: { flexDirection: 'row', gap: 8, marginBottom: 24 },
-  statCard: { flex: 1, borderRadius: 14, borderWidth: 1, paddingVertical: 14, alignItems: 'center' },
-  statCardNum: { fontSize: 24, fontWeight: '900', letterSpacing: -0.5 },
-  statCardLabel: { fontSize: 9, fontWeight: '700', letterSpacing: 1, marginTop: 2 },
+  avatar: { width: 72, height: 72, borderRadius: 36, borderWidth: 1, justifyContent: 'center', alignItems: 'center', marginBottom: 14 },
+  avatarText: { fontSize: 20, fontWeight: '700' },
+  userName: { fontSize: 18, fontWeight: '700', letterSpacing: -0.3 },
+  userEmail: { fontSize: 12, fontWeight: '500', marginTop: 4 },
+  adminBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, marginTop: 8, borderWidth: 1 },
+  adminBadgeText: { fontSize: 11, fontWeight: '700' },
+
+  statsCard: { flexDirection: 'row', borderRadius: 16, borderWidth: 1, paddingVertical: 20, marginBottom: 28 },
+  statItem: { flex: 1, alignItems: 'center', gap: 4 },
+  statDivider: { width: 1, marginHorizontal: 0 },
+  statNum: { fontSize: 22, fontWeight: '800', letterSpacing: -0.5 },
+  statLabel: { fontSize: 10, fontWeight: '500' },
+
   section: { marginBottom: 24 },
-  sectionTitle: { fontSize: 20, fontWeight: '800', letterSpacing: -0.3, marginBottom: 14 },
-  actionsList: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
-  actionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14 },
-  actionLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  actionIcon: { width: 36, height: 36, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
-  actionLabel: { fontSize: 15, fontWeight: '600' },
-  divider: { height: 1, marginHorizontal: 16 },
-  settingsCard: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
-  settingsRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14 },
-  settingsLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  settingsLabel: { fontSize: 15, fontWeight: '600' },
-  settingsDivider: { height: 1, marginHorizontal: 16 },
-  themePreview: { marginBottom: 8 },
-  themePreviewContent: { paddingHorizontal: 16, gap: 8 },
-  themeChip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12 },
-  themeChipActive: { borderWidth: 2, borderColor: '#FFD700' },
-  themeChipText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' },
+  sectionLabel: { fontSize: 13, fontWeight: '800', letterSpacing: 1.2, marginBottom: 12 },
+
+  card: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
+
+  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14 },
+  rowLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  rowIcon: { width: 32, height: 32, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
+  rowLabel: { fontSize: 14, fontWeight: '500' },
+  rowHint: { fontSize: 11, fontWeight: '400', marginTop: 2 },
+  separator: { height: 0.5, marginLeft: 60 },
+
+  hintText: { fontSize: 11, fontWeight: '500', paddingHorizontal: 16, paddingBottom: 14, paddingTop: 2 },
+  logoutLabel: { fontSize: 14, fontWeight: '500' },
 });
