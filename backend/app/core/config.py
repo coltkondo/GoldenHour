@@ -41,6 +41,9 @@ class Settings(BaseSettings):
     LOG_ROTATION: str = "500 MB"
     LOG_RETENTION: str = "10 days"
 
+    # Timezone for business-hours comparisons (happy hour schedules stored in local time)
+    APP_TIMEZONE: str = "America/New_York"
+
     # Optional: Maps and external services
     GOOGLE_MAPS_API_KEY: Optional[str] = None
     MAPBOX_TOKEN: Optional[str] = None

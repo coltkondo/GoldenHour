@@ -6,6 +6,7 @@ Called by both the v1 submissions router and the admin submissions router.
 from datetime import datetime, timezone
 
 from fastapi import HTTPException
+from sqlalchemy import update as sa_update
 from sqlalchemy.orm import Session
 
 from app.core.points_config import POINTS_CONFIG
@@ -96,16 +97,18 @@ def review_submission(
             sub.points_awarded = points
 
             if points > 0:
-                submitter = (
-                    db.query(User)
-                    .filter(User.id == sub.user_id)
-                    .with_for_update()
-                    .first()
+                # Atomic SQL-level increment — generates:
+                #   UPDATE users SET points_balance = points_balance + :x WHERE id = :id
+                # This is safe under concurrent approvals without relying on ORM-level locking.
+                result = db.execute(
+                    sa_update(User)
+                    .where(User.id == sub.user_id)
+                    .values(points_balance=User.points_balance + points)
+                    .execution_options(synchronize_session="fetch")
                 )
-                if submitter:
-                    submitter.points_balance += points
+                if result.rowcount > 0:
                     tx = PointTransaction(
-                        user_id=submitter.id,
+                        user_id=sub.user_id,
                         submission_id=sub.id,
                         points=points,
                         transaction_type="submission_approved",
@@ -113,7 +116,7 @@ def review_submission(
                     )
                     db.add(tx)
                     logger.bind(
-                        user_id=str(submitter.id),
+                        user_id=str(sub.user_id),
                         submission_id=str(sub.id),
                         points=points,
                     ).info("points_awarded")

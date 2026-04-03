@@ -4,7 +4,9 @@ from sqlalchemy import and_, func
 from typing import List, Optional
 from uuid import UUID
 from datetime import datetime, time
+from zoneinfo import ZoneInfo
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.models.deal import Deal
 from app.models.venue import Venue
@@ -14,6 +16,16 @@ from app.services.search import bounding_box, haversine_distance
 
 
 router = APIRouter(prefix="/deals", tags=["deals"])
+
+
+def _now_eastern() -> datetime:
+    """Return the current datetime in the app's configured timezone.
+
+    HappyHourSchedule.start_time / end_time are stored as naive Time values
+    representing local business hours (Eastern). All day-of-week and time
+    comparisons must use the same timezone — never the server's local clock.
+    """
+    return datetime.now(ZoneInfo(settings.APP_TIMEZONE))
 
 
 @router.get("/active", response_model=List[DealResponse])
@@ -44,7 +56,7 @@ async def get_todays_deals(db: Session = Depends(get_db)):
     """
     Get all deals that are active today (based on schedule).
     """
-    today = datetime.now().weekday()  # 0=Monday
+    today = _now_eastern().weekday()  # 0=Monday
 
     deals = (
         db.query(Deal)
@@ -94,8 +106,8 @@ async def get_nearby_deals(
     )
 
     if active_now:
-        # Get current day and time
-        now = datetime.now()
+        # Get current day and time in the app's local timezone
+        now = _now_eastern()
         current_day = now.weekday()  # 0=Monday
         current_time = now.time()
 
