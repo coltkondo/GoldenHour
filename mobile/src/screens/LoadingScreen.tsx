@@ -1,5 +1,13 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Dimensions, TouchableOpacity, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Animated,
+  Dimensions,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
 import Svg, { Defs, RadialGradient, Stop, Rect as SvgRect } from 'react-native-svg';
 import { useTheme } from '../theme';
 import { AppIcon } from '../components/icons';
@@ -36,21 +44,46 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onFinish }) => {
       Animated.parallel([
         Animated.timing(glowOpacity, { toValue: 1, duration: 800, useNativeDriver: false }),
         Animated.parallel([
-          Animated.spring(wordmarkOpacity, { toValue: 1, tension: 60, friction: 8, useNativeDriver: true }),
-          Animated.spring(wordmarkTranslateY, { toValue: 0, tension: 60, friction: 8, useNativeDriver: true }),
+          Animated.spring(wordmarkOpacity, {
+            toValue: 1,
+            tension: 60,
+            friction: 8,
+            useNativeDriver: true,
+          }),
+          Animated.spring(wordmarkTranslateY, {
+            toValue: 0,
+            tension: 60,
+            friction: 8,
+            useNativeDriver: true,
+          }),
         ]),
       ]),
       Animated.parallel([
         Animated.timing(taglineOpacity, { toValue: 1, duration: 500, useNativeDriver: true }),
-        Animated.spring(taglineTranslateY, { toValue: 0, tension: 80, friction: 10, useNativeDriver: true }),
+        Animated.spring(taglineTranslateY, {
+          toValue: 0,
+          tension: 80,
+          friction: 10,
+          useNativeDriver: true,
+        }),
       ]),
       Animated.parallel([
         Animated.timing(featuresOpacity, { toValue: 1, duration: 500, useNativeDriver: true }),
-        Animated.spring(featuresTranslateY, { toValue: 0, tension: 80, friction: 10, useNativeDriver: true }),
+        Animated.spring(featuresTranslateY, {
+          toValue: 0,
+          tension: 80,
+          friction: 10,
+          useNativeDriver: true,
+        }),
       ]),
       Animated.parallel([
         Animated.timing(ctaOpacity, { toValue: 1, duration: 500, useNativeDriver: true }),
-        Animated.spring(ctaTranslateY, { toValue: 0, tension: 80, friction: 10, useNativeDriver: true }),
+        Animated.spring(ctaTranslateY, {
+          toValue: 0,
+          tension: 80,
+          friction: 10,
+          useNativeDriver: true,
+        }),
       ]),
     ]).start();
   }, []);
@@ -73,7 +106,12 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onFinish }) => {
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Wordmark */}
-        <Animated.View style={[styles.wordmarkSection, { opacity: wordmarkOpacity, transform: [{ translateY: wordmarkTranslateY }] }]}>
+        <Animated.View
+          style={[
+            styles.wordmarkSection,
+            { opacity: wordmarkOpacity, transform: [{ translateY: wordmarkTranslateY }] },
+          ]}
+        >
           <Text style={[styles.wordmark, { color: d.primary }]}>
             GLDNHR
             <Text style={[styles.degree, { color: d.primary }]}>°</Text>
@@ -81,23 +119,33 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onFinish }) => {
         </Animated.View>
 
         {/* Tagline */}
-        <Animated.View style={[styles.taglineSection, { opacity: taglineOpacity, transform: [{ translateY: taglineTranslateY }] }]}>
+        <Animated.View
+          style={[
+            styles.taglineSection,
+            { opacity: taglineOpacity, transform: [{ translateY: taglineTranslateY }] },
+          ]}
+        >
           <Text style={[styles.taglineLine1, { color: d.text }]}>Find the best deals.</Text>
           <Text style={[styles.taglineLine2, { color: d.text }]}>
-            Discover your{' '}
-            <Text style={[styles.taglineGold, { color: d.primary }]}>city</Text>.
+            Discover your <Text style={[styles.taglineGold, { color: d.primary }]}>city</Text>.
           </Text>
         </Animated.View>
 
         {/* Subtext */}
         <Animated.View style={[styles.subtextSection, { opacity: taglineOpacity }]}>
           <Text style={[styles.subtext, { color: d.textMuted }]}>
-            Your guide to happy hours, live deals, and hidden gems. Earn points for sharing intel and unlock rewards at venues near you.
+            Your guide to happy hours, live deals, and hidden gems. Earn points for sharing intel
+            and unlock rewards at venues near you.
           </Text>
         </Animated.View>
 
         {/* Feature Icons */}
-        <Animated.View style={[styles.featuresSection, { opacity: featuresOpacity, transform: [{ translateY: featuresTranslateY }] }]}>
+        <Animated.View
+          style={[
+            styles.featuresSection,
+            { opacity: featuresOpacity, transform: [{ translateY: featuresTranslateY }] },
+          ]}
+        >
           <View style={styles.featuresRow}>
             {FEATURES.map(({ icon, label }) => (
               <View key={label} style={styles.featureItem}>
@@ -111,19 +159,36 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onFinish }) => {
         </Animated.View>
 
         {/* CTA Buttons */}
-        <Animated.View style={[styles.ctaSection, { opacity: ctaOpacity, transform: [{ translateY: ctaTranslateY }] }]}>
-          <TouchableOpacity style={[styles.primaryButton, { backgroundColor: d.primary }]} activeOpacity={0.85} onPress={onFinish}>
-            <Text style={[styles.primaryButtonText, { color: d.buttonPrimaryText }]}>GET STARTED</Text>
+        <Animated.View
+          style={[
+            styles.ctaSection,
+            { opacity: ctaOpacity, transform: [{ translateY: ctaTranslateY }] },
+          ]}
+        >
+          <TouchableOpacity
+            style={[styles.primaryButton, { backgroundColor: d.primary }]}
+            activeOpacity={0.85}
+            onPress={onFinish}
+          >
+            <Text style={[styles.primaryButtonText, { color: d.buttonPrimaryText }]}>
+              GET STARTED
+            </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.secondaryButton, { borderColor: d.border }]} activeOpacity={0.7} onPress={onFinish}>
+          <TouchableOpacity
+            style={[styles.secondaryButton, { borderColor: d.border }]}
+            activeOpacity={0.7}
+            onPress={onFinish}
+          >
             <Text style={[styles.secondaryButtonText, { color: d.text }]}>I HAVE AN ACCOUNT</Text>
           </TouchableOpacity>
         </Animated.View>
 
         {/* Fine Print */}
         <View style={styles.finePrint}>
-          <Text style={[styles.finePrintText, { color: d.textHint }]}>v1.0.0 — STATE COLLEGE, PA</Text>
+          <Text style={[styles.finePrintText, { color: d.textHint }]}>
+            v1.0.0 — STATE COLLEGE, PA
+          </Text>
         </View>
       </ScrollView>
     </View>
@@ -132,7 +197,12 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onFinish }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  scrollContent: { flexGrow: 1, paddingHorizontal: 24, paddingTop: height * 0.12, paddingBottom: 40 },
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 24,
+    paddingTop: height * 0.12,
+    paddingBottom: 40,
+  },
 
   /* Glow */
   glowContainer: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
@@ -156,14 +226,27 @@ const styles = StyleSheet.create({
   featuresSection: { marginBottom: 48 },
   featuresRow: { flexDirection: 'row', justifyContent: 'space-around' },
   featureItem: { alignItems: 'center' },
-  featureIconBox: { width: 56, height: 56, borderRadius: 16, justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
+  featureIconBox: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
   featureLabel: { fontSize: 10, fontWeight: '600', letterSpacing: 1.5 },
 
   /* CTAs */
   ctaSection: { gap: 12, marginBottom: 40 },
   primaryButton: { height: 52, borderRadius: 26, justifyContent: 'center', alignItems: 'center' },
   primaryButtonText: { fontSize: 14, fontWeight: '800', letterSpacing: 1.5 },
-  secondaryButton: { height: 52, borderRadius: 26, justifyContent: 'center', alignItems: 'center', borderWidth: 1.5 },
+  secondaryButton: {
+    height: 52,
+    borderRadius: 26,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
+  },
   secondaryButtonText: { fontSize: 14, fontWeight: '700', letterSpacing: 1.5 },
 
   /* Fine Print */

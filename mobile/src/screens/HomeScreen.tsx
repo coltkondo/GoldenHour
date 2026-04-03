@@ -26,8 +26,8 @@ const { width } = Dimensions.get('window');
 
 interface FloatingIcon {
   id: number;
-  x: number;
-  y: number;
+  x: `${number}%`;
+  y: `${number}%`;
   size: number;
   name: string;
   duration: number;
@@ -45,12 +45,15 @@ const FEATURED_BG_ICONS: FloatingIcon[] = [
   { id: 8, x: '40%', y: '85%', size: 38, name: 'food', duration: 8500, delay: 2500 },
 ];
 
-const FeaturedCardBackground: React.FC<{ primaryColor: string; mode: ThemeMode }> = ({ primaryColor, mode }) => {
+const FeaturedCardBackground: React.FC<{ primaryColor: string; mode: ThemeMode }> = ({
+  primaryColor,
+  mode,
+}) => {
   const animatedValues = useRef(
     FEATURED_BG_ICONS.map(() => ({
       translateY: new Animated.Value(0),
       translateX: new Animated.Value(0),
-    }))
+    })),
   ).current;
 
   const iconOpacity = mode === 'dark' ? 0.12 : 0.35;
@@ -63,18 +66,44 @@ const FeaturedCardBackground: React.FC<{ primaryColor: string; mode: ThemeMode }
 
       const floatY = Animated.loop(
         Animated.sequence([
-          Animated.timing(translateY, { toValue: -range, duration: icon.duration / 2, delay: icon.delay, useNativeDriver: true }),
-          Animated.timing(translateY, { toValue: range, duration: icon.duration / 2, useNativeDriver: true }),
-          Animated.timing(translateY, { toValue: 0, duration: icon.duration / 2, useNativeDriver: true }),
-        ])
+          Animated.timing(translateY, {
+            toValue: -range,
+            duration: icon.duration / 2,
+            delay: icon.delay,
+            useNativeDriver: true,
+          }),
+          Animated.timing(translateY, {
+            toValue: range,
+            duration: icon.duration / 2,
+            useNativeDriver: true,
+          }),
+          Animated.timing(translateY, {
+            toValue: 0,
+            duration: icon.duration / 2,
+            useNativeDriver: true,
+          }),
+        ]),
       );
 
       const floatX = Animated.loop(
         Animated.sequence([
-          Animated.timing(translateX, { toValue: rangeX, duration: icon.duration / 3, delay: icon.delay + 500, useNativeDriver: true }),
-          Animated.timing(translateX, { toValue: -rangeX, duration: icon.duration / 3, useNativeDriver: true }),
-          Animated.timing(translateX, { toValue: 0, duration: icon.duration / 3, useNativeDriver: true }),
-        ])
+          Animated.timing(translateX, {
+            toValue: rangeX,
+            duration: icon.duration / 3,
+            delay: icon.delay + 500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(translateX, {
+            toValue: -rangeX,
+            duration: icon.duration / 3,
+            useNativeDriver: true,
+          }),
+          Animated.timing(translateX, {
+            toValue: 0,
+            duration: icon.duration / 3,
+            useNativeDriver: true,
+          }),
+        ]),
       );
 
       floatY.start();
@@ -86,7 +115,7 @@ const FeaturedCardBackground: React.FC<{ primaryColor: string; mode: ThemeMode }
       };
     });
 
-    return () => animations.forEach(cleanup => cleanup());
+    return () => animations.forEach((cleanup) => cleanup());
   }, []);
 
   return (
@@ -122,7 +151,12 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
   const R = 3959;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 };
@@ -137,7 +171,8 @@ const getDealIconName = (category: string): 'martini' | 'wine' | 'deals' | 'food
   const lower = category.toLowerCase();
   if (lower.includes('wine') || lower.includes('glass') || lower.includes('bottle')) return 'wine';
   if (lower.includes('beer') || lower.includes('draft') || lower.includes('pint')) return 'deals';
-  if (lower.includes('food') || lower.includes('bite') || lower.includes('appetizer')) return 'food';
+  if (lower.includes('food') || lower.includes('bite') || lower.includes('appetizer'))
+    return 'food';
   return 'martini';
 };
 
@@ -161,7 +196,7 @@ export const HomeScreen = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState<typeof FILTER_PILLS[number]>('All');
+  const [activeFilter, setActiveFilter] = useState<(typeof FILTER_PILLS)[number]>('All');
   const [savedVenues, setSavedVenues] = useState<Set<string>>(new Set());
   const [toastVisible, setToastVisible] = useState(false);
   const [toastData, setToastData] = useState<ToastData | null>(null);
@@ -207,7 +242,7 @@ export const HomeScreen = () => {
   };
 
   const toggleSave = (venueId: string) => {
-    setSavedVenues(prev => {
+    setSavedVenues((prev) => {
       const next = new Set(prev);
       if (next.has(venueId)) next.delete(venueId);
       else next.add(venueId);
@@ -218,41 +253,45 @@ export const HomeScreen = () => {
   const filteredDeals = useMemo(() => {
     if (activeFilter === 'All') return deals;
     const categoryMap: Record<string, string[]> = {
-      'Cocktails': ['cocktail', 'mixed', 'martini', 'margarita'],
-      'Draft': ['draft', 'beer', 'pint', 'ipa', 'lager'],
-      'Wine': ['wine', 'glass', 'bottle', 'red', 'white', 'rose'],
-      'Bites': ['food', 'bite', 'appetizer', 'snack', 'wings', 'tacos'],
+      Cocktails: ['cocktail', 'mixed', 'martini', 'margarita'],
+      Draft: ['draft', 'beer', 'pint', 'ipa', 'lager'],
+      Wine: ['wine', 'glass', 'bottle', 'red', 'white', 'rose'],
+      Bites: ['food', 'bite', 'appetizer', 'snack', 'wings', 'tacos'],
     };
     const keywords = categoryMap[activeFilter] || [];
-    return deals.filter(deal =>
-      keywords.some(kw =>
-        deal.category.toLowerCase().includes(kw) ||
-        deal.title.toLowerCase().includes(kw) ||
-        (deal.items || []).some(item => item.toLowerCase().includes(kw))
-      )
+    return deals.filter((deal) =>
+      keywords.some(
+        (kw) =>
+          deal.category.toLowerCase().includes(kw) ||
+          deal.title.toLowerCase().includes(kw) ||
+          (deal.items || []).some((item) => item.toLowerCase().includes(kw)),
+      ),
     );
   }, [deals, activeFilter]);
 
   const nearbyVenues = useMemo(() => {
     if (!location) return [];
     return venues
-      .map(venue => ({
+      .map((venue) => ({
         ...venue,
-        distance: calculateDistance(location.latitude, location.longitude, venue.latitude, venue.longitude),
+        distance: calculateDistance(
+          location.latitude,
+          location.longitude,
+          venue.latitude,
+          venue.longitude,
+        ),
       }))
       .sort((a, b) => a.distance - b.distance)
       .slice(0, 6);
   }, [venues, location]);
 
   const featuredDeal = filteredDeals[0];
-  const featuredVenue = featuredDeal ? venues.find(v => v.id === featuredDeal.venue_id) : null;
+  const featuredVenue = featuredDeal ? venues.find((v) => v.id === featuredDeal.venue_id) : null;
 
   const compactDeals = useMemo(() => filteredDeals.slice(1, 4), [filteredDeals]);
 
   const upcomingDeals = useMemo(() => {
-    return deals
-      .filter(d => d.active)
-      .slice(0, 4);
+    return deals.filter((d) => d.active).slice(0, 4);
   }, [deals]);
 
   const locationLabel = location ? 'State College' : 'Enable location';
@@ -264,7 +303,9 @@ export const HomeScreen = () => {
           <ActivityIndicator size="large" color={d.primary} />
         </View>
         <Text style={[styles.loadingText, { color: d.text }]}>Finding happy hours near you</Text>
-        <Text style={[styles.loadingSubtext, { color: d.textMuted }]}>This might take a moment</Text>
+        <Text style={[styles.loadingSubtext, { color: d.textMuted }]}>
+          This might take a moment
+        </Text>
       </View>
     );
   }
@@ -285,18 +326,22 @@ export const HomeScreen = () => {
           />
         }
       >
-
         {/* ── Top Bar ─────────────────────────────────────── */}
         <View style={styles.topBar}>
           <Text style={[styles.wordmark, { color: d.primary }]}>GLDNHR</Text>
           <View style={styles.topBarRight}>
             <TouchableOpacity
-              style={[styles.pointsPill, { borderColor: d.border, backgroundColor: d.cardBackground }]}
+              style={[
+                styles.pointsPill,
+                { borderColor: d.border, backgroundColor: d.cardBackground },
+              ]}
               activeOpacity={0.7}
               onPress={() => navigation.navigate('ProfileTab')}
             >
               <AppIcon name="points" size={12} role="brand" />
-              <Text style={[styles.pointsText, { color: d.primary }]}>{user?.points_balance ?? 0}</Text>
+              <Text style={[styles.pointsText, { color: d.primary }]}>
+                {user?.points_balance ?? 0}
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity activeOpacity={0.7} style={styles.bellButton}>
               <AppIcon name="bell" size={20} role="muted" />
@@ -320,7 +365,9 @@ export const HomeScreen = () => {
             </View>
             <View style={styles.toastRight}>
               <View style={[styles.toastPointsBadge, { backgroundColor: d.primary }]}>
-                <Text style={[styles.toastPointsText, { color: d.buttonPrimaryText }]}>+{toastData.points}</Text>
+                <Text style={[styles.toastPointsText, { color: d.buttonPrimaryText }]}>
+                  +{toastData.points}
+                </Text>
               </View>
               <TouchableOpacity onPress={() => setToastVisible(false)} activeOpacity={0.7}>
                 <AppIcon name="x" size={14} role="muted" />
@@ -331,7 +378,9 @@ export const HomeScreen = () => {
 
         {/* ── Search Row ──────────────────────────────────── */}
         <View style={styles.searchRow}>
-          <View style={[styles.searchBox, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+          <View
+            style={[styles.searchBox, { backgroundColor: d.cardBackground, borderColor: d.border }]}
+          >
             <AppIcon name="search" size={18} role="muted" />
             <TextInput
               style={[styles.searchInput, { color: d.text }]}
@@ -342,26 +391,53 @@ export const HomeScreen = () => {
               returnKeyType="search"
             />
             {searchQuery.length > 0 && (
-              <TouchableOpacity onPress={() => setSearchQuery('')} style={[styles.searchClear, { backgroundColor: d.filterInactive }]}>
+              <TouchableOpacity
+                onPress={() => setSearchQuery('')}
+                style={[styles.searchClear, { backgroundColor: d.filterInactive }]}
+              >
                 <Text style={[styles.searchClearText, { color: d.text }]}>×</Text>
               </TouchableOpacity>
             )}
           </View>
-          <TouchableOpacity style={[styles.filterButton, { backgroundColor: d.cardBackground, borderColor: d.border }]} activeOpacity={0.7}>
+          <TouchableOpacity
+            style={[
+              styles.filterButton,
+              { backgroundColor: d.cardBackground, borderColor: d.border },
+            ]}
+            activeOpacity={0.7}
+          >
             <AppIcon name="filter" size={18} role="muted" />
           </TouchableOpacity>
         </View>
 
         {/* ── Filter Pills ────────────────────────────────── */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll} contentContainerStyle={styles.filterPillsWrapper}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.filterScroll}
+          contentContainerStyle={styles.filterPillsWrapper}
+        >
           {FILTER_PILLS.map((pill) => (
             <TouchableOpacity
               key={pill}
-              style={[styles.filterPill, { backgroundColor: activeFilter === pill ? 'rgba(245,166,35,0.12)' : d.filterInactive, borderColor: activeFilter === pill ? d.primary : 'transparent', borderWidth: 1 }]}
+              style={[
+                styles.filterPill,
+                {
+                  backgroundColor:
+                    activeFilter === pill ? 'rgba(245,166,35,0.12)' : d.filterInactive,
+                  borderColor: activeFilter === pill ? d.primary : 'transparent',
+                  borderWidth: 1,
+                },
+              ]}
               onPress={() => setActiveFilter(pill)}
               activeOpacity={0.7}
             >
-              <Text style={[styles.filterPillText, { color: activeFilter === pill ? d.primary : d.textMuted }]}>
+              <Text
+                style={[
+                  styles.filterPillText,
+                  { color: activeFilter === pill ? d.primary : d.textMuted },
+                ]}
+              >
                 {pill}
               </Text>
             </TouchableOpacity>
@@ -377,40 +453,84 @@ export const HomeScreen = () => {
             </View>
 
             {/* Featured Deal Card */}
-            <TouchableOpacity style={[styles.featuredCard, { backgroundColor: d.cardBackground, borderColor: d.border }]} onPress={() => navigateToVenue(featuredVenue)} activeOpacity={0.92}>
+            <TouchableOpacity
+              style={[
+                styles.featuredCard,
+                { backgroundColor: d.cardBackground, borderColor: d.border },
+              ]}
+              onPress={() => navigateToVenue(featuredVenue)}
+              activeOpacity={0.92}
+            >
               <View style={[styles.featuredImageArea, { backgroundColor: d.primary }]}>
                 <FeaturedCardBackground primaryColor={d.buttonPrimaryText} mode={mode} />
-                <View style={[styles.featuredGradientOverlay, { backgroundColor: d.background, opacity: 0.7 }]} />
+                <View
+                  style={[
+                    styles.featuredGradientOverlay,
+                    { backgroundColor: d.background, opacity: 0.7 },
+                  ]}
+                />
                 <View style={styles.featuredContent}>
                   <View style={styles.featuredTopRow}>
                     <TouchableOpacity
                       style={styles.featuredSaveButton}
-                      onPress={(e) => { e.stopPropagation(); toggleSave(featuredVenue.id); }}
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        toggleSave(featuredVenue.id);
+                      }}
                       activeOpacity={0.7}
                     >
-                      <AppIcon name="bookmark" size={18} role="default" weight={savedVenues.has(featuredVenue.id) ? 'fill' : 'regular'} color={d.text} />
+                      <AppIcon
+                        name="bookmark"
+                        size={18}
+                        role="default"
+                        weight={savedVenues.has(featuredVenue.id) ? 'fill' : 'regular'}
+                        color={d.text}
+                      />
                     </TouchableOpacity>
                   </View>
                   <View style={styles.featuredBottom}>
-                    <Text style={[styles.featuredType, { color: d.live }]}>{featuredDeal.category.toUpperCase()}</Text>
-                    <Text style={[styles.featuredPrice, { color: d.primary }]}>
-                      {featuredDeal.deal_price ? `$${featuredDeal.deal_price}` : `${featuredDeal.discount_percentage}% OFF`}
+                    <Text style={[styles.featuredType, { color: d.live }]}>
+                      {featuredDeal.category.toUpperCase()}
                     </Text>
-                    <Text style={[styles.featuredTitle, { color: d.text }]} numberOfLines={2}>{featuredDeal.title}</Text>
+                    <Text style={[styles.featuredPrice, { color: d.primary }]}>
+                      {featuredDeal.deal_price
+                        ? `$${featuredDeal.deal_price}`
+                        : `${featuredDeal.discount_percentage}% OFF`}
+                    </Text>
+                    <Text style={[styles.featuredTitle, { color: d.text }]} numberOfLines={2}>
+                      {featuredDeal.title}
+                    </Text>
                     <View style={styles.featuredMetaRow}>
                       <AppIcon name="location" size={12} role="muted" />
-                      <Text style={[styles.featuredVenue, { color: d.textMuted }]} numberOfLines={1}>{featuredVenue.name}</Text>
+                      <Text
+                        style={[styles.featuredVenue, { color: d.textMuted }]}
+                        numberOfLines={1}
+                      >
+                        {featuredVenue.name}
+                      </Text>
                       {location && (
                         <Text style={[styles.featuredDistance, { color: d.textHint }]}>
-                          {formatDistance(calculateDistance(location.latitude, location.longitude, featuredVenue.latitude, featuredVenue.longitude))}
+                          {formatDistance(
+                            calculateDistance(
+                              location.latitude,
+                              location.longitude,
+                              featuredVenue.latitude,
+                              featuredVenue.longitude,
+                            ),
+                          )}
                         </Text>
                       )}
                     </View>
                     {featuredDeal.items && featuredDeal.items.length > 0 && (
                       <View style={styles.featuredTags}>
                         {featuredDeal.items.slice(0, 3).map((item, i) => (
-                          <View key={i} style={[styles.featuredTag, { backgroundColor: d.filterInactive }]}>
-                            <Text style={[styles.featuredTagText, { color: d.textMuted }]}>{item}</Text>
+                          <View
+                            key={i}
+                            style={[styles.featuredTag, { backgroundColor: d.filterInactive }]}
+                          >
+                            <Text style={[styles.featuredTagText, { color: d.textMuted }]}>
+                              {item}
+                            </Text>
                           </View>
                         ))}
                       </View>
@@ -421,7 +541,9 @@ export const HomeScreen = () => {
                         <Text style={[styles.featuredUpvoteText, { color: d.textMuted }]}>Hot</Text>
                       </View>
                       <View style={styles.featuredCTA}>
-                        <Text style={[styles.featuredCTAText, { color: d.primary }]}>View deal</Text>
+                        <Text style={[styles.featuredCTAText, { color: d.primary }]}>
+                          View deal
+                        </Text>
                         <AppIcon name="arrowRight" size={14} role="brand" />
                       </View>
                     </View>
@@ -432,27 +554,51 @@ export const HomeScreen = () => {
 
             {/* Compact Deal Rows */}
             {compactDeals.length > 0 && (
-              <View style={[styles.compactList, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+              <View
+                style={[
+                  styles.compactList,
+                  { backgroundColor: d.cardBackground, borderColor: d.border },
+                ]}
+              >
                 {compactDeals.map((deal, index) => {
                   const dealIconName = getDealIconName(deal.category);
-                  const venue = venues.find(v => v.id === deal.venue_id);
+                  const venue = venues.find((v) => v.id === deal.venue_id);
                   const isLast = index === compactDeals.length - 1;
                   return (
                     <React.Fragment key={deal.id}>
                       <Pressable
-                        style={({ pressed }) => [styles.compactRow, pressed && { backgroundColor: d.filterInactive }]}
+                        style={({ pressed }) => [
+                          styles.compactRow,
+                          pressed && { backgroundColor: d.filterInactive },
+                        ]}
                         onPress={() => venue && navigateToVenue(venue)}
                       >
                         <View style={[styles.compactThumb, { backgroundColor: d.filterInactive }]}>
                           <AppIcon name={dealIconName} size={20} role="brand" />
                         </View>
                         <View style={styles.compactInfo}>
-                          <Text style={[styles.compactName, { color: d.text }]} numberOfLines={1}>{deal.title}</Text>
+                          <Text style={[styles.compactName, { color: d.text }]} numberOfLines={1}>
+                            {deal.title}
+                          </Text>
                           <View style={styles.compactMeta}>
-                            {venue && <Text style={[styles.compactVenue, { color: d.textMuted }]} numberOfLines={1}>{venue.name}</Text>}
-                            <View style={[styles.compactTimeBadge, { backgroundColor: d.filterInactive }]}>
+                            {venue && (
+                              <Text
+                                style={[styles.compactVenue, { color: d.textMuted }]}
+                                numberOfLines={1}
+                              >
+                                {venue.name}
+                              </Text>
+                            )}
+                            <View
+                              style={[
+                                styles.compactTimeBadge,
+                                { backgroundColor: d.filterInactive },
+                              ]}
+                            >
                               <AppIcon name="clock" size={12} role="muted" />
-                              <Text style={[styles.compactTimeText, { color: d.textMuted }]}>HH</Text>
+                              <Text style={[styles.compactTimeText, { color: d.textMuted }]}>
+                                HH
+                              </Text>
                             </View>
                           </View>
                         </View>
@@ -460,7 +606,9 @@ export const HomeScreen = () => {
                           {deal.deal_price ? `$${deal.deal_price}` : `${deal.discount_percentage}%`}
                         </Text>
                       </Pressable>
-                      {!isLast && <View style={[styles.compactSeparator, { backgroundColor: d.divider }]} />}
+                      {!isLast && (
+                        <View style={[styles.compactSeparator, { backgroundColor: d.divider }]} />
+                      )}
                     </React.Fragment>
                   );
                 })}
@@ -468,12 +616,21 @@ export const HomeScreen = () => {
             )}
           </View>
         ) : (
-          <View style={[styles.emptyCard, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+          <View
+            style={[styles.emptyCard, { backgroundColor: d.cardBackground, borderColor: d.border }]}
+          >
             <AppIcon name="clock" size={28} role="muted" />
             <Text style={[styles.emptyTitle, { color: d.text }]}>No active deals right now</Text>
-            <Text style={[styles.emptySub, { color: d.textMuted }]}>Check back during happy hour</Text>
-            <TouchableOpacity style={[styles.emptyButton, { backgroundColor: d.primary }]} onPress={navigateToExplorer}>
-              <Text style={[styles.emptyButtonText, { color: d.buttonPrimaryText }]}>Browse venues</Text>
+            <Text style={[styles.emptySub, { color: d.textMuted }]}>
+              Check back during happy hour
+            </Text>
+            <TouchableOpacity
+              style={[styles.emptyButton, { backgroundColor: d.primary }]}
+              onPress={navigateToExplorer}
+            >
+              <Text style={[styles.emptyButtonText, { color: d.buttonPrimaryText }]}>
+                Browse venues
+              </Text>
             </TouchableOpacity>
           </View>
         )}
@@ -488,32 +645,82 @@ export const HomeScreen = () => {
           </View>
 
           {nearbyVenues.length > 0 ? (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.nearbyCardsContainer} style={styles.nearbyCardsScroll} decelerationRate="fast" snapToInterval={width * 0.42 + 12}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.nearbyCardsContainer}
+              style={styles.nearbyCardsScroll}
+              decelerationRate="fast"
+              snapToInterval={width * 0.42 + 12}
+            >
               {nearbyVenues.map((venue) => {
-                const venueDeal = deals.find(d => d.venue_id === venue.id);
+                const venueDeal = deals.find((d) => d.venue_id === venue.id);
                 const isSaved = savedVenues.has(venue.id);
                 const venueType = venue.venue_type?.toLowerCase() || '';
-                const logoName = venueType.includes('wine') ? 'wine' : venueType.includes('cocktail') || venueType.includes('lounge') ? 'martini' : venueType.includes('food') || venueType.includes('restaurant') ? 'food' : 'deals';
+                const logoName = venueType.includes('wine')
+                  ? 'wine'
+                  : venueType.includes('cocktail') || venueType.includes('lounge')
+                    ? 'martini'
+                    : venueType.includes('food') || venueType.includes('restaurant')
+                      ? 'food'
+                      : 'deals';
                 return (
-                  <TouchableOpacity key={venue.id} style={styles.nearbyCard} onPress={() => navigateToVenue(venue)} activeOpacity={0.85}>
-                    <View style={[styles.nearbyCardInner, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
-                      <View style={[styles.nearbyCardAccent, { backgroundColor: d.primary, opacity: 0.15 }]} />
+                  <TouchableOpacity
+                    key={venue.id}
+                    style={styles.nearbyCard}
+                    onPress={() => navigateToVenue(venue)}
+                    activeOpacity={0.85}
+                  >
+                    <View
+                      style={[
+                        styles.nearbyCardInner,
+                        { backgroundColor: d.cardBackground, borderColor: d.border },
+                      ]}
+                    >
+                      <View
+                        style={[
+                          styles.nearbyCardAccent,
+                          { backgroundColor: d.primary, opacity: 0.15 },
+                        ]}
+                      />
                       <View style={styles.nearbyLogoCenter}>
-                        <AppIcon name={logoName} size={48} role="brand" color={d.primary} weight="fill" />
+                        <AppIcon
+                          name={logoName}
+                          size={48}
+                          role="brand"
+                          color={d.primary}
+                          weight="fill"
+                        />
                       </View>
-                      <TouchableOpacity style={styles.nearbySaveButton} onPress={() => toggleSave(venue.id)} activeOpacity={0.7}>
-                        <AppIcon name="heart" size={18} role="muted" weight={isSaved ? 'fill' : 'regular'} color={isSaved ? d.primary : d.textMuted} />
+                      <TouchableOpacity
+                        style={styles.nearbySaveButton}
+                        onPress={() => toggleSave(venue.id)}
+                        activeOpacity={0.7}
+                      >
+                        <AppIcon
+                          name="heart"
+                          size={18}
+                          role="muted"
+                          weight={isSaved ? 'fill' : 'regular'}
+                          color={isSaved ? d.primary : d.textMuted}
+                        />
                       </TouchableOpacity>
                       {venueDeal && (venueDeal.deal_price || venueDeal.discount_percentage) && (
                         <View style={[styles.nearbyPriceBadge, { backgroundColor: d.primary }]}>
                           <Text style={[styles.nearbyPriceText, { color: d.buttonPrimaryText }]}>
-                            {venueDeal.deal_price ? `$${venueDeal.deal_price}` : `${venueDeal.discount_percentage}%`}
+                            {venueDeal.deal_price
+                              ? `$${venueDeal.deal_price}`
+                              : `${venueDeal.discount_percentage}%`}
                           </Text>
                         </View>
                       )}
                       <View style={styles.nearbyCardContent}>
-                        <Text style={[styles.nearbyCardName, { color: d.text }]} numberOfLines={1}>{venue.name}</Text>
-                        <Text style={[styles.nearbyCardMeta, { color: d.textMuted }]}>{formatDistance(venue.distance)}</Text>
+                        <Text style={[styles.nearbyCardName, { color: d.text }]} numberOfLines={1}>
+                          {venue.name}
+                        </Text>
+                        <Text style={[styles.nearbyCardMeta, { color: d.textMuted }]}>
+                          {formatDistance(venue.distance)}
+                        </Text>
                         {venue.active && <LiveBadge label="LIVE" size="sm" />}
                       </View>
                     </View>
@@ -522,10 +729,17 @@ export const HomeScreen = () => {
               })}
             </ScrollView>
           ) : (
-            <View style={[styles.emptyCard, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+            <View
+              style={[
+                styles.emptyCard,
+                { backgroundColor: d.cardBackground, borderColor: d.border },
+              ]}
+            >
               <AppIcon name="location" size={28} role="muted" />
               <Text style={[styles.emptyTitle, { color: d.text }]}>No venues nearby</Text>
-              <Text style={[styles.emptySub, { color: d.textMuted }]}>Enable location to find happy hours</Text>
+              <Text style={[styles.emptySub, { color: d.textMuted }]}>
+                Enable location to find happy hours
+              </Text>
             </View>
           )}
         </View>
@@ -534,9 +748,14 @@ export const HomeScreen = () => {
         {upcomingDeals.length > 0 && (
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: d.text, marginBottom: 14 }]}>UPCOMING</Text>
-            <View style={[styles.upcomingList, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+            <View
+              style={[
+                styles.upcomingList,
+                { backgroundColor: d.cardBackground, borderColor: d.border },
+              ]}
+            >
               {upcomingDeals.map((deal, index) => {
-                const venue = venues.find(v => v.id === deal.venue_id);
+                const venue = venues.find((v) => v.id === deal.venue_id);
                 const isLast = index === upcomingDeals.length - 1;
                 const hour = new Date().getHours();
                 const startHour = Math.max(hour + 1, 17);
@@ -548,38 +767,69 @@ export const HomeScreen = () => {
                 return (
                   <React.Fragment key={deal.id}>
                     <Pressable
-                      style={({ pressed }) => [styles.upcomingRow, pressed && { backgroundColor: d.filterInactive }]}
+                      style={({ pressed }) => [
+                        styles.upcomingRow,
+                        pressed && { backgroundColor: d.filterInactive },
+                      ]}
                       onPress={() => venue && navigateToVenue(venue)}
                     >
-                      <View style={[styles.upcomingIconThumb, { backgroundColor: d.filterInactive }]}>
+                      <View
+                        style={[styles.upcomingIconThumb, { backgroundColor: d.filterInactive }]}
+                      >
                         <AppIcon name={dealIconName} size={20} role="brand" />
                       </View>
                       <View style={styles.upcomingLeft}>
-                        <Text style={[styles.upcomingName, { color: d.text }]} numberOfLines={1}>{deal.title}</Text>
+                        <Text style={[styles.upcomingName, { color: d.text }]} numberOfLines={1}>
+                          {deal.title}
+                        </Text>
                         {venue && (
                           <View style={styles.upcomingVenueRow}>
                             <AppIcon name="location" size={10} role="muted" />
-                            <Text style={[styles.upcomingVenue, { color: d.textMuted }]} numberOfLines={1}>{venue.name}</Text>
+                            <Text
+                              style={[styles.upcomingVenue, { color: d.textMuted }]}
+                              numberOfLines={1}
+                            >
+                              {venue.name}
+                            </Text>
                           </View>
                         )}
-                        <View style={[styles.upcomingTimeBox, { backgroundColor: 'rgba(45,212,160,0.12)', borderColor: d.live }]}>
-                          <Text style={[styles.upcomingTimeBoxText, { color: d.live }]}>{dayLabel} {timeLabel}</Text>
+                        <View
+                          style={[
+                            styles.upcomingTimeBox,
+                            { backgroundColor: 'rgba(45,212,160,0.12)', borderColor: d.live },
+                          ]}
+                        >
+                          <Text style={[styles.upcomingTimeBoxText, { color: d.live }]}>
+                            {dayLabel} {timeLabel}
+                          </Text>
                         </View>
                       </View>
                       <View style={styles.upcomingRight}>
-                        {deal.original_price && deal.deal_price && deal.original_price > deal.deal_price ? (
+                        {deal.original_price &&
+                        deal.deal_price &&
+                        deal.original_price > deal.deal_price ? (
                           <>
-                            <Text style={[styles.upcomingDealPrice, { color: d.primary }]}>${deal.deal_price}</Text>
-                            <Text style={[styles.upcomingOriginalPrice, { color: d.textMuted }]}>${deal.original_price}</Text>
+                            <Text style={[styles.upcomingDealPrice, { color: d.primary }]}>
+                              ${deal.deal_price}
+                            </Text>
+                            <Text style={[styles.upcomingOriginalPrice, { color: d.textMuted }]}>
+                              ${deal.original_price}
+                            </Text>
                           </>
                         ) : deal.deal_price ? (
-                          <Text style={[styles.upcomingDealPrice, { color: d.primary }]}>${deal.deal_price}</Text>
+                          <Text style={[styles.upcomingDealPrice, { color: d.primary }]}>
+                            ${deal.deal_price}
+                          </Text>
                         ) : deal.discount_percentage ? (
-                          <Text style={[styles.upcomingDealPrice, { color: d.primary }]}>{deal.discount_percentage}%</Text>
+                          <Text style={[styles.upcomingDealPrice, { color: d.primary }]}>
+                            {deal.discount_percentage}%
+                          </Text>
                         ) : null}
                       </View>
                     </Pressable>
-                    {!isLast && <View style={[styles.upcomingSeparator, { backgroundColor: d.divider }]} />}
+                    {!isLast && (
+                      <View style={[styles.upcomingSeparator, { backgroundColor: d.divider }]} />
+                    )}
                   </React.Fragment>
                 );
               })}
@@ -600,16 +850,41 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   scrollContent: { paddingTop: 56, paddingHorizontal: 16 },
 
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 },
-  loadingSpinner: { width: 56, height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+  },
+  loadingSpinner: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
   loadingText: { fontSize: 17, fontWeight: '700', letterSpacing: -0.3, marginBottom: 4 },
   loadingSubtext: { fontSize: 13, fontWeight: '500' },
 
   /* Top Bar */
-  topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
   wordmark: { fontSize: 22, fontWeight: '900', letterSpacing: 2 },
   topBarRight: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  pointsPill: { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1 },
+  pointsPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderWidth: 1,
+  },
   pointsText: { fontSize: 13, fontWeight: '700' },
   bellButton: { padding: 4 },
 
@@ -618,7 +893,14 @@ const styles = StyleSheet.create({
   locationText: { fontSize: 13, fontWeight: '500', flex: 1 },
 
   /* Toast Banner */
-  toastBanner: { flexDirection: 'row', alignItems: 'center', borderRadius: 16, padding: 14, marginBottom: 20, gap: 12 },
+  toastBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 20,
+    gap: 12,
+  },
   toastLeft: { flex: 1 },
   toastLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 1, marginBottom: 2 },
   toastMessage: { fontSize: 13, fontWeight: '500' },
@@ -628,11 +910,33 @@ const styles = StyleSheet.create({
 
   /* Search */
   searchRow: { flexDirection: 'row', gap: 10, marginBottom: 14 },
-  searchBox: { flex: 1, flexDirection: 'row', alignItems: 'center', borderRadius: 14, paddingHorizontal: 14, height: 46, gap: 10, borderWidth: 1 },
+  searchBox: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    height: 46,
+    gap: 10,
+    borderWidth: 1,
+  },
   searchInput: { flex: 1, fontSize: 14, fontWeight: '500', padding: 0 },
-  searchClear: { width: 20, height: 20, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
+  searchClear: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   searchClearText: { fontSize: 14, fontWeight: '600', marginTop: -2 },
-  filterButton: { width: 46, height: 46, borderRadius: 14, justifyContent: 'center', alignItems: 'center', borderWidth: 1 },
+  filterButton: {
+    width: 46,
+    height: 46,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+  },
 
   /* Filter Pills */
   filterScroll: { marginBottom: 24, marginLeft: -16, marginRight: -16 },
@@ -642,7 +946,12 @@ const styles = StyleSheet.create({
 
   /* Section */
   section: { marginBottom: 28, marginTop: 8 },
-  sectionHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
   sectionTitle: { fontSize: 14, fontWeight: '800', letterSpacing: 1.2 },
   sectionAction: { fontSize: 12, fontWeight: '600' },
 
@@ -650,10 +959,21 @@ const styles = StyleSheet.create({
   featuredCard: { borderRadius: 20, overflow: 'hidden', marginBottom: 12, borderWidth: 1 },
   featuredImageArea: { height: 260, position: 'relative' },
   featuredGradientOverlay: { ...StyleSheet.absoluteFillObject },
-  featuredContent: { ...StyleSheet.absoluteFillObject, justifyContent: 'space-between', padding: 16, zIndex: 1 },
+  featuredContent: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'space-between',
+    padding: 16,
+    zIndex: 1,
+  },
   floatingIcon: { position: 'absolute' },
   featuredTopRow: { flexDirection: 'row', justifyContent: 'flex-end' },
-  featuredSaveButton: { width: 34, height: 34, borderRadius: 17, justifyContent: 'center', alignItems: 'center' },
+  featuredSaveButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   featuredBottom: { gap: 6 },
   featuredType: { fontSize: 10, fontWeight: '700', letterSpacing: 1.2 },
   featuredPrice: { fontSize: 36, fontWeight: '900', letterSpacing: -1 },
@@ -664,7 +984,12 @@ const styles = StyleSheet.create({
   featuredTags: { flexDirection: 'row', gap: 6, flexWrap: 'wrap' },
   featuredTag: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
   featuredTagText: { fontSize: 10, fontWeight: '500' },
-  featuredFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 },
+  featuredFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 6,
+  },
   featuredUpvotes: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   featuredUpvoteText: { fontSize: 11, fontWeight: '600' },
   featuredCTA: { flexDirection: 'row', alignItems: 'center', gap: 4 },
@@ -672,13 +997,32 @@ const styles = StyleSheet.create({
 
   /* Compact List */
   compactList: { borderRadius: 16, overflow: 'hidden', borderWidth: 1 },
-  compactRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 14 },
-  compactThumb: { width: 40, height: 40, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  compactRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+  },
+  compactThumb: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
   compactInfo: { flex: 1, marginRight: 8, minWidth: 0 },
   compactName: { fontSize: 14, fontWeight: '600', letterSpacing: -0.2 },
   compactMeta: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 3 },
   compactVenue: { fontSize: 12, fontWeight: '500', flex: 1 },
-  compactTimeBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 },
+  compactTimeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
   compactTimeText: { fontSize: 9, fontWeight: '600' },
   compactPrice: { fontSize: 14, fontWeight: '700' },
   compactSeparator: { height: 0.5, marginLeft: 66, marginRight: 14 },
@@ -694,11 +1038,44 @@ const styles = StyleSheet.create({
   nearbyCardsScroll: { marginBottom: 0, marginLeft: -4, marginRight: -4 },
   nearbyCardsContainer: { gap: 12, paddingHorizontal: 4 },
   nearbyCard: { width: width * 0.42, borderRadius: 16, overflow: 'hidden' },
-  nearbyCardInner: { height: 180, position: 'relative', borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
+  nearbyCardInner: {
+    height: 180,
+    position: 'relative',
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
   nearbyCardAccent: { ...StyleSheet.absoluteFillObject },
-  nearbyLogoCenter: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 60, justifyContent: 'center', alignItems: 'center', opacity: 0.2 },
-  nearbySaveButton: { position: 'absolute', top: 10, left: 10, width: 30, height: 30, borderRadius: 15, justifyContent: 'center', alignItems: 'center', zIndex: 2 },
-  nearbyPriceBadge: { position: 'absolute', top: 10, right: 10, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, zIndex: 2 },
+  nearbyLogoCenter: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+    opacity: 0.2,
+  },
+  nearbySaveButton: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 2,
+  },
+  nearbyPriceBadge: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    zIndex: 2,
+  },
   nearbyPriceText: { fontSize: 11, fontWeight: '800' },
   nearbyCardContent: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 12, zIndex: 1 },
   nearbyCardName: { fontSize: 15, fontWeight: '700', marginBottom: 2, letterSpacing: -0.3 },
@@ -706,13 +1083,32 @@ const styles = StyleSheet.create({
 
   /* Upcoming */
   upcomingList: { paddingTop: 8, borderRadius: 16, overflow: 'hidden', borderWidth: 1 },
-  upcomingRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 14 },
-  upcomingIconThumb: { width: 40, height: 40, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  upcomingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+  },
+  upcomingIconThumb: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
   upcomingLeft: { flex: 1, marginRight: 12, minWidth: 0 },
   upcomingName: { fontSize: 14, fontWeight: '600', letterSpacing: -0.2 },
   upcomingVenueRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 3 },
   upcomingVenue: { fontSize: 12, fontWeight: '500', flex: 1 },
-  upcomingTimeBox: { borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, alignSelf: 'flex-start', marginTop: 6, borderWidth: 1 },
+  upcomingTimeBox: {
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    alignSelf: 'flex-start',
+    marginTop: 6,
+    borderWidth: 1,
+  },
   upcomingTimeBoxText: { fontSize: 10, fontWeight: '700', letterSpacing: 0.3 },
   upcomingRight: { alignItems: 'flex-end', gap: 2 },
   upcomingOriginalPrice: { fontSize: 12, fontWeight: '500', textDecorationLine: 'line-through' },

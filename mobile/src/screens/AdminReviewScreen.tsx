@@ -63,7 +63,9 @@ export const AdminReviewScreen = () => {
     }
   }, [statusFilter]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
   async function handleReview(sub: Submission, status: 'approved' | 'rejected') {
     const notes = adminNotes[sub.id];
@@ -79,7 +81,7 @@ export const AdminReviewScreen = () => {
             setReviewing(sub.id);
             try {
               await submissionsAPI.review(sub.id, { status, admin_notes: notes });
-              setSubmissions(prev => prev.filter(s => s.id !== sub.id));
+              setSubmissions((prev) => prev.filter((s) => s.id !== sub.id));
               setExpandedId(null);
             } catch (err: any) {
               Alert.alert('Error', err.response?.data?.detail || 'Review failed');
@@ -88,13 +90,27 @@ export const AdminReviewScreen = () => {
             }
           },
         },
-      ]
+      ],
     );
   }
 
   return (
     <View style={[styles.container, { backgroundColor: d.background }]}>
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor={d.primary} />}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => {
+              setRefreshing(true);
+              load();
+            }}
+            tintColor={d.primary}
+          />
+        }
+      >
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
             <AppIcon name="back" size={22} role="default" />
@@ -103,9 +119,26 @@ export const AdminReviewScreen = () => {
         </View>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow}>
-          {['pending', 'approved', 'rejected', ''].map(f => (
-            <TouchableOpacity key={f} style={[styles.filterChip, { backgroundColor: statusFilter === f ? d.primary : d.cardBackground, borderColor: statusFilter === f ? d.primary : d.border }]} onPress={() => setStatusFilter(f)}>
-              <Text style={[styles.filterChipText, { color: statusFilter === f ? d.buttonPrimaryText : d.textMuted }]}>{f === '' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}</Text>
+          {['pending', 'approved', 'rejected', ''].map((f) => (
+            <TouchableOpacity
+              key={f}
+              style={[
+                styles.filterChip,
+                {
+                  backgroundColor: statusFilter === f ? d.primary : d.cardBackground,
+                  borderColor: statusFilter === f ? d.primary : d.border,
+                },
+              ]}
+              onPress={() => setStatusFilter(f)}
+            >
+              <Text
+                style={[
+                  styles.filterChipText,
+                  { color: statusFilter === f ? d.buttonPrimaryText : d.textMuted },
+                ]}
+              >
+                {f === '' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
+              </Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -113,54 +146,126 @@ export const AdminReviewScreen = () => {
         {loading ? (
           <ActivityIndicator size="large" color={d.primary} style={{ marginTop: 40 }} />
         ) : submissions.length === 0 ? (
-          <View style={[styles.emptyState, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+          <View
+            style={[
+              styles.emptyState,
+              { backgroundColor: d.cardBackground, borderColor: d.border },
+            ]}
+          >
             <AppIcon name="correct" size={32} role="positive" />
             <Text style={[styles.emptyText, { color: d.text }]}>Queue is empty</Text>
           </View>
         ) : (
-          submissions.map(sub => {
+          submissions.map((sub) => {
             const expanded = expandedId === sub.id;
             const statusColor = getStatusColor(sub.status);
             return (
-              <View key={sub.id} style={[styles.card, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
-                <TouchableOpacity onPress={() => setExpandedId(expanded ? null : sub.id)} activeOpacity={0.8}>
+              <View
+                key={sub.id}
+                style={[styles.card, { backgroundColor: d.cardBackground, borderColor: d.border }]}
+              >
+                <TouchableOpacity
+                  onPress={() => setExpandedId(expanded ? null : sub.id)}
+                  activeOpacity={0.8}
+                >
                   <View style={styles.cardHeader}>
                     <View style={styles.cardLeft}>
                       <View style={[styles.typePill, { backgroundColor: d.filterInactive }]}>
-                        <Text style={[styles.typePillText, { color: d.text }]}>{TYPE_LABELS[sub.submission_type] ?? sub.submission_type}</Text>
+                        <Text style={[styles.typePillText, { color: d.text }]}>
+                          {TYPE_LABELS[sub.submission_type] ?? sub.submission_type}
+                        </Text>
                       </View>
-                      <Text style={[styles.submitter, { color: d.textMuted }]}>by {sub.submitter_username}</Text>
+                      <Text style={[styles.submitter, { color: d.textMuted }]}>
+                        by {sub.submitter_username}
+                      </Text>
                     </View>
                     <View style={styles.cardRight}>
-                      <StatusDot status={sub.status === 'pending' ? 'live' : sub.status === 'approved' ? 'live' : 'expiring'} size={8} pulse={false} />
+                      <StatusDot
+                        status={
+                          sub.status === 'pending'
+                            ? 'live'
+                            : sub.status === 'approved'
+                              ? 'live'
+                              : 'expiring'
+                        }
+                        size={8}
+                        pulse={false}
+                      />
                       <AppIcon name="dropdown" size={16} role="muted" />
                     </View>
                   </View>
-                  <Text style={[styles.cardDate, { color: d.textHint }]}>{new Date(sub.created_at).toLocaleDateString()}</Text>
+                  <Text style={[styles.cardDate, { color: d.textHint }]}>
+                    {new Date(sub.created_at).toLocaleDateString()}
+                  </Text>
                 </TouchableOpacity>
 
                 {expanded && (
                   <View style={styles.expandedContent}>
                     <Text style={[styles.dataLabel, { color: d.textMuted }]}>Submitted Data</Text>
-                    <View style={[styles.jsonBlock, { backgroundColor: d.surface, borderColor: d.border }]}>
-                      <Text style={[styles.jsonText, { color: d.text }]}>{JSON.stringify(sub.submitted_data, null, 2)}</Text>
+                    <View
+                      style={[
+                        styles.jsonBlock,
+                        { backgroundColor: d.surface, borderColor: d.border },
+                      ]}
+                    >
+                      <Text style={[styles.jsonText, { color: d.text }]}>
+                        {JSON.stringify(sub.submitted_data, null, 2)}
+                      </Text>
                     </View>
 
                     {sub.status === 'pending' && (
                       <>
-                        <View style={[styles.applyNote, { backgroundColor: d.filterInactive, borderColor: d.border }]}>
-                          <Text style={[styles.applyNoteText, { color: d.text }]}>On approve: {AUTO_APPLY[sub.submission_type]}</Text>
+                        <View
+                          style={[
+                            styles.applyNote,
+                            { backgroundColor: d.filterInactive, borderColor: d.border },
+                          ]}
+                        >
+                          <Text style={[styles.applyNoteText, { color: d.text }]}>
+                            On approve: {AUTO_APPLY[sub.submission_type]}
+                          </Text>
                         </View>
 
-                        <View style={[styles.notesInputContainer, { backgroundColor: d.surface, borderColor: d.border }]}>
-                          <TextInput style={[styles.notesInput, { color: d.text }]} placeholder="Admin notes (optional)" placeholderTextColor={d.textHint} value={adminNotes[sub.id] ?? ''} onChangeText={v => setAdminNotes(prev => ({ ...prev, [sub.id]: v }))} multiline />
+                        <View
+                          style={[
+                            styles.notesInputContainer,
+                            { backgroundColor: d.surface, borderColor: d.border },
+                          ]}
+                        >
+                          <TextInput
+                            style={[styles.notesInput, { color: d.text }]}
+                            placeholder="Admin notes (optional)"
+                            placeholderTextColor={d.textHint}
+                            value={adminNotes[sub.id] ?? ''}
+                            onChangeText={(v) =>
+                              setAdminNotes((prev) => ({ ...prev, [sub.id]: v }))
+                            }
+                            multiline
+                          />
                         </View>
 
                         <View style={styles.reviewBtns}>
-                          <TouchableOpacity style={[styles.approveBtn, { backgroundColor: d.primary }]} onPress={() => handleReview(sub, 'approved')} disabled={reviewing === sub.id}>
-                            {reviewing === sub.id ? <ActivityIndicator color={d.buttonPrimaryText} size="small" /> : <Text style={[styles.approveBtnText, { color: d.buttonPrimaryText }]}>Approve</Text>}
+                          <TouchableOpacity
+                            style={[styles.approveBtn, { backgroundColor: d.primary }]}
+                            onPress={() => handleReview(sub, 'approved')}
+                            disabled={reviewing === sub.id}
+                          >
+                            {reviewing === sub.id ? (
+                              <ActivityIndicator color={d.buttonPrimaryText} size="small" />
+                            ) : (
+                              <Text style={[styles.approveBtnText, { color: d.buttonPrimaryText }]}>
+                                Approve
+                              </Text>
+                            )}
                           </TouchableOpacity>
-                          <TouchableOpacity style={[styles.rejectBtn, { backgroundColor: 'rgba(255,107,53,0.12)', borderColor: d.error }]} onPress={() => handleReview(sub, 'rejected')} disabled={reviewing === sub.id}>
+                          <TouchableOpacity
+                            style={[
+                              styles.rejectBtn,
+                              { backgroundColor: 'rgba(255,107,53,0.12)', borderColor: d.error },
+                            ]}
+                            onPress={() => handleReview(sub, 'rejected')}
+                            disabled={reviewing === sub.id}
+                          >
                             <Text style={[styles.rejectBtnText, { color: d.error }]}>Reject</Text>
                           </TouchableOpacity>
                         </View>
@@ -187,9 +292,21 @@ const styles = StyleSheet.create({
   backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
   headerTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3 },
   filterRow: { marginBottom: 16 },
-  filterChip: { borderRadius: 16, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 7, marginRight: 8 },
+  filterChip: {
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    marginRight: 8,
+  },
   filterChipText: { fontSize: 12, fontWeight: '600' },
-  emptyState: { borderRadius: 16, borderWidth: 1, padding: 32, alignItems: 'center', marginTop: 20 },
+  emptyState: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 32,
+    alignItems: 'center',
+    marginTop: 20,
+  },
   emptyText: { fontSize: 16, fontWeight: '600', marginTop: 12 },
   card: { borderRadius: 16, borderWidth: 1, padding: 14, marginBottom: 10 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
@@ -210,6 +327,12 @@ const styles = StyleSheet.create({
   reviewBtns: { flexDirection: 'row', gap: 10 },
   approveBtn: { flex: 1, borderRadius: 14, paddingVertical: 12, alignItems: 'center' },
   approveBtnText: { fontWeight: '700', fontSize: 14 },
-  rejectBtn: { flex: 1, borderRadius: 14, paddingVertical: 12, alignItems: 'center', borderWidth: 1 },
+  rejectBtn: {
+    flex: 1,
+    borderRadius: 14,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+  },
   rejectBtnText: { fontWeight: '700', fontSize: 14 },
 });

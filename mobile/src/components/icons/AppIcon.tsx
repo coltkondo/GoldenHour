@@ -169,7 +169,13 @@ interface AppIconProps {
   color?: string;
 }
 
-export const AppIcon: React.FC<AppIconProps> = ({ name, size = 20, weight, role = 'default', color }) => {
+export const AppIcon: React.FC<AppIconProps> = ({
+  name,
+  size = 20,
+  weight,
+  role = 'default',
+  color,
+}) => {
   const { theme } = useTheme();
   const d = theme.derived;
 
@@ -183,7 +189,11 @@ export const AppIcon: React.FC<AppIconProps> = ({ name, size = 20, weight, role 
   };
 
   const iconColor = color ?? roleColors[role];
-  const iconWeight = weight ?? (['deals', 'events', 'points', 'rewards', 'trophy', 'crown', 'home', 'profile'].includes(name) ? 'duotone' : 'regular');
+  const iconWeight =
+    weight ??
+    (['deals', 'events', 'points', 'rewards', 'trophy', 'crown', 'home', 'profile'].includes(name)
+      ? 'duotone'
+      : 'regular');
   const IconComponent = PHOSPHOR_ICONS[IconMap[name]];
 
   if (!IconComponent) {

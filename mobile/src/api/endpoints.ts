@@ -9,11 +9,7 @@ export const venuesAPI = {
     return response.data;
   },
 
-  getNearby: async (
-    latitude: number,
-    longitude: number,
-    radiusMeters: number = 10000
-  ) => {
+  getNearby: async (latitude: number, longitude: number, radiusMeters: number = 10000) => {
     const response = await apiClient.get<Venue[]>('/venues/nearby', {
       params: { latitude, longitude, radius_meters: radiusMeters },
     });
@@ -37,13 +33,20 @@ export const venuesAPI = {
 };
 
 export const dealsAPI = {
-  getActive: async (params?: { skip?: number; limit?: number; category?: string; venue_id?: string }) => {
+  getActive: async (params?: {
+    skip?: number;
+    limit?: number;
+    category?: string;
+    venue_id?: string;
+  }) => {
     const response = await apiClient.get<Deal[]>('/deals/active', { params });
     return response.data;
   },
 
   getByVenue: async (venueId: string) => {
-    const response = await apiClient.get<Deal[]>('/deals/active', { params: { venue_id: venueId } });
+    const response = await apiClient.get<Deal[]>('/deals/active', {
+      params: { venue_id: venueId },
+    });
     return response.data;
   },
 
@@ -56,7 +59,7 @@ export const dealsAPI = {
     latitude: number,
     longitude: number,
     radiusMeters: number = 10000,
-    activeNow: boolean = false
+    activeNow: boolean = false,
   ) => {
     const response = await apiClient.get<Deal[]>('/deals/nearby', {
       params: { latitude, longitude, radius_meters: radiusMeters, active_now: activeNow },
@@ -72,12 +75,18 @@ export const dealsAPI = {
 
 export const authAPI = {
   register: async (data: { username: string; email: string; password: string }) => {
-    const response = await apiClient.post<{ access_token: string; user: AuthUser }>('/auth/register', data);
+    const response = await apiClient.post<{ access_token: string; user: AuthUser }>(
+      '/auth/register',
+      data,
+    );
     return response.data;
   },
 
   login: async (data: { email: string; password: string }) => {
-    const response = await apiClient.post<{ access_token: string; user: AuthUser }>('/auth/login', data);
+    const response = await apiClient.post<{ access_token: string; user: AuthUser }>(
+      '/auth/login',
+      data,
+    );
     return response.data;
   },
 

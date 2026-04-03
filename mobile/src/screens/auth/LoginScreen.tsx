@@ -39,31 +39,76 @@ export const LoginScreen = () => {
   }
 
   return (
-    <KeyboardAvoidingView style={[styles.container, { backgroundColor: d.background }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView
+      style={[styles.container, { backgroundColor: d.background }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <View style={styles.logoContainer}>
           <Text style={[styles.logoText, { color: d.text }]}>GLDNHR</Text>
         </View>
 
         <Text style={[styles.title, { color: d.text }]}>Welcome back</Text>
-        <Text style={[styles.subtitle, { color: d.textMuted }]}>Sign in to earn points & submit deals</Text>
+        <Text style={[styles.subtitle, { color: d.textMuted }]}>
+          Sign in to earn points & submit deals
+        </Text>
 
-        {error ? <View style={[styles.errorBox, { backgroundColor: `${brand.error}15`, borderColor: `${brand.error}40` }]}><Text style={[styles.errorText, { color: brand.error }]}>{error}</Text></View> : null}
+        {error ? (
+          <View
+            style={[
+              styles.errorBox,
+              { backgroundColor: `${brand.error}15`, borderColor: `${brand.error}40` },
+            ]}
+          >
+            <Text style={[styles.errorText, { color: brand.error }]}>{error}</Text>
+          </View>
+        ) : null}
 
         <View style={styles.form}>
-          <View style={[styles.inputContainer, { backgroundColor: d.surface, borderColor: d.border }]}>
-            <TextInput style={[styles.input, { color: d.text }]} placeholder="Email" placeholderTextColor={d.textHint} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" autoCorrect={false} />
+          <View
+            style={[styles.inputContainer, { backgroundColor: d.surface, borderColor: d.border }]}
+          >
+            <TextInput
+              style={[styles.input, { color: d.text }]}
+              placeholder="Email"
+              placeholderTextColor={d.textHint}
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
           </View>
-          <View style={[styles.inputContainer, { backgroundColor: d.surface, borderColor: d.border }]}>
-            <TextInput style={[styles.input, { color: d.text }]} placeholder="Password" placeholderTextColor={d.textHint} value={password} onChangeText={setPassword} secureTextEntry />
+          <View
+            style={[styles.inputContainer, { backgroundColor: d.surface, borderColor: d.border }]}
+          >
+            <TextInput
+              style={[styles.input, { color: d.text }]}
+              placeholder="Password"
+              placeholderTextColor={d.textHint}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+            />
           </View>
 
-          <TouchableOpacity style={[styles.loginBtn, { backgroundColor: d.text }]} onPress={handleLogin} disabled={loading} activeOpacity={0.85}>
-            {loading ? <ActivityIndicator color={d.background} /> : <Text style={[styles.loginBtnText, { color: d.background }]}>Sign In</Text>}
+          <TouchableOpacity
+            style={[styles.loginBtn, { backgroundColor: d.text }]}
+            onPress={handleLogin}
+            disabled={loading}
+            activeOpacity={0.85}
+          >
+            {loading ? (
+              <ActivityIndicator color={d.background} />
+            ) : (
+              <Text style={[styles.loginBtnText, { color: d.background }]}>Sign In</Text>
+            )}
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.switchBtn} onPress={() => navigation.navigate('Signup')}>
-            <Text style={[styles.switchText, { color: d.textMuted }]}>No account? <Text style={[styles.switchLink, { color: d.text }]}>Sign Up</Text></Text>
+            <Text style={[styles.switchText, { color: d.textMuted }]}>
+              No account? <Text style={[styles.switchLink, { color: d.text }]}>Sign Up</Text>
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -85,7 +130,13 @@ const styles = StyleSheet.create({
   form: { gap: 12 },
   inputContainer: { borderRadius: 14, borderWidth: 0.5 },
   input: { padding: 16, fontSize: 15 },
-  loginBtn: { borderRadius: 20, height: 48, justifyContent: 'center', alignItems: 'center', marginTop: 4 },
+  loginBtn: {
+    borderRadius: 20,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 4,
+  },
   loginBtnText: { fontSize: 15, fontWeight: '600' },
   switchBtn: { alignItems: 'center', marginTop: 20 },
   switchText: { fontSize: 14, fontWeight: '500' },

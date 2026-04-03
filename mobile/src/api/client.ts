@@ -23,7 +23,7 @@ apiClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 console.log('API Client initialized with base URL:', API_URL);
@@ -36,7 +36,7 @@ apiClient.interceptors.response.use(
       console.error('API Error:', error.response?.status, error.message);
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default apiClient;

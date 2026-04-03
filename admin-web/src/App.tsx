@@ -1,19 +1,19 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
-import { useAuth, AuthProvider } from './context/AuthContext'
-import Layout from './components/Layout'
-import Dashboard from './pages/dashboard'
-import VenueList from './pages/Venues/VenueList'
-import VenueForm from './pages/Venues/VenueForm'
-import DealList from './pages/Deals/DealList'
-import DealForm from './pages/Deals/DealForm'
-import PendingReview from './pages/Submissions/PendingReview'
-import ReviewDetail from './pages/Submissions/ReviewDetail'
-import LoginPage from './pages/auth/LoginPage'
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth, AuthProvider } from './context/AuthContext';
+import Layout from './components/Layout';
+import Dashboard from './pages/dashboard';
+import VenueList from './pages/Venues/VenueList';
+import VenueForm from './pages/Venues/VenueForm';
+import DealList from './pages/Deals/DealList';
+import DealForm from './pages/Deals/DealForm';
+import PendingReview from './pages/Submissions/PendingReview';
+import ReviewDetail from './pages/Submissions/ReviewDetail';
+import LoginPage from './pages/auth/LoginPage';
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
-  const { token } = useAuth()
-  if (!token) return <Navigate to="/login" replace />
-  return <>{children}</>
+  const { token } = useAuth();
+  if (!token) return <Navigate to="/login" replace />;
+  return <>{children}</>;
 }
 
 function AppRoutes() {
@@ -39,7 +39,7 @@ function AppRoutes() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
-  )
+  );
 }
 
 export default function App() {
@@ -47,5 +47,5 @@ export default function App() {
     <AuthProvider>
       <AppRoutes />
     </AuthProvider>
-  )
+  );
 }

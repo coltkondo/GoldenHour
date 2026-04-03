@@ -17,11 +17,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   return (
     <View style={styles.container}>
       <ActivityIndicator size={size} color={d.primary} />
-      {message && (
-        <Text style={[styles.message, { color: d.textSecondary }]}>
-          {message}
-        </Text>
-      )}
+      {message && <Text style={[styles.message, { color: d.textSecondary }]}>{message}</Text>}
     </View>
   );
 };

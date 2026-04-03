@@ -42,7 +42,12 @@ const LockIcon = ({ color, size = 22 }: { color: string; size?: number }) => (
   </Svg>
 );
 
-const REPORT_OPTIONS: { type: ReportType; label: string; icon: React.FC<{ color: string; size?: number }>; desc: string }[] = [
+const REPORT_OPTIONS: {
+  type: ReportType;
+  label: string;
+  icon: React.FC<{ color: string; size?: number }>;
+  desc: string;
+}[] = [
   {
     type: 'deal_expired',
     label: 'Deal no longer active',
@@ -58,7 +63,9 @@ const REPORT_OPTIONS: { type: ReportType; label: string; icon: React.FC<{ color:
   {
     type: 'deal_update',
     label: 'Deal info is wrong',
-    icon: ({ color, size }: { color: string; size?: number }) => <AppIcon name="warning" size={size ?? 22} color={color} />,
+    icon: ({ color, size }: { color: string; size?: number }) => (
+      <AppIcon name="warning" size={size ?? 22} color={color} />
+    ),
     desc: 'Something about this deal is incorrect',
   },
 ];
@@ -108,12 +115,7 @@ export const FlagReportModal = ({ visible, onClose, venue, deal }: FlagReportMod
   }
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent
-      onRequestClose={handleClose}
-    >
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={handleClose}>
       <KeyboardAvoidingView
         style={styles.overlay}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -141,11 +143,12 @@ export const FlagReportModal = ({ visible, onClose, venue, deal }: FlagReportMod
             <ScrollView keyboardShouldPersistTaps="handled">
               <Text style={[styles.title, { color: d.text }]}>Report an Issue</Text>
               <Text style={[styles.subtitle, { color: d.textMuted }]}>
-                {venue.name}{deal ? ` · ${deal.title}` : ''}
+                {venue.name}
+                {deal ? ` · ${deal.title}` : ''}
               </Text>
 
               <View style={styles.optionsList}>
-                {REPORT_OPTIONS.map(opt => {
+                {REPORT_OPTIONS.map((opt) => {
                   const Icon = opt.icon;
                   return (
                     <TouchableOpacity
@@ -153,19 +156,25 @@ export const FlagReportModal = ({ visible, onClose, venue, deal }: FlagReportMod
                       style={[
                         styles.optionRow,
                         { borderColor: d.border },
-                        selectedType === opt.type && { backgroundColor: 'rgba(255,107,53,0.12)', borderColor: d.error },
+                        selectedType === opt.type && {
+                          backgroundColor: 'rgba(255,107,53,0.12)',
+                          borderColor: d.error,
+                        },
                       ]}
                       onPress={() => setSelectedType(opt.type)}
                       activeOpacity={0.8}
                     >
                       <Icon color={selectedType === opt.type ? d.error : d.textMuted} size={22} />
                       <View style={styles.optionText}>
-                        <Text style={[styles.optionLabel, { color: selectedType === opt.type ? d.error : d.text }]}>
+                        <Text
+                          style={[
+                            styles.optionLabel,
+                            { color: selectedType === opt.type ? d.error : d.text },
+                          ]}
+                        >
                           {opt.label}
                         </Text>
-                        <Text style={[styles.optionDesc, { color: d.textMuted }]}>
-                          {opt.desc}
-                        </Text>
+                        <Text style={[styles.optionDesc, { color: d.textMuted }]}>{opt.desc}</Text>
                       </View>
                       {selectedType === opt.type && (
                         <AppIcon name="correct" size={20} color={d.error} />
@@ -177,7 +186,10 @@ export const FlagReportModal = ({ visible, onClose, venue, deal }: FlagReportMod
 
               {selectedType && (
                 <TextInput
-                  style={[styles.notesInput, { color: d.text, borderColor: d.border, backgroundColor: d.surface }]}
+                  style={[
+                    styles.notesInput,
+                    { color: d.text, borderColor: d.border, backgroundColor: d.surface },
+                  ]}
                   placeholder="Optional: add more detail..."
                   placeholderTextColor={d.textHint}
                   value={notes}
@@ -188,14 +200,25 @@ export const FlagReportModal = ({ visible, onClose, venue, deal }: FlagReportMod
               )}
 
               {error && (
-                <View style={[styles.errorBanner, { backgroundColor: 'rgba(255,107,53,0.12)', borderColor: d.error }]}>
+                <View
+                  style={[
+                    styles.errorBanner,
+                    { backgroundColor: 'rgba(255,107,53,0.12)', borderColor: d.error },
+                  ]}
+                >
                   <AppIcon name="warning" size={16} color={d.error} />
-                  <Text style={[styles.errorText, { color: d.error }]}>Submission failed. Please try again.</Text>
+                  <Text style={[styles.errorText, { color: d.error }]}>
+                    Submission failed. Please try again.
+                  </Text>
                 </View>
               )}
 
               <TouchableOpacity
-                style={[styles.submitBtn, { backgroundColor: d.error }, !selectedType && styles.submitBtnDisabled]}
+                style={[
+                  styles.submitBtn,
+                  { backgroundColor: d.error },
+                  !selectedType && styles.submitBtnDisabled,
+                ]}
                 onPress={handleSubmit}
                 disabled={!selectedType || loading}
                 activeOpacity={0.85}
@@ -203,7 +226,9 @@ export const FlagReportModal = ({ visible, onClose, venue, deal }: FlagReportMod
                 {loading ? (
                   <ActivityIndicator color={d.buttonPrimaryText} />
                 ) : (
-                  <Text style={[styles.submitBtnText, { color: d.buttonPrimaryText }]}>Submit Report</Text>
+                  <Text style={[styles.submitBtnText, { color: d.buttonPrimaryText }]}>
+                    Submit Report
+                  </Text>
                 )}
               </TouchableOpacity>
             </ScrollView>

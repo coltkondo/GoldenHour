@@ -40,11 +40,22 @@ const ThemedTabBar = ({ state, descriptors, navigation }: any) => {
         return (
           <Pressable key={route.key} onPress={onPress} style={styles.tabItem}>
             <AppIcon
-              name={route.name === 'HomeTab' ? 'home' : route.name === 'MapTab' ? 'location' : route.name === 'ExplorerTab' ? 'search' : 'profile'}
+              name={
+                route.name === 'HomeTab'
+                  ? 'home'
+                  : route.name === 'MapTab'
+                    ? 'location'
+                    : route.name === 'ExplorerTab'
+                      ? 'search'
+                      : 'profile'
+              }
               size={22}
               role={isFocused ? 'brand' : 'muted'}
             />
-            <Text style={[styles.tabLabel, { color: isFocused ? d.primary : d.textMuted }]} numberOfLines={1}>
+            <Text
+              style={[styles.tabLabel, { color: isFocused ? d.primary : d.textMuted }]}
+              numberOfLines={1}
+            >
               {label}
             </Text>
           </Pressable>
@@ -64,8 +75,16 @@ export const TabNavigator = () => {
     >
       <Tab.Screen name="HomeTab" component={HomeScreen} options={{ tabBarLabel: 'Home' }} />
       <Tab.Screen name="MapTab" component={MapScreen} options={{ tabBarLabel: 'Map' }} />
-      <Tab.Screen name="ExplorerTab" component={ExplorerScreen} options={{ tabBarLabel: 'Explore' }} />
-      <Tab.Screen name="ProfileTab" component={ProfileScreen} options={{ tabBarLabel: 'Profile' }} />
+      <Tab.Screen
+        name="ExplorerTab"
+        component={ExplorerScreen}
+        options={{ tabBarLabel: 'Explore' }}
+      />
+      <Tab.Screen
+        name="ProfileTab"
+        component={ProfileScreen}
+        options={{ tabBarLabel: 'Profile' }}
+      />
     </Tab.Navigator>
   );
 };

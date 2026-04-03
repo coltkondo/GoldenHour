@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { venuesApi, dealsApi } from '../services/adminApi'
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { venuesApi, dealsApi } from '../services/adminApi';
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
@@ -8,8 +8,8 @@ export default function Dashboard() {
     activeVenues: 0,
     totalDeals: 0,
     activeDeals: 0,
-  })
-  const [loading, setLoading] = useState(true)
+  });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
@@ -17,18 +17,20 @@ export default function Dashboard() {
       venuesApi.count({ active_only: true }),
       dealsApi.count(),
       dealsApi.count({ active_only: true }),
-    ]).then(([total, active, totalDeals, activeDeals]) => {
-      setStats({
-        totalVenues: total.count,
-        activeVenues: active.count,
-        totalDeals: totalDeals.count,
-        activeDeals: activeDeals.count,
+    ])
+      .then(([total, active, totalDeals, activeDeals]) => {
+        setStats({
+          totalVenues: total.count,
+          activeVenues: active.count,
+          totalDeals: totalDeals.count,
+          activeDeals: activeDeals.count,
+        });
+        setLoading(false);
       })
-      setLoading(false)
-    }).catch(() => setLoading(false))
-  }, [])
+      .catch(() => setLoading(false));
+  }, []);
 
-  if (loading) return <div className="loading">Loading...</div>
+  if (loading) return <div className="loading">Loading...</div>;
 
   return (
     <div className="dashboard">
@@ -56,12 +58,20 @@ export default function Dashboard() {
       <div className="quick-actions">
         <h2>Quick Actions</h2>
         <div className="action-buttons">
-          <Link to="/venues/new" className="btn btn-primary">Add New Bar</Link>
-          <Link to="/deals/new" className="btn btn-primary">Add New Deal</Link>
-          <a href="/api/v1/admin/export/venues.csv" className="btn btn-secondary">Export Bars CSV</a>
-          <a href="/api/v1/admin/export/deals.csv" className="btn btn-secondary">Export Deals CSV</a>
+          <Link to="/venues/new" className="btn btn-primary">
+            Add New Bar
+          </Link>
+          <Link to="/deals/new" className="btn btn-primary">
+            Add New Deal
+          </Link>
+          <a href="/api/v1/admin/export/venues.csv" className="btn btn-secondary">
+            Export Bars CSV
+          </a>
+          <a href="/api/v1/admin/export/deals.csv" className="btn btn-secondary">
+            Export Deals CSV
+          </a>
         </div>
       </div>
     </div>
-  )
+  );
 }

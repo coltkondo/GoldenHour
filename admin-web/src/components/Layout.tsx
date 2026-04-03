@@ -1,15 +1,15 @@
-import { NavLink, Outlet } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { NavLink, Outlet } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const navItems = [
   { to: '/', label: 'Dashboard' },
   { to: '/venues', label: 'Bars' },
   { to: '/deals', label: 'Deals' },
   { to: '/submissions', label: 'Submissions' },
-]
+];
 
 export default function Layout() {
-  const { user, logout } = useAuth()
+  const { user, logout } = useAuth();
 
   return (
     <div className="layout">
@@ -32,12 +32,18 @@ export default function Layout() {
           ))}
         </ul>
         <div className="sidebar-footer">
-          <a href="/api/v1/admin/export/venues.csv" className="export-link">Export Bars CSV</a>
-          <a href="/api/v1/admin/export/deals.csv" className="export-link">Export Deals CSV</a>
+          <a href="/api/v1/admin/export/venues.csv" className="export-link">
+            Export Bars CSV
+          </a>
+          <a href="/api/v1/admin/export/deals.csv" className="export-link">
+            Export Deals CSV
+          </a>
           {user && (
             <div className="sidebar-user">
               <span className="sidebar-username">{user.username}</span>
-              <button className="logout-btn" onClick={logout}>Sign Out</button>
+              <button className="logout-btn" onClick={logout}>
+                Sign Out
+              </button>
             </div>
           )}
         </div>
@@ -46,5 +52,5 @@ export default function Layout() {
         <Outlet />
       </main>
     </div>
-  )
+  );
 }

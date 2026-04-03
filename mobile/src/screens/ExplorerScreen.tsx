@@ -52,12 +52,18 @@ export const ExplorerScreen = () => {
     }
   };
 
-  const allTags = Array.from(new Set(venues.flatMap((v: any) => v.tags || []).filter(Boolean))).sort();
-  const venueTypes = Array.from(new Set(venues.map((v) => v.venue_type).filter(Boolean))).sort() as string[];
+  const allTags = Array.from(
+    new Set(venues.flatMap((v: any) => v.tags || []).filter(Boolean)),
+  ).sort();
+  const venueTypes = Array.from(
+    new Set(venues.map((v) => v.venue_type).filter(Boolean)),
+  ).sort() as string[];
   const categories = Array.from(new Set([...venueTypes, ...allTags])).sort();
 
   const filteredVenues = selectedTag
-    ? venues.filter((v: any) => v.venue_type === selectedTag || (v.tags && v.tags.includes(selectedTag)))
+    ? venues.filter(
+        (v: any) => v.venue_type === selectedTag || (v.tags && v.tags.includes(selectedTag)),
+      )
     : venues;
 
   const dealsByVenue = todayDeals.reduce<Record<string, Deal[]>>((acc, deal) => {
@@ -74,7 +80,8 @@ export const ExplorerScreen = () => {
   const getVenueIconName = (type: string | null): 'deals' | 'martini' => {
     if (!type) return 'deals';
     const lower = type.toLowerCase();
-    if (lower.includes('cocktail') || lower.includes('lounge') || lower.includes('wine')) return 'martini';
+    if (lower.includes('cocktail') || lower.includes('lounge') || lower.includes('wine'))
+      return 'martini';
     return 'deals';
   };
 
@@ -91,7 +98,11 @@ export const ExplorerScreen = () => {
 
   return (
     <View style={[styles.container, { backgroundColor: d.background }]}>
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Header */}
         <View style={styles.header}>
           <Text style={[styles.wordmark, { color: d.primary }]}>GLDNHR</Text>
@@ -103,11 +114,15 @@ export const ExplorerScreen = () => {
 
         {/* Load Error */}
         {loadError && (
-          <View style={[styles.errorCard, { backgroundColor: d.cardBackground, borderColor: d.error }]}>
+          <View
+            style={[styles.errorCard, { backgroundColor: d.cardBackground, borderColor: d.error }]}
+          >
             <AppIcon name="warning" size={20} role="urgent" />
             <View style={styles.errorContent}>
               <Text style={[styles.errorTitle, { color: d.error }]}>Couldn't load data</Text>
-              <Text style={[styles.errorDesc, { color: d.textMuted }]}>Check your connection and pull down to retry</Text>
+              <Text style={[styles.errorDesc, { color: d.textMuted }]}>
+                Check your connection and pull down to retry
+              </Text>
             </View>
           </View>
         )}
@@ -135,11 +150,20 @@ export const ExplorerScreen = () => {
           {(['browse', 'tonight', 'submit'] as const).map((tab) => (
             <TouchableOpacity
               key={tab}
-              style={[styles.tab, selectedTab === tab && { backgroundColor: 'rgba(245,166,35,0.12)', borderColor: d.primary, borderWidth: 1 }]}
+              style={[
+                styles.tab,
+                selectedTab === tab && {
+                  backgroundColor: 'rgba(245,166,35,0.12)',
+                  borderColor: d.primary,
+                  borderWidth: 1,
+                },
+              ]}
               onPress={() => setSelectedTab(tab)}
               activeOpacity={0.8}
             >
-              <Text style={[styles.tabText, { color: selectedTab === tab ? d.primary : d.textMuted }]}>
+              <Text
+                style={[styles.tabText, { color: selectedTab === tab ? d.primary : d.textMuted }]}
+              >
                 {tab === 'browse' ? 'Browse' : tab === 'tonight' ? 'Tonight' : 'Submit'}
               </Text>
             </TouchableOpacity>
@@ -149,32 +173,84 @@ export const ExplorerScreen = () => {
         {/* Browse Tab */}
         {selectedTab === 'browse' && (
           <View style={styles.section}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll} contentContainerStyle={styles.chipContainer}>
-              <TouchableOpacity style={[styles.chip, { backgroundColor: !selectedTag ? 'rgba(245,166,35,0.12)' : d.filterInactive, borderColor: !selectedTag ? d.primary : 'transparent', borderWidth: 1 }]} onPress={() => setSelectedTag(null)}>
-                <Text style={[styles.chipText, { color: !selectedTag ? d.primary : d.textMuted }]}>All ({venues.length})</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.chipScroll}
+              contentContainerStyle={styles.chipContainer}
+            >
+              <TouchableOpacity
+                style={[
+                  styles.chip,
+                  {
+                    backgroundColor: !selectedTag ? 'rgba(245,166,35,0.12)' : d.filterInactive,
+                    borderColor: !selectedTag ? d.primary : 'transparent',
+                    borderWidth: 1,
+                  },
+                ]}
+                onPress={() => setSelectedTag(null)}
+              >
+                <Text style={[styles.chipText, { color: !selectedTag ? d.primary : d.textMuted }]}>
+                  All ({venues.length})
+                </Text>
               </TouchableOpacity>
               {categories.map((cat) => (
-                <TouchableOpacity key={cat} style={[styles.chip, { backgroundColor: selectedTag === cat ? 'rgba(245,166,35,0.12)' : d.filterInactive, borderColor: selectedTag === cat ? d.primary : 'transparent', borderWidth: 1 }]} onPress={() => setSelectedTag(selectedTag === cat ? null : cat)}>
-                  <Text style={[styles.chipText, { color: selectedTag === cat ? d.primary : d.textMuted }]}>{cat}</Text>
+                <TouchableOpacity
+                  key={cat}
+                  style={[
+                    styles.chip,
+                    {
+                      backgroundColor:
+                        selectedTag === cat ? 'rgba(245,166,35,0.12)' : d.filterInactive,
+                      borderColor: selectedTag === cat ? d.primary : 'transparent',
+                      borderWidth: 1,
+                    },
+                  ]}
+                  onPress={() => setSelectedTag(selectedTag === cat ? null : cat)}
+                >
+                  <Text
+                    style={[
+                      styles.chipText,
+                      { color: selectedTag === cat ? d.primary : d.textMuted },
+                    ]}
+                  >
+                    {cat}
+                  </Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
 
-            <Text style={[styles.sectionLabel, { color: d.text }]}>{selectedTag || 'All Bars'} ({filteredVenues.length})</Text>
+            <Text style={[styles.sectionLabel, { color: d.text }]}>
+              {selectedTag || 'All Bars'} ({filteredVenues.length})
+            </Text>
 
             {filteredVenues.map((venue: any) => {
               return (
-                <TouchableOpacity key={venue.id} style={[styles.venueCard, { backgroundColor: d.cardBackground, borderColor: d.border }]} activeOpacity={0.8} onPress={() => navigation.navigate('HappyHour', { venue })}>
+                <TouchableOpacity
+                  key={venue.id}
+                  style={[
+                    styles.venueCard,
+                    { backgroundColor: d.cardBackground, borderColor: d.border },
+                  ]}
+                  activeOpacity={0.8}
+                  onPress={() => navigation.navigate('HappyHour', { venue })}
+                >
                   <View style={[styles.venueThumb, { backgroundColor: d.filterInactive }]}>
                     <AppIcon name={getVenueIconName(venue.venue_type)} size={20} role="brand" />
                   </View>
                   <View style={styles.venueContent}>
-                    <Text style={[styles.venueName, { color: d.text }]} numberOfLines={1}>{venue.nickname || venue.name}</Text>
-                    <Text style={[styles.venueAddress, { color: d.textMuted }]} numberOfLines={1}>{venue.address}</Text>
+                    <Text style={[styles.venueName, { color: d.text }]} numberOfLines={1}>
+                      {venue.nickname || venue.name}
+                    </Text>
+                    <Text style={[styles.venueAddress, { color: d.textMuted }]} numberOfLines={1}>
+                      {venue.address}
+                    </Text>
                     <View style={styles.venueTagRow}>
                       {venue.venue_type && (
                         <View style={[styles.venueTag, { backgroundColor: d.filterInactive }]}>
-                          <Text style={[styles.venueTagText, { color: d.textMuted }]}>{venue.venue_type}</Text>
+                          <Text style={[styles.venueTagText, { color: d.textMuted }]}>
+                            {venue.venue_type}
+                          </Text>
                         </View>
                       )}
                     </View>
@@ -199,32 +275,57 @@ export const ExplorerScreen = () => {
                 const venue = venueMap[venueId];
                 if (!venue) return null;
                 return (
-                  <TouchableOpacity key={venueId} style={[styles.tonightCard, { backgroundColor: d.cardBackground, borderColor: d.border }]} activeOpacity={0.8} onPress={() => navigation.navigate('HappyHour', { venue })}>
+                  <TouchableOpacity
+                    key={venueId}
+                    style={[
+                      styles.tonightCard,
+                      { backgroundColor: d.cardBackground, borderColor: d.border },
+                    ]}
+                    activeOpacity={0.8}
+                    onPress={() => navigation.navigate('HappyHour', { venue })}
+                  >
                     <View style={styles.tonightCardHeader}>
-                      <Text style={[styles.tonightVenueName, { color: d.text }]} numberOfLines={1}>{(venue as any).nickname || venue.name}</Text>
+                      <Text style={[styles.tonightVenueName, { color: d.text }]} numberOfLines={1}>
+                        {(venue as any).nickname || venue.name}
+                      </Text>
                       <AppIcon name="chevronRight" size={16} role="muted" />
                     </View>
                     {deals.map((deal, index) => (
                       <React.Fragment key={deal.id}>
                         <View style={styles.dealRow}>
                           <StatusDot status="live" size={6} pulse={false} />
-                          <Text style={[styles.dealName, { color: d.text }]} numberOfLines={1}>{deal.title}</Text>
+                          <Text style={[styles.dealName, { color: d.text }]} numberOfLines={1}>
+                            {deal.title}
+                          </Text>
                           {deal.deal_price != null ? (
-                            <Text style={[styles.dealPrice, { color: d.primary }]}>${deal.deal_price.toFixed(0)}</Text>
+                            <Text style={[styles.dealPrice, { color: d.primary }]}>
+                              ${deal.deal_price.toFixed(0)}
+                            </Text>
                           ) : deal.discount_percentage != null ? (
-                            <Text style={[styles.dealPrice, { color: d.primary }]}>{deal.discount_percentage}%</Text>
+                            <Text style={[styles.dealPrice, { color: d.primary }]}>
+                              {deal.discount_percentage}%
+                            </Text>
                           ) : null}
                         </View>
-                        {index < deals.length - 1 && <View style={[styles.dealSeparator, { backgroundColor: d.divider }]} />}
+                        {index < deals.length - 1 && (
+                          <View style={[styles.dealSeparator, { backgroundColor: d.divider }]} />
+                        )}
                       </React.Fragment>
                     ))}
                   </TouchableOpacity>
                 );
               })
             ) : (
-              <View style={[styles.emptyCard, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+              <View
+                style={[
+                  styles.emptyCard,
+                  { backgroundColor: d.cardBackground, borderColor: d.border },
+                ]}
+              >
                 <Text style={[styles.emptyText, { color: d.text }]}>No deals tonight</Text>
-                <Text style={[styles.emptySubtext, { color: d.textMuted }]}>Check back on another day for happy hour specials</Text>
+                <Text style={[styles.emptySubtext, { color: d.textMuted }]}>
+                  Check back on another day for happy hour specials
+                </Text>
               </View>
             )}
           </View>
@@ -235,20 +336,45 @@ export const ExplorerScreen = () => {
           <View style={styles.section}>
             <Text style={[styles.sectionLabel, { color: d.text }]}>Submit a Happy Hour</Text>
 
-            <View style={[styles.submitCard, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+            <View
+              style={[
+                styles.submitCard,
+                { backgroundColor: d.cardBackground, borderColor: d.border },
+              ]}
+            >
               <View style={styles.submitIconContainer}>
                 <AppIcon name="location" size={48} role="brand" />
               </View>
-              <Text style={[styles.submitTitle, { color: d.text }]}>Know a spot we're missing?</Text>
-              <Text style={[styles.submitDesc, { color: d.textMuted }]}>Help the community by adding a new happy hour venue or deal.</Text>
-              <TouchableOpacity onPress={() => navigation.navigate('QuickSubmit')} style={[styles.submitButton, { backgroundColor: d.primary }]} activeOpacity={0.8}>
-                <Text style={[styles.submitButtonText, { color: d.buttonPrimaryText }]}>Submit New Venue</Text>
+              <Text style={[styles.submitTitle, { color: d.text }]}>
+                Know a spot we're missing?
+              </Text>
+              <Text style={[styles.submitDesc, { color: d.textMuted }]}>
+                Help the community by adding a new happy hour venue or deal.
+              </Text>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('QuickSubmit')}
+                style={[styles.submitButton, { backgroundColor: d.primary }]}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.submitButtonText, { color: d.buttonPrimaryText }]}>
+                  Submit New Venue
+                </Text>
               </TouchableOpacity>
             </View>
 
-            <View style={[styles.tipsCard, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+            <View
+              style={[
+                styles.tipsCard,
+                { backgroundColor: d.cardBackground, borderColor: d.border },
+              ]}
+            >
               <Text style={[styles.tipsTitle, { color: d.text }]}>Tips</Text>
-              {['Include the venue name and address', 'Add happy hour days and times', 'List specific deals (e.g. $5 drafts)', 'Mention any food specials'].map((tip, i) => (
+              {[
+                'Include the venue name and address',
+                'Add happy hour days and times',
+                'List specific deals (e.g. $5 drafts)',
+                'Mention any food specials',
+              ].map((tip, i) => (
                 <View key={i} style={styles.tipRow}>
                   <View style={[styles.tipCheckIcon, { backgroundColor: d.live }]}>
                     <AppIcon name="check" size={12} role="positive" color={d.buttonPrimaryText} />
@@ -271,7 +397,14 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   scrollContent: { paddingTop: 60, paddingHorizontal: 16 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  loadingSpinner: { width: 56, height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
+  loadingSpinner: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
   loadingText: { fontSize: 15, fontWeight: '600' },
 
   header: { marginBottom: 24 },
@@ -279,12 +412,26 @@ const styles = StyleSheet.create({
   locationChip: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start' },
   locationText: { fontSize: 13, fontWeight: '500' },
 
-  errorCard: { flexDirection: 'row', alignItems: 'center', borderRadius: 14, borderWidth: 1, padding: 14, marginBottom: 20, gap: 12 },
+  errorCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 14,
+    marginBottom: 20,
+    gap: 12,
+  },
   errorContent: { flex: 1 },
   errorTitle: { fontSize: 14, fontWeight: '700' },
   errorDesc: { fontSize: 12, fontWeight: '500', marginTop: 2 },
 
-  statsRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', marginBottom: 24, paddingVertical: 8 },
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    marginBottom: 24,
+    paddingVertical: 8,
+  },
   statItem: { alignItems: 'center' },
   statDivider: { width: 1, height: 32, marginHorizontal: 8 },
   statNum: { fontSize: 24, fontWeight: '800', letterSpacing: -0.5 },
@@ -302,8 +449,22 @@ const styles = StyleSheet.create({
   chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 16 },
   chipText: { fontSize: 13, fontWeight: '500' },
 
-  venueCard: { flexDirection: 'row', alignItems: 'center', borderRadius: 16, borderWidth: 1, padding: 12, marginBottom: 10 },
-  venueThumb: { width: 40, height: 40, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  venueCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 12,
+    marginBottom: 10,
+  },
+  venueThumb: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
   venueContent: { flex: 1, minWidth: 0 },
   venueName: { fontSize: 14, fontWeight: '600', letterSpacing: -0.1 },
   venueAddress: { fontSize: 12, fontWeight: '500', marginTop: 2 },
@@ -311,10 +472,20 @@ const styles = StyleSheet.create({
   venueTag: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
   venueTagText: { fontSize: 10, fontWeight: '500' },
 
-  tonightHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
+  tonightHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
   tonightTitle: { fontSize: 16, fontWeight: '700', letterSpacing: -0.2 },
   tonightCard: { borderRadius: 16, borderWidth: 1, padding: 14, marginBottom: 10 },
-  tonightCardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  tonightCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
   tonightVenueName: { fontSize: 14, fontWeight: '600', flex: 1, marginRight: 8 },
   dealRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8 },
   dealName: { flex: 1, fontSize: 13, fontWeight: '500' },
@@ -325,16 +496,40 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 15, fontWeight: '600' },
   emptySubtext: { fontSize: 13, fontWeight: '500', textAlign: 'center', marginTop: 4 },
 
-  submitCard: { borderRadius: 16, borderWidth: 1, padding: 24, alignItems: 'center', marginBottom: 16 },
+  submitCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 24,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
   submitIconContainer: { marginBottom: 16 },
   submitTitle: { fontSize: 16, fontWeight: '600', marginBottom: 8, textAlign: 'center' },
-  submitDesc: { fontSize: 13, fontWeight: '500', textAlign: 'center', lineHeight: 20, marginBottom: 20 },
-  submitButton: { width: '100%', height: 48, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
+  submitDesc: {
+    fontSize: 13,
+    fontWeight: '500',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 20,
+  },
+  submitButton: {
+    width: '100%',
+    height: 48,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   submitButtonText: { fontSize: 14, fontWeight: '700' },
 
   tipsCard: { borderRadius: 16, borderWidth: 1, padding: 16 },
   tipsTitle: { fontSize: 12, fontWeight: '600', marginBottom: 14 },
   tipRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
-  tipCheckIcon: { width: 18, height: 18, borderRadius: 9, justifyContent: 'center', alignItems: 'center' },
+  tipCheckIcon: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   tipText: { fontSize: 12, fontWeight: '500', flex: 1 },
 });

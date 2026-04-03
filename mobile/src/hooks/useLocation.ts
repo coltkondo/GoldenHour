@@ -12,7 +12,7 @@ export const useLocation = () => {
       try {
         // Request permission
         const { status } = await Location.requestForegroundPermissionsAsync();
-        
+
         if (status !== 'granted') {
           // Use default location (State College) when permission denied
           console.log('Location permission denied, using default State College location');
@@ -22,7 +22,7 @@ export const useLocation = () => {
 
         // Get current location
         const currentLocation = await Location.getCurrentPositionAsync({});
-        
+
         setLocation({
           latitude: currentLocation.coords.latitude,
           longitude: currentLocation.coords.longitude,

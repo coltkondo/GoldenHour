@@ -145,9 +145,7 @@ export const DealCard: React.FC<DealCardProps> = ({
 
       {deal.discount_percentage != null && deal.discount_percentage > 0 && (
         <View style={styles.discountStrip}>
-          <Text style={styles.discountText}>
-            {deal.discount_percentage}% OFF
-          </Text>
+          <Text style={styles.discountText}>{deal.discount_percentage}% OFF</Text>
         </View>
       )}
     </TouchableOpacity>

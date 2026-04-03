@@ -1,21 +1,21 @@
-import { useState } from 'react'
+import { useState } from 'react';
 
 interface StatusToggleProps {
-  active: boolean
-  onToggle: () => Promise<void>
+  active: boolean;
+  onToggle: () => Promise<void>;
 }
 
 export default function StatusToggle({ active, onToggle }: StatusToggleProps) {
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
   const handleClick = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      await onToggle()
+      await onToggle();
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <button
@@ -26,5 +26,5 @@ export default function StatusToggle({ active, onToggle }: StatusToggleProps) {
     >
       {loading ? '...' : active ? 'Active' : 'Inactive'}
     </button>
-  )
+  );
 }

@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { submissionsApi } from '../../services/adminApi'
-import type { Submission } from '../../types'
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { submissionsApi } from '../../services/adminApi';
+import type { Submission } from '../../types';
 
 const TYPE_LABELS: Record<string, string> = {
   new_deal: 'New Deal',
@@ -10,7 +10,7 @@ const TYPE_LABELS: Record<string, string> = {
   new_bar: 'New Bar',
   bar_closed: 'Bar Closed',
   bar_update: 'Bar Update',
-}
+};
 
 const AUTO_APPLY_DESCRIPTION: Record<string, string> = {
   new_bar: 'A new bar will be created with the submitted data.',
@@ -19,46 +19,48 @@ const AUTO_APPLY_DESCRIPTION: Record<string, string> = {
   new_deal: 'A new deal will be created with the submitted data.',
   deal_expired: 'The related deal will be marked as expired (inactive).',
   deal_update: 'The related deal will be updated with the submitted data.',
-}
+};
 
 export default function ReviewDetail() {
-  const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
-  const [sub, setSub] = useState<Submission | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [adminNotes, setAdminNotes] = useState('')
-  const [submitting, setSubmitting] = useState(false)
-  const [result, setResult] = useState<string | null>(null)
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [sub, setSub] = useState<Submission | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [adminNotes, setAdminNotes] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
 
   useEffect(() => {
-    submissionsApi.get(id!).then(data => {
-      setSub(data)
-      setLoading(false)
-    })
-  }, [id])
+    submissionsApi.get(id!).then((data) => {
+      setSub(data);
+      setLoading(false);
+    });
+  }, [id]);
 
   async function handleReview(status: 'approved' | 'rejected') {
-    setSubmitting(true)
-    setResult(null)
+    setSubmitting(true);
+    setResult(null);
     try {
-      await submissionsApi.review(id!, { status, admin_notes: adminNotes || undefined })
-      setResult(status === 'approved' ? 'Approved! Changes applied.' : 'Rejected.')
-      setTimeout(() => navigate('/submissions'), 1500)
+      await submissionsApi.review(id!, { status, admin_notes: adminNotes || undefined });
+      setResult(status === 'approved' ? 'Approved! Changes applied.' : 'Rejected.');
+      setTimeout(() => navigate('/submissions'), 1500);
     } catch (err: any) {
-      setResult(`Error: ${err.message}`)
+      setResult(`Error: ${err.message}`);
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
   }
 
-  if (loading) return <div className="loading">Loading...</div>
-  if (!sub) return <div className="error">Submission not found</div>
+  if (loading) return <div className="loading">Loading...</div>;
+  if (!sub) return <div className="error">Submission not found</div>;
 
-  const isPending = sub.status === 'pending'
+  const isPending = sub.status === 'pending';
 
   return (
     <div className="review-detail">
-      <button className="back-btn" onClick={() => navigate('/submissions')}>← Back</button>
+      <button className="back-btn" onClick={() => navigate('/submissions')}>
+        ← Back
+      </button>
 
       <div className="page-header">
         <h1>{TYPE_LABELS[sub.submission_type] ?? sub.submission_type}</h1>
@@ -68,9 +70,13 @@ export default function ReviewDetail() {
       </div>
 
       <div className="detail-meta">
-        <span>Submitted by <strong>{sub.submitter_username}</strong></span>
+        <span>
+          Submitted by <strong>{sub.submitter_username}</strong>
+        </span>
         <span>{new Date(sub.created_at).toLocaleString()}</span>
-        {sub.points_awarded > 0 && <span className="points-awarded">+{sub.points_awarded} pts awarded</span>}
+        {sub.points_awarded > 0 && (
+          <span className="points-awarded">+{sub.points_awarded} pts awarded</span>
+        )}
       </div>
 
       {isPending && (
@@ -104,12 +110,16 @@ export default function ReviewDetail() {
             <textarea
               id="notes"
               value={adminNotes}
-              onChange={e => setAdminNotes(e.target.value)}
+              onChange={(e) => setAdminNotes(e.target.value)}
               placeholder="Reason for rejection, corrections made, etc."
               rows={3}
             />
           </div>
-          {result && <div className={`result-msg ${result.startsWith('Error') ? 'error' : 'success'}`}>{result}</div>}
+          {result && (
+            <div className={`result-msg ${result.startsWith('Error') ? 'error' : 'success'}`}>
+              {result}
+            </div>
+          )}
           <div className="review-btns">
             <button
               className="btn btn-approve"
@@ -130,11 +140,21 @@ export default function ReviewDetail() {
       ) : (
         <div className="detail-section">
           <h3>Review Decision</h3>
-          <p><strong>Status:</strong> {sub.status}</p>
-          {sub.admin_notes && <p><strong>Notes:</strong> {sub.admin_notes}</p>}
-          {sub.reviewed_at && <p><strong>Reviewed at:</strong> {new Date(sub.reviewed_at).toLocaleString()}</p>}
+          <p>
+            <strong>Status:</strong> {sub.status}
+          </p>
+          {sub.admin_notes && (
+            <p>
+              <strong>Notes:</strong> {sub.admin_notes}
+            </p>
+          )}
+          {sub.reviewed_at && (
+            <p>
+              <strong>Reviewed at:</strong> {new Date(sub.reviewed_at).toLocaleString()}
+            </p>
+          )}
         </div>
       )}
     </div>
-  )
+  );
 }

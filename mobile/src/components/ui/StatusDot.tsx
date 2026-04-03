@@ -25,7 +25,7 @@ export const StatusDot: React.FC<StatusDotProps> = ({ status, size = 8, pulse = 
       Animated.sequence([
         Animated.timing(scale, { toValue: 1.4, duration: 600, useNativeDriver: true }),
         Animated.timing(scale, { toValue: 1, duration: 600, useNativeDriver: true }),
-      ])
+      ]),
     );
     anim.start();
     return () => anim.stop();

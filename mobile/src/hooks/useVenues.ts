@@ -12,7 +12,7 @@ interface UseVenuesResult {
 export function useVenues(
   latitude: number,
   longitude: number,
-  radiusMeters: number = 10000
+  radiusMeters: number = 10000,
 ): UseVenuesResult {
   const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState(true);

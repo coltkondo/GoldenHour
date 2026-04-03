@@ -17,7 +17,7 @@ export const LiveBadge: React.FC<LiveBadgeProps> = ({ label = 'LIVE', size = 'sm
       Animated.sequence([
         Animated.timing(scale, { toValue: 1.4, duration: 600, useNativeDriver: true }),
         Animated.timing(scale, { toValue: 1, duration: 600, useNativeDriver: true }),
-      ])
+      ]),
     );
     pulse.start();
     return () => pulse.stop();
@@ -29,7 +29,17 @@ export const LiveBadge: React.FC<LiveBadgeProps> = ({ label = 'LIVE', size = 'sm
   const fontSize = size === 'sm' ? 10 : 12;
 
   return (
-    <View style={[styles.badge, { backgroundColor: 'rgba(45,212,160,0.12)', borderColor: d.live, paddingHorizontal: paddingH, paddingVertical: paddingV }]}>
+    <View
+      style={[
+        styles.badge,
+        {
+          backgroundColor: 'rgba(45,212,160,0.12)',
+          borderColor: d.live,
+          paddingHorizontal: paddingH,
+          paddingVertical: paddingV,
+        },
+      ]}
+    >
       <View style={styles.dotWrapper}>
         <Animated.View style={[styles.dot, { backgroundColor: d.live, transform: [{ scale }] }]} />
       </View>
