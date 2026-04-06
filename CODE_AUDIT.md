@@ -9,8 +9,8 @@
 ## BACKEND (FastAPI / Python)
 
 ### Critical
-1. **Naive datetime() — no UTC** (`deals.py:47,98`) — `datetime.now()` used without timezone; breaks happy hour filtering across timezones
-2. **Race condition on points balance** (`submission_review.py:99-119`) — non-atomic increment; concurrent approvals can silently lose points
+1. ~~**Naive datetime() — no UTC** (`deals.py:47,98`) — `datetime.now()` used without timezone; breaks happy hour filtering across timezones~~ **RESOLVED** in commit `fbbd212` — replaced with `_now_eastern()` using `ZoneInfo(settings.APP_TIMEZONE)`; 9 tests in `tests/test_issue1_deals_timezone.py`
+2. ~~**Race condition on points balance** (`submission_review.py:99-119`) — non-atomic increment; concurrent approvals can silently lose points~~ **RESOLVED** in commit `fbbd212` — replaced ORM read-modify-write with atomic SQL `UPDATE users SET points_balance = points_balance + :x`; 7 tests in `tests/test_issue2_points_atomic.py`
 
 ### High
 3. **No rate limiting** — zero rate limiting on any endpoint; auth endpoints and submission creation are wide open to abuse

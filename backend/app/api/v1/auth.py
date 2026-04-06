@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -17,7 +18,8 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 @router.post("/register", response_model=Token, status_code=201)
 def register(data: UserCreate, db: Session = Depends(get_db)):
     """Create a new user account and return a JWT."""
-    if db.query(User).filter(User.email == data.email).first():
+    # func.lower() guards against any pre-existing mixed-case rows in the DB
+    if db.query(User).filter(func.lower(User.email) == data.email).first():
         raise HTTPException(status_code=409, detail="Email already registered")
     if db.query(User).filter(User.username == data.username).first():
         raise HTTPException(status_code=409, detail="Username already taken")
@@ -39,7 +41,8 @@ def register(data: UserCreate, db: Session = Depends(get_db)):
 @router.post("/login", response_model=Token)
 def login(data: UserLogin, db: Session = Depends(get_db)):
     """Authenticate and return a JWT."""
-    user = db.query(User).filter(User.email == data.email).first()
+    # func.lower() allows login even if an older row was stored with mixed-case email
+    user = db.query(User).filter(func.lower(User.email) == data.email).first()
     if not user or not verify_password(data.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
