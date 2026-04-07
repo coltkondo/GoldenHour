@@ -22,12 +22,12 @@
 
 ### Medium
 9. **No request body size limits** — `submitted_data` JSONB accepts arbitrarily large payloads; DoS vector
-10. ~~**CORS too permissive** (`main.py:76-82`) — `allow_methods=["*"]` allows TRACE method; `allow_headers=["*"]` undermines CSRF protection~~ **RESOLVED** in commit `TBD` — replaced wildcards with explicit `allow_methods` (GET/POST/PUT/PATCH/DELETE/OPTIONS) and `allow_headers` (Authorization/Content-Type/Accept/Origin); 11 tests in `tests/test_issue10_cors.py`
+10. ~~**CORS too permissive** (`main.py:76-82`) — `allow_methods=["*"]` allows TRACE method; `allow_headers=["*"]` undermines CSRF protection~~ **RESOLVED** in commit `1a8e640` — replaced wildcards with explicit `allow_methods` (GET/POST/PUT/PATCH/DELETE/OPTIONS) and `allow_headers` (Authorization/Content-Type/Accept/Origin); 11 tests in `tests/test_issue10_cors.py`
 11. **Soft delete without audit trail** — `active` boolean flip has no `deleted_at` timestamp or `deleted_by` tracking
 12. **7 empty stub files** — `moderation.py`, `geocoding.py`, `validation.py`, `happy_hours.py`, `public.py`, `admin/users.py`, `admin/analytics.py` are comment-only; if routes are registered, they return nothing or crash
 13. **Redundant/empty Alembic migrations** — `11cfbfc180c0`, `86849ca32f7b` are no-ops; `4da5183dc371` duplicates earlier work; hard-to-trace upgrade path
 14. **Missing FK indexes** — `PointTransaction.submission_id` and `Submission.reviewed_by` may lack explicit indexes
-15. ~~**Non-deterministic leaderboard ranking** — ties in `points_balance` sort in undefined order~~ **RESOLVED** in commit `TBD` — added `User.username.asc()` as secondary sort key; 4 tests in `tests/test_issue15_leaderboard_ranking.py`
+15. ~~**Non-deterministic leaderboard ranking** — ties in `points_balance` sort in undefined order~~ **RESOLVED** in commit `1a8e640` — added `User.username.asc()` as secondary sort key; 4 tests in `tests/test_issue15_leaderboard_ranking.py`
 16. **`pool_recycle=1800` may exceed DB idle timeout** (`database.py:13`) — if Postgres closes connections at 10 min, recycling at 30 min is too late
 17. **`DEBUG=True` default enables SQL query logging** (`config.py`, `database.py`) — leaks schema/query details if accidentally left on in production
 18. **Redis dependency declared but completely unimplemented** (`cache.py` is empty) — misleading, unused dependency
