@@ -30,6 +30,7 @@ import { FlagIcon } from 'phosphor-react-native/src/icons/Flag';
 import { ShieldCheckIcon } from 'phosphor-react-native/src/icons/ShieldCheck';
 import { ListIcon } from 'phosphor-react-native/src/icons/List';
 import { PlusIcon } from 'phosphor-react-native/src/icons/Plus';
+import { MinusIcon } from 'phosphor-react-native/src/icons/Minus';
 import { PaletteIcon } from 'phosphor-react-native/src/icons/Palette';
 import { SignOutIcon } from 'phosphor-react-native/src/icons/SignOut';
 import { WarningIcon } from 'phosphor-react-native/src/icons/Warning';
@@ -87,6 +88,7 @@ export const IconMap = {
   shield: 'ShieldCheck',
   list: 'List',
   plus: 'Plus',
+  minus: 'Minus',
   palette: 'Palette',
   logout: 'SignOut',
   warning: 'Warning',
@@ -140,6 +142,7 @@ const PHOSPHOR_ICONS: Record<string, React.FC<any>> = {
   ShieldCheck: ShieldCheckIcon,
   List: ListIcon,
   Plus: PlusIcon,
+  Minus: MinusIcon,
   Palette: PaletteIcon,
   SignOut: SignOutIcon,
   Warning: WarningIcon,

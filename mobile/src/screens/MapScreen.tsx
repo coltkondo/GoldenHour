@@ -94,7 +94,7 @@ export const MapScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedVenueId, setSelectedVenueId] = useState<string | null>(null);
-  const [mapRegion, setMapRegion] = useState<Region | null>(null);
+  const [mapRegion, setMapRegion] = useState<Region | null>(location ?? null);
 
   useEffect(() => {
     if (!locationLoading && !locationError) {
@@ -163,6 +163,32 @@ export const MapScreen = () => {
       mapRef.current.animateToRegion(
         { ...location, latitudeDelta: 0.05, longitudeDelta: 0.05 },
         500,
+      );
+    }
+  };
+
+  const zoomIn = () => {
+    if (mapRef.current && mapRegion) {
+      mapRef.current.animateToRegion(
+        {
+          ...mapRegion,
+          latitudeDelta: mapRegion.latitudeDelta / 2,
+          longitudeDelta: mapRegion.longitudeDelta / 2,
+        },
+        300,
+      );
+    }
+  };
+
+  const zoomOut = () => {
+    if (mapRef.current && mapRegion) {
+      mapRef.current.animateToRegion(
+        {
+          ...mapRegion,
+          latitudeDelta: Math.min(mapRegion.latitudeDelta * 2, 180),
+          longitudeDelta: Math.min(mapRegion.longitudeDelta * 2, 360),
+        },
+        300,
       );
     }
   };
@@ -239,6 +265,24 @@ export const MapScreen = () => {
         <AppIcon name="crosshair" size={18} role="brand" />
       </TouchableOpacity>
 
+      <View style={styles.zoomControls}>
+        <TouchableOpacity
+          style={[styles.zoomButton, styles.zoomButtonTop, { backgroundColor: d.cardBackground, borderColor: d.border }]}
+          onPress={zoomIn}
+          activeOpacity={0.8}
+        >
+          <AppIcon name="plus" size={18} role="default" />
+        </TouchableOpacity>
+        <View style={[styles.zoomDivider, { backgroundColor: d.border }]} />
+        <TouchableOpacity
+          style={[styles.zoomButton, styles.zoomButtonBottom, { backgroundColor: d.cardBackground, borderColor: d.border }]}
+          onPress={zoomOut}
+          activeOpacity={0.8}
+        >
+          <AppIcon name="minus" size={18} role="default" />
+        </TouchableOpacity>
+      </View>
+
       {location && (
         <VenueBottomSheet
           venues={visibleVenues}
@@ -293,5 +337,40 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     zIndex: 10,
+  },
+  zoomControls: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 166 : 158,
+    right: 16,
+    width: 40,
+    borderRadius: 12,
+    borderWidth: 1,
+    overflow: 'hidden',
+    zIndex: 10,
+    borderColor: 'transparent',
+  },
+  zoomButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  zoomButtonTop: {
+    borderBottomWidth: 0,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+  },
+  zoomButtonBottom: {
+    borderTopWidth: 0,
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
+  },
+  zoomDivider: {
+    height: 1,
   },
 });
