@@ -82,6 +82,20 @@ app.add_middleware(
 )
 
 
+# Security headers — added to every response regardless of route or status code.
+# X-XSS-Protection is intentionally "0": modern browsers use CSP instead, and
+# the legacy XSS auditor has known bypass bugs when set to "1; mode=block".
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "0"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+    return response
+
+
 # Request logging middleware
 @app.middleware("http")
 async def log_requests(request: Request, call_next):

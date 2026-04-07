@@ -6,6 +6,7 @@ Called by both the v1 submissions router and the admin submissions router.
 from datetime import datetime, timezone
 
 from fastapi import HTTPException
+from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy import update as sa_update
 from sqlalchemy.orm import Session
 
@@ -16,40 +17,29 @@ from app.models.venue import Venue
 from app.models.deal import Deal
 from app.models.point_transaction import PointTransaction
 from app.schemas.submission import ReviewAction, SubmissionResponse
+from app.schemas.submission_data import VenueData, DealData
 from app.core.logging import logger
 
 
-# Fields users are allowed to propose via submissions.
-# Excludes: id, verified, active, created_at, updated_at (set by system/admin only).
-ALLOWED_VENUE_FIELDS = {
-    "name",
-    "nickname",
-    "address",
-    "latitude",
-    "longitude",
-    "phone",
-    "website",
-    "neighborhood",
-    "venue_type",
-    "tags",
-    "cash_only",
-    "description",
-    "google_place_id",
-    "price_level",
-    "rating",
-}
+def _validated_venue(data: dict) -> dict:
+    """Validate and allowlist venue fields from submitted_data.
 
-ALLOWED_DEAL_FIELDS = {
-    "venue_id",
-    "title",
-    "description",
-    "category",
-    "deal_type",
-    "original_price",
-    "deal_price",
-    "discount_percentage",
-    "items",
-}
+    VenueData.extra='ignore' strips unknown keys; Field constraints enforce
+    lat/lon ranges, string lengths, and price_level/rating bounds.
+    Raises HTTP 422 with a structured message on invalid values.
+    """
+    try:
+        return VenueData(**data).model_dump(exclude_none=True)
+    except PydanticValidationError as exc:
+        raise HTTPException(status_code=422, detail=exc.errors())
+
+
+def _validated_deal(data: dict) -> dict:
+    """Validate and allowlist deal fields from submitted_data."""
+    try:
+        return DealData(**data).model_dump(exclude_none=True)
+    except PydanticValidationError as exc:
+        raise HTTPException(status_code=422, detail=exc.errors())
 
 
 def review_submission(
@@ -142,8 +132,7 @@ def _apply_submission(sub: Submission, db: Session) -> None:
     data = sub.submitted_data or {}
 
     if sub.submission_type == "new_bar":
-        filtered = {k: v for k, v in data.items() if k in ALLOWED_VENUE_FIELDS}
-        venue = Venue(**filtered)
+        venue = Venue(**_validated_venue(data))
         db.add(venue)
 
     elif sub.submission_type == "bar_closed":
@@ -152,13 +141,11 @@ def _apply_submission(sub: Submission, db: Session) -> None:
 
     elif sub.submission_type == "bar_update":
         venue = _get_venue(sub, db)
-        for k, v in data.items():
-            if k in ALLOWED_VENUE_FIELDS:
-                setattr(venue, k, v)
+        for k, v in _validated_venue(data).items():
+            setattr(venue, k, v)
 
     elif sub.submission_type == "new_deal":
-        filtered = {k: v for k, v in data.items() if k in ALLOWED_DEAL_FIELDS}
-        deal = Deal(**filtered)
+        deal = Deal(**_validated_deal(data))
         db.add(deal)
 
     elif sub.submission_type == "deal_expired":
@@ -167,9 +154,8 @@ def _apply_submission(sub: Submission, db: Session) -> None:
 
     elif sub.submission_type == "deal_update":
         deal = _get_deal(sub, db)
-        for k, v in data.items():
-            if k in ALLOWED_DEAL_FIELDS:
-                setattr(deal, k, v)
+        for k, v in _validated_deal(data).items():
+            setattr(deal, k, v)
 
 
 def _get_venue(sub: Submission, db: Session) -> Venue:

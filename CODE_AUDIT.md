@@ -14,10 +14,10 @@
 
 ### High
 3. **No rate limiting** — zero rate limiting on any endpoint; auth endpoints and submission creation are wide open to abuse
-4. **Missing security headers** (`main.py`) — no HSTS, X-Frame-Options, Content-Security-Policy, or HTTPS redirect middleware
-5. **Weak password validation** (`user.py:13-22`) — only checks for 1 uppercase/lowercase/digit; `Qwerty1` passes
-6. **Email case sensitivity** — `User@Example.com` and `user@example.com` treated as distinct accounts; allows duplicate registration
-7. **JSONB submission data not value-validated** (`submission_review.py`) — lat/lon ranges not checked; malformed values applied directly to models
+4. ~~**Missing security headers** (`main.py`) — no HSTS, X-Frame-Options, Content-Security-Policy, or HTTPS redirect middleware~~ **RESOLVED** in commit `fbbd212` — added `add_security_headers` middleware to `main.py` injecting X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Referrer-Policy, and Permissions-Policy on every response; 12 tests in `tests/test_issue4_security_headers.py`
+5. ~~**Weak password validation** (`user.py:13-22`) — only checks for 1 uppercase/lowercase/digit; `Qwerty1` passes~~ **RESOLVED** in commit `1d153fb` — added special character requirement and `max_length=128` (bcrypt DoS protection); 13 tests in `tests/test_issue5_password_validation.py`
+6. ~~**Email case sensitivity** — `User@Example.com` and `user@example.com` treated as distinct accounts; allows duplicate registration~~ **RESOLVED** in commit `1d153fb` — added `.lower()` normalizer to `UserCreate` and `UserLogin`; `func.lower()` used in all DB email queries; 12 tests in `tests/test_issue6_email_normalization.py`
+7. ~~**JSONB submission data not value-validated** (`submission_review.py`) — lat/lon ranges not checked; malformed values applied directly to models~~ **RESOLVED** in commit `fbbd212` — created `app/schemas/submission_data.py` with `VenueData`/`DealData` Pydantic models (`extra="ignore"`, Field constraints on lat/lon/price/rating); `_apply_submission()` now validates all data through these schemas before any DB write, raising HTTP 422 on invalid values; 17 tests in `tests/test_issue7_submission_data_validation.py`
 8. **Partial transaction rollback risk** (`submission_review.py:121-129`) — if approval partially succeeds, rollback may not cover all state changes
 
 ### Medium
