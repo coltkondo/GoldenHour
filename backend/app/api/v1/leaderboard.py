@@ -42,7 +42,7 @@ def get_leaderboard(
         )
         .outerjoin(approved_counts, User.id == approved_counts.c.user_id)
         .filter(User.points_balance > 0)
-        .order_by(User.points_balance.desc())
+        .order_by(User.points_balance.desc(), User.username.asc())
         .limit(limit)
         .all()
     )

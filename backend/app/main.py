@@ -72,13 +72,15 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 
-# CORS middleware — origins loaded from ALLOWED_ORIGINS env var (comma-separated)
+# CORS middleware — origins loaded from ALLOWED_ORIGINS env var (comma-separated).
+# Methods and headers are explicitly enumerated — wildcards allow TRACE (XST risk)
+# and "*" on allow_headers bypasses CSRF protection afforded by restricting Origin.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[o.strip() for o in settings.ALLOWED_ORIGINS.split(",")],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "Origin"],
 )
 
 
