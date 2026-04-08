@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { parseStoredUser } from '../utils/authUtils';
 
 const TOKEN_KEY = 'gh_token';
 const USER_KEY = 'gh_user';
@@ -36,10 +37,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           AsyncStorage.getItem(TOKEN_KEY),
           AsyncStorage.getItem(USER_KEY),
         ]);
-        if (storedToken && storedUser) {
+        const user = parseStoredUser(storedUser);
+        if (storedToken && user) {
           setToken(storedToken);
-          setUser(JSON.parse(storedUser));
+          setUser(user);
+        } else if (storedToken && storedUser) {
+          // storedUser was present but unparseable — clear corrupted keys
+          await Promise.all([
+            AsyncStorage.removeItem(TOKEN_KEY),
+            AsyncStorage.removeItem(USER_KEY),
+          ]);
         }
+      } catch {
+        // AsyncStorage itself failed — boot unauthenticated
       } finally {
         setLoading(false);
       }

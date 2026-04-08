@@ -23,11 +23,11 @@
 
 | Priority | Count |
 |----------|-------|
-| P0 | 8 |
+| P0 | 6 |
 | P1 | 11 |
 | P2 | 13 |
 | P3 | 18 |
-| Resolved | 19 |
+| Resolved | 21 |
 | **Total** | **69** |
 
 ---
@@ -72,6 +72,10 @@
 
 19. ~~**Filter button non-functional** (`mobile/src/screens/HomeScreen.tsx:350-352`) — `onPress` did nothing~~ **RESOLVED** — filter button now toggles a sort panel with "Nearest" and "Best Deal" modes; `sortVenuesByMode` applied to `nearbyVenues` pipeline; covered by tests in `mobile/src/__tests__/homeFilters.test.ts`
 
+20. ~~**Wrong day-of-week mapping** (`mobile/src/screens/ExplorerScreen.tsx:32-34`) — audited as incorrect, but formula `today === 0 ? 6 : today - 1` correctly maps JS Sunday=0 → Backend Sunday=6 for all 7 days~~ **FALSE POSITIVE** — code was already correct; no change required
+
+21. ~~**`JSON.parse(storedUser)` not in try-catch** (`mobile/src/context/AuthContext.tsx:40-52`) — corrupted AsyncStorage threw an unhandled promise rejection, crashing auth init~~ **RESOLVED** — `parseStoredUser` helper extracted to `mobile/src/utils/authUtils.ts`; returns `null` on any parse failure; `AuthContext` uses it and clears corrupted keys before booting unauthenticated; 8 tests in `mobile/src/__tests__/authUtils.test.ts`
+
 ---
 
 ## P0 — Ship Blockers
@@ -80,30 +84,24 @@
 
 ### Mobile
 
-**P0-1. Wrong day-of-week mapping** (`mobile/src/screens/ExplorerScreen.tsx:32-34`)  
-JS `getDay()` returns Sunday=0; backend uses Monday=0. Happy hour schedules display the wrong day to every user.
-
-**P0-2. `JSON.parse(storedUser)` not in try-catch** (`mobile/src/context/AuthContext.tsx:40-52`)  
-Corrupted AsyncStorage crashes auth initialization, soft-bricking the app. Any user with storage corruption cannot open the app.
-
-**P0-3. `route.params.venue` accessed without null guard** (`mobile/src/screens/HappyHourScreen.tsx:59`)  
+**P0-1. `route.params.venue` accessed without null guard** (`mobile/src/screens/HappyHourScreen.tsx:59`)  
 App hard-crashes if navigation params are missing. Any deep-link or back-navigation race condition triggers this.
 
-**P0-4. `deal.items` accessed without null guard** (`mobile/src/screens/HomeScreen.tsx:409`, `DealCard.tsx:131`)  
+**P0-2. `deal.items` accessed without null guard** (`mobile/src/screens/HomeScreen.tsx:409`, `DealCard.tsx:131`)  
 `items` is nullable per API types. Accessing it without a guard throws a runtime error.
 
-**P0-5. Google Maps API key is a placeholder** (`mobile/app.json:18,28-30`)  
+**P0-3. Google Maps API key is a placeholder** (`mobile/app.json:18,28-30`)  
 `"YOUR_GOOGLE_MAPS_API_KEY"` still in config. The map screen will not render for any user.
 
-**P0-6. `ThemeContext` returns `null` while loading** (`mobile/src/context/ThemeContext.tsx:68-70`)  
+**P0-4. `ThemeContext` returns `null` while loading** (`mobile/src/context/ThemeContext.tsx:68-70`)  
 Causes a blank white screen on every cold start until theme resolves.
 
 ### Backend / Infrastructure
 
-**P0-7. Health endpoint always returns healthy** (`backend/app/main.py:162`)  
+**P0-5. Health endpoint always returns healthy** (`backend/app/main.py:162`)  
 `GET /health` returns `{"status": "healthy"}` without checking DB or Redis connectivity. Railway/Render routes traffic to a completely broken backend; a failed DB connection is invisible to the orchestrator.
 
-**P0-8. Dockerfile: runs as root, no `.dockerignore`, no `HEALTHCHECK`** (`backend/Dockerfile`)  
+**P0-6. Dockerfile: runs as root, no `.dockerignore`, no `HEALTHCHECK`** (`backend/Dockerfile`)  
 Three separate issues:
 - No non-root `USER` directive — container escape grants root host access
 - `COPY . .` without `.dockerignore` can bake `.env` files with real secrets into image layers
@@ -265,8 +263,8 @@ No automated linting, type-checking, or tests on push/PR. Breaking changes can b
 
 | Priority | Area | Issues |
 |----------|------|--------|
-| P0 | Mobile | 6 (P0-1 through P0-6) |
-| P0 | Backend/Infra | 2 (P0-7 through P0-8) |
+| P0 | Mobile | 4 (P0-1 through P0-4) |
+| P0 | Backend/Infra | 2 (P0-5 through P0-6) |
 | P1 | Security | 5 (P1-1 through P1-5) |
 | P1 | Mobile | 4 (P1-6 through P1-9) |
 | P1 | Admin Web | 2 (P1-10 through P1-11) |
