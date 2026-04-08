@@ -21,8 +21,21 @@ import { Venue, Deal } from '../types/api';
 import { AppIcon, IconMap } from '../components/icons';
 import { LiveBadge } from '../components/ui/LiveBadge';
 import { StatusDot } from '../components/ui/StatusDot';
+import {
+  FILTER_PILLS,
+  FilterCategory,
+  SortMode,
+  VenueWithDistance,
+  applyDealFilters,
+  applyVenueFilters,
+} from '../utils/homeFilters';
 
 const { width } = Dimensions.get('window');
+
+const SORT_OPTIONS: { mode: SortMode; label: string }[] = [
+  { mode: 'nearest', label: 'Nearest' },
+  { mode: 'best_deal', label: 'Best Deal' },
+];
 
 interface FloatingIcon {
   id: number;
@@ -145,8 +158,6 @@ const FeaturedCardBackground: React.FC<{ primaryColor: string; mode: ThemeMode }
 
 /* ── Helpers ───────────────────────────────────────────────── */
 
-const FILTER_PILLS = ['All', 'Cocktails', 'Draft', 'Wine', 'Bites'] as const;
-
 const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
   const R = 3959;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -196,8 +207,10 @@ export const HomeScreen = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState<(typeof FILTER_PILLS)[number]>('All');
+  const [activeFilter, setActiveFilter] = useState<FilterCategory>('All');
   const [savedVenues, setSavedVenues] = useState<Set<string>>(new Set());
+  const [showSortPanel, setShowSortPanel] = useState(false);
+  const [sortMode, setSortMode] = useState<SortMode>('nearest');
   const [toastVisible, setToastVisible] = useState(false);
   const [toastData, setToastData] = useState<ToastData | null>(null);
 
@@ -250,40 +263,26 @@ export const HomeScreen = () => {
     });
   };
 
-  const filteredDeals = useMemo(() => {
-    if (activeFilter === 'All') return deals;
-    const categoryMap: Record<string, string[]> = {
-      Cocktails: ['cocktail', 'mixed', 'martini', 'margarita'],
-      Draft: ['draft', 'beer', 'pint', 'ipa', 'lager'],
-      Wine: ['wine', 'glass', 'bottle', 'red', 'white', 'rose'],
-      Bites: ['food', 'bite', 'appetizer', 'snack', 'wings', 'tacos'],
-    };
-    const keywords = categoryMap[activeFilter] || [];
-    return deals.filter((deal) =>
-      keywords.some(
-        (kw) =>
-          deal.category.toLowerCase().includes(kw) ||
-          deal.title.toLowerCase().includes(kw) ||
-          (deal.items || []).some((item) => item.toLowerCase().includes(kw)),
-      ),
-    );
-  }, [deals, activeFilter]);
+  const venueMap = useMemo(() => new Map(venues.map((v) => [v.id, v])), [venues]);
 
-  const nearbyVenues = useMemo(() => {
+  const filteredDeals = useMemo(
+    () => applyDealFilters(deals, activeFilter, searchQuery, venueMap),
+    [deals, activeFilter, searchQuery, venueMap],
+  );
+
+  const nearbyVenues = useMemo((): VenueWithDistance[] => {
     if (!location) return [];
-    return venues
-      .map((venue) => ({
-        ...venue,
-        distance: calculateDistance(
-          location.latitude,
-          location.longitude,
-          venue.latitude,
-          venue.longitude,
-        ),
-      }))
-      .sort((a, b) => a.distance - b.distance)
-      .slice(0, 6);
-  }, [venues, location]);
+    const withDistance = venues.map((venue) => ({
+      ...venue,
+      distance: calculateDistance(
+        location.latitude,
+        location.longitude,
+        venue.latitude,
+        venue.longitude,
+      ),
+    }));
+    return applyVenueFilters(withDistance, searchQuery, sortMode, deals).slice(0, 6);
+  }, [venues, location, searchQuery, sortMode, deals]);
 
   const featuredDeal = filteredDeals[0];
   const featuredVenue = featuredDeal ? venues.find((v) => v.id === featuredDeal.venue_id) : null;
@@ -402,13 +401,57 @@ export const HomeScreen = () => {
           <TouchableOpacity
             style={[
               styles.filterButton,
-              { backgroundColor: d.cardBackground, borderColor: d.border },
+              {
+                backgroundColor: showSortPanel ? d.primary : d.cardBackground,
+                borderColor: showSortPanel ? d.primary : d.border,
+              },
             ]}
             activeOpacity={0.7}
+            onPress={() => setShowSortPanel((prev) => !prev)}
           >
-            <AppIcon name="filter" size={18} role="muted" />
+            <AppIcon
+              name="filter"
+              size={18}
+              role={showSortPanel ? 'button' : 'muted'}
+              color={showSortPanel ? d.buttonPrimaryText : undefined}
+            />
           </TouchableOpacity>
         </View>
+
+        {/* ── Sort Panel ──────────────────────────────────── */}
+        {showSortPanel && (
+          <View
+            style={[styles.sortPanel, { backgroundColor: d.cardBackground, borderColor: d.border }]}
+          >
+            <Text style={[styles.sortPanelLabel, { color: d.textMuted }]}>SORT BY</Text>
+            <View style={styles.sortOptions}>
+              {SORT_OPTIONS.map(({ mode, label }) => (
+                <TouchableOpacity
+                  key={mode}
+                  style={[
+                    styles.sortOption,
+                    {
+                      backgroundColor:
+                        sortMode === mode ? 'rgba(245,166,35,0.12)' : 'transparent',
+                      borderColor: sortMode === mode ? d.primary : d.border,
+                    },
+                  ]}
+                  onPress={() => setSortMode(mode)}
+                  activeOpacity={0.7}
+                >
+                  <Text
+                    style={[
+                      styles.sortOptionText,
+                      { color: sortMode === mode ? d.primary : d.textMuted },
+                    ]}
+                  >
+                    {label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
 
         {/* ── Filter Pills ────────────────────────────────── */}
         <ScrollView
@@ -937,6 +980,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
   },
+
+  /* Sort Panel */
+  sortPanel: {
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 12,
+    marginBottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  sortPanelLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 0.8 },
+  sortOptions: { flexDirection: 'row', gap: 8, flex: 1 },
+  sortOption: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  sortOptionText: { fontSize: 12, fontWeight: '600' },
 
   /* Filter Pills */
   filterScroll: { marginBottom: 24, marginLeft: -16, marginRight: -16 },
