@@ -172,7 +172,8 @@ useFocusEffect(
 
 ---
 
-### Fix 6 — Set DEBUG Default to False in Backend
+### ✅ Fix 6 — Set DEBUG Default to False in Backend
+> **DONE** — commit `8f5965e` · 7 tests in `backend/tests/test_fix6_debug_default.py`
 
 **Priority:** P1. If `DEBUG` env var is not set in production, SQLAlchemy `echo=True` dumps every SQL query (including password hash queries) to stdout.
 
@@ -190,7 +191,8 @@ Also confirm Railway environment has `DEBUG=false` and `ENVIRONMENT=production` 
 
 ---
 
-### Fix 7 — Fix Hardcoded Happy Hour Countdown Time
+### ✅ Fix 7 — Fix Hardcoded Happy Hour Countdown Time
+> **DONE** — commit `a3cf535` · 21 tests in `mobile/src/__tests__/scheduleUtils.test.ts`
 
 **Priority:** P2. `Math.max(hour + 1, 17)` forces "next happy hour" to always show 5pm regardless of actual schedule. Will show wrong times for SC venues with e.g. 4pm or 3pm happy hours.
 
@@ -378,6 +380,9 @@ When distributing, set expectations:
 | `mobile/src/screens/ProfileScreen.tsx` | `useFocusEffect` to refresh points on focus | ✅ Fix 4 · `30b6e27` |
 | `mobile/src/__tests__/profilePointsRefresh.test.ts` | **New** — 6 tests for points refresh logic | ✅ Fix 4 · `30b6e27` |
 | `mobile/src/screens/ProfileScreen.tsx` | Disable notification toggle | ⬜ Fix 5 |
-| `mobile/src/screens/HomeScreen.tsx` | Fix hardcoded `Math.max(hour+1, 17)` | ⬜ Fix 7 |
-| `backend/app/core/config.py` | `DEBUG: bool = False` | ⬜ Fix 6 |
+| `mobile/src/screens/HomeScreen.tsx` | Load real schedules + use `formatScheduleRange()` | ✅ Fix 7 · `a3cf535` |
+| `mobile/src/utils/scheduleUtils.ts` | **New** — `parseTimeString` + `formatScheduleRange` | ✅ Fix 7 · `a3cf535` |
+| `mobile/src/__tests__/scheduleUtils.test.ts` | **New** — 21 tests for schedule time formatting | ✅ Fix 7 · `a3cf535` |
+| `backend/app/core/config.py` | `DEBUG: bool = False` | ✅ Fix 6 · `8f5965e` |
+| `backend/tests/test_fix6_debug_default.py` | **New** — 7 tests for DEBUG default | ✅ Fix 6 · `8f5965e` |
 | `backend/scripts/import_gsheets.py` | **New** — flat CSV import with Nominatim geocoding | ⬜ Fix 8 |

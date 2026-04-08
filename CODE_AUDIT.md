@@ -24,10 +24,10 @@
 | Priority | Count |
 |----------|-------|
 | P0 | 1 |
-| P1 | 8 |
-| P2 | 13 |
+| P1 | 7 |
+| P2 | 12 |
 | P3 | 18 |
-| Resolved | 29 |
+| Resolved | 31 |
 | **Total** | **69** |
 
 ---
@@ -124,8 +124,8 @@ Any XSS payload on the admin domain reads `localStorage` and steals the token, g
 **P1-4. `docker-compose.yml` exposes database with default credentials** (`docker-compose.yml:5-10,19-28`)  
 PostgreSQL port 5432 bound to host with `postgres:postgres`. Redis port 6379 bound to host with no password. On any shared or cloud machine this is full DB compromise and Redis RCE via `CONFIG SET`.
 
-**P1-5. `DEBUG=True` is the default** (`backend/app/core/config.py:32`, `backend/app/core/database.py:9`)  
-If `DEBUG` env var is not explicitly set in production, SQLAlchemy `echo=True` dumps every SQL statement (including password hash queries) to stdout. Set default to `False`.
+~~**P1-5. `DEBUG=True` is the default** (`backend/app/core/config.py:32`, `backend/app/core/database.py:9`)  
+If `DEBUG` env var is not explicitly set in production, SQLAlchemy `echo=True` dumps every SQL statement (including password hash queries) to stdout. Set default to `False`.~~ **RESOLVED** in commit `8f5965e` — `DEBUG: bool = False`; operators opt in by setting `DEBUG=true` in Railway. 7 tests in `backend/tests/test_fix6_debug_default.py`.
 
 ### Mobile — Broken Features Users Notice in Session 1
 
@@ -173,8 +173,8 @@ Python's `id()` returns a memory address. Not unique across requests, not unique
 **P2-6. Error states set but no retry offered** (`mobile/src/screens/MapScreen.tsx`, `LeaderboardScreen.tsx`)  
 Error banners are shown but there is no retry button. Users are permanently stuck on the error state until they restart the app.
 
-**P2-7. Hardcoded happy hour start time** (`mobile/src/screens/HomeScreen.tsx:541-546`)  
-`Math.max(hour + 1, 17)` ignores actual schedule times from the API. Incorrect "next happy hour" display for venues with non-5pm schedules.
+~~**P2-7. Hardcoded happy hour start time** (`mobile/src/screens/HomeScreen.tsx:541-546`)  
+`Math.max(hour + 1, 17)` ignores actual schedule times from the API. Incorrect "next happy hour" display for venues with non-5pm schedules.~~ **RESOLVED** in commit `a3cf535` — `loadData()` now fetches schedules for the unique venue IDs of the first 4 active deals and builds a `deal_id → HappyHourSchedule` map; `formatScheduleRange()` in `src/utils/scheduleUtils.ts` converts PostgreSQL time strings ("16:00:00") to compact display ranges ("4–7p"), falling back to "Today" when no schedule is found. 21 tests in `mobile/src/__tests__/scheduleUtils.test.ts`.
 
 **P2-8. Hardcoded `localhost:8000` in Vite config** (`admin-web/vite.config.ts:8-12`)  
 Admin web cannot be deployed anywhere other than a local machine without a code change. No `VITE_API_BASE_URL` environment variable.
@@ -261,10 +261,10 @@ No automated linting, type-checking, or tests on push/PR. Breaking changes can b
 | Priority | Area | Issues |
 |----------|------|--------|
 | P0 | Mobile | 1 open — P0-3 (Google Maps placeholder) |
-| P1 | Security | 4 open — P1-1, P1-2, P1-4, P1-5 |
+| P1 | Security | 3 open — P1-1, P1-2, P1-4 |
 | P1 | Mobile | 2 open — P1-7 (bookmarks), P1-8 (notification toggle) |
 | P1 | Admin Web | 2 open — P1-10, P1-11 |
-| P2 | Various | 13 (P2-1 through P2-13) |
+| P2 | Various | 12 open — P2-1 through P2-13 except P2-7 |
 | P3 | Various | 18 (P3-1 through P3-18) |
-| Resolved | — | 29 |
+| Resolved | — | 31 |
 | **Total** | | **69** |
