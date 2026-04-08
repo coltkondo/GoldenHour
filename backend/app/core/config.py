@@ -29,7 +29,7 @@ class Settings(BaseSettings):
 
     # Environment
     ENVIRONMENT: str = "development"
-    DEBUG: bool = True
+    DEBUG: bool = False
 
     # API
     API_V1_PREFIX: str = "/api/v1"
