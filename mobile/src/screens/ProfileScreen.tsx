@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -21,8 +21,6 @@ export const ProfileScreen = () => {
   const navigation = useNavigation<any>();
   const { theme, mode, toggleMode } = useTheme();
   const d = theme.derived;
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-
   const getInitials = () => {
     const username = user?.username ?? 'Guest';
     if (username.length >= 2) return username.substring(0, 2).toUpperCase();
@@ -187,13 +185,13 @@ export const ProfileScreen = () => {
                 <Text style={[styles.rowLabel, { color: d.text }]}>Happy Hour Alerts</Text>
               </View>
               <Switch
-                value={notificationsEnabled}
-                onValueChange={setNotificationsEnabled}
+                value={false}
+                disabled={true}
                 trackColor={{ false: d.filterInactive, true: d.live }}
                 thumbColor={d.background}
               />
             </View>
-            <Text style={[styles.hintText, { color: d.textMuted }]}>Active 5pm – 9pm daily</Text>
+            <Text style={[styles.hintText, { color: d.textMuted }]}>Notifications coming soon</Text>
 
             <View style={[styles.separator, { backgroundColor: d.divider }]} />
 
