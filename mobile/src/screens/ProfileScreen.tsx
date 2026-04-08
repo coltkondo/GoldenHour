@@ -1,12 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { useAuth } from '../context/AuthContext';
 import { AppIcon } from '../components/icons';
+import { authAPI } from '../api/endpoints';
 
 export const ProfileScreen = () => {
-  const { user, isAdmin, logout } = useAuth();
+  const { user, isAdmin, logout, refreshUser } = useAuth();
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!user) return;
+      authAPI.me()
+        .then((freshUser) => refreshUser(freshUser))
+        .catch(() => {}); // network failure: keep showing stale balance
+    }, [user?.id]),
+  );
   const navigation = useNavigation<any>();
   const { theme, mode, toggleMode } = useTheme();
   const d = theme.derived;
