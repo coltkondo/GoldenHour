@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, useTheme } from './src/theme';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { LoadingScreen } from './src/screens/LoadingScreen';
+import { ErrorBoundary } from './src/components/ErrorBoundary';
 
 function AppContent() {
   const [isLoading, setIsLoading] = useState(true);
@@ -27,8 +28,10 @@ function AppContent() {
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <AppContent />
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
