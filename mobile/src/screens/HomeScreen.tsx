@@ -17,7 +17,8 @@ import { useTheme, ThemeMode } from '../theme';
 import { useAuth } from '../context/AuthContext';
 import { useLocation } from '../hooks/useLocation';
 import { venuesAPI, dealsAPI } from '../api/endpoints';
-import { Venue, Deal } from '../types/api';
+import { Venue, Deal, HappyHourSchedule } from '../types/api';
+import { formatScheduleRange } from '../utils/scheduleUtils';
 import { AppIcon, IconMap } from '../components/icons';
 import { LiveBadge } from '../components/ui/LiveBadge';
 import { StatusDot } from '../components/ui/StatusDot';
@@ -213,6 +214,7 @@ export const HomeScreen = () => {
   const [sortMode, setSortMode] = useState<SortMode>('nearest');
   const [toastVisible, setToastVisible] = useState(false);
   const [toastData, setToastData] = useState<ToastData | null>(null);
+  const [scheduleMap, setScheduleMap] = useState<Map<string, HappyHourSchedule>>(new Map());
 
   useEffect(() => {
     if (!locationLoading && location) {
@@ -229,6 +231,23 @@ export const HomeScreen = () => {
       ]);
       setVenues(venueData);
       setDeals(dealData);
+
+      // Load schedules for the first 4 active deals so the Upcoming section
+      // can display real start/end times instead of the hardcoded 5pm fallback.
+      const upcoming = dealData.filter((d) => d.active).slice(0, 4);
+      const venueIds = [...new Set(upcoming.map((d) => d.venue_id))];
+      const scheduleSets = await Promise.all(
+        venueIds.map((id) => venuesAPI.getSchedules(id).catch(() => [] as HappyHourSchedule[])),
+      );
+      const newScheduleMap = new Map<string, HappyHourSchedule>();
+      for (const schedules of scheduleSets) {
+        for (const s of schedules) {
+          for (const dealId of s.deal_ids ?? []) {
+            newScheduleMap.set(dealId, s);
+          }
+        }
+      }
+      setScheduleMap(newScheduleMap);
     } catch (err) {
       console.error('Error loading home data:', err);
     } finally {
@@ -800,12 +819,10 @@ export const HomeScreen = () => {
               {upcomingDeals.map((deal, index) => {
                 const venue = venues.find((v) => v.id === deal.venue_id);
                 const isLast = index === upcomingDeals.length - 1;
-                const hour = new Date().getHours();
-                const startHour = Math.max(hour + 1, 17);
-                const endHour = startHour + 3;
+                const schedule = scheduleMap.get(deal.id);
                 const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
                 const dayLabel = dayNames[new Date().getDay()];
-                const timeLabel = `${startHour > 12 ? startHour - 12 : startHour}–${endHour > 12 ? endHour - 12 : endHour}${startHour >= 12 ? 'p' : 'a'}`;
+                const timeLabel = formatScheduleRange(schedule?.start_time, schedule?.end_time);
                 const dealIconName = getDealIconName(deal.category);
                 return (
                   <React.Fragment key={deal.id}>
