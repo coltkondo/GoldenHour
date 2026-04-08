@@ -30,7 +30,7 @@ export interface Deal {
   original_price: number | null;
   deal_price: number | null;
   discount_percentage: number | null;
-  items: string[];
+  items: string[] | null;
   active: boolean;
   verified: boolean;
   created_at: string;

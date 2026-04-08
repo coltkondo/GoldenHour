@@ -23,11 +23,11 @@
 
 | Priority | Count |
 |----------|-------|
-| P0 | 6 |
+| P0 | 4 |
 | P1 | 11 |
 | P2 | 13 |
 | P3 | 18 |
-| Resolved | 21 |
+| Resolved | 23 |
 | **Total** | **69** |
 
 ---
@@ -84,11 +84,11 @@
 
 ### Mobile
 
-**P0-1. `route.params.venue` accessed without null guard** (`mobile/src/screens/HappyHourScreen.tsx:59`)  
-App hard-crashes if navigation params are missing. Any deep-link or back-navigation race condition triggers this.
+~~**P0-1. `route.params.venue` accessed without null guard** (`mobile/src/screens/HappyHourScreen.tsx`)~~  
+~~App hard-crashes if navigation params are missing. Any deep-link or back-navigation race condition triggers this.~~ **RESOLVED** — `route.params?.venue` with optional chaining; `loadData` guarded internally; `useEffect` calls `navigation.goBack()` when venue is absent; `if (!venue) return null` guard after all hooks. 2 null-items tests added in `homeFilters.test.ts`.
 
-**P0-2. `deal.items` accessed without null guard** (`mobile/src/screens/HomeScreen.tsx:409`, `DealCard.tsx:131`)  
-`items` is nullable per API types. Accessing it without a guard throws a runtime error.
+~~**P0-2. `deal.items` accessed without null guard** (`mobile/src/screens/HomeScreen.tsx:409`, `DealCard.tsx:131`)~~  
+~~`items` is nullable per API types. Accessing it without a guard throws a runtime error.~~ **RESOLVED** — `items: string[] | null` in `mobile/src/types/api.ts`; `DealCard.tsx` uses `deal.items?.length ?? 0` and `deal.items ?? []` throughout; `homeFilters.ts` already used `deal.items ?? []`; 2 null-items tests added in `mobile/src/__tests__/homeFilters.test.ts`.
 
 **P0-3. Google Maps API key is a placeholder** (`mobile/app.json:18,28-30`)  
 `"YOUR_GOOGLE_MAPS_API_KEY"` still in config. The map screen will not render for any user.

@@ -37,7 +37,7 @@ export const HappyHourScreen = () => {
   const route = useRoute<RouteProp<HappyHourRouteParams, 'HappyHour'>>();
   const { theme } = useTheme();
   const d = theme.derived;
-  const { venue } = route.params;
+  const venue = route.params?.venue;
 
   const [deals, setDeals] = useState<Deal[]>([]);
   const [schedules, setSchedules] = useState<HappyHourSchedule[]>([]);
@@ -47,11 +47,8 @@ export const HappyHourScreen = () => {
   const today = new Date().getDay();
   const todayDb = today === 0 ? 6 : today - 1;
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
   const loadData = async () => {
+    if (!venue) return;
     try {
       const [venueDeals, venueSchedules] = await Promise.all([
         dealsAPI.getByVenue(venue.id),
@@ -65,6 +62,16 @@ export const HappyHourScreen = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (venue) {
+      loadData();
+    } else {
+      navigation.goBack();
+    }
+  }, []);
+
+  if (!venue) return null;
 
   const handleDirections = () => {
     Linking.openURL(

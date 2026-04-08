@@ -128,6 +128,11 @@ describe('filterDealsByCategory', () => {
     const noItems = makeDeal({ id: 'd-ni', items: [] });
     expect(() => filterDealsByCategory([noItems], 'Bites')).not.toThrow();
   });
+
+  test('deals with null items field do not throw', () => {
+    const nullItems = makeDeal({ id: 'd-null', items: null as unknown as string[] });
+    expect(() => filterDealsByCategory([nullItems], 'Bites')).not.toThrow();
+  });
 });
 
 // ── filterDealsBySearch ───────────────────────────────────────
@@ -203,6 +208,11 @@ describe('filterDealsBySearch', () => {
   test('deals with empty items array do not throw', () => {
     const noItems = makeDeal({ id: 'd-ni', items: [] });
     expect(() => filterDealsBySearch([noItems], 'beer', venueMap)).not.toThrow();
+  });
+
+  test('deals with null items field do not throw', () => {
+    const nullItems = makeDeal({ id: 'd-null', items: null as unknown as string[] });
+    expect(() => filterDealsBySearch([nullItems], 'beer', venueMap)).not.toThrow();
   });
 });
 

@@ -128,16 +128,16 @@ export const DealCard: React.FC<DealCardProps> = ({
         </Text>
       )}
 
-      {deal.items.length > 0 && (
+      {(deal.items?.length ?? 0) > 0 && (
         <View style={styles.itemsRow}>
-          {deal.items.slice(0, 4).map((item, index) => (
+          {(deal.items ?? []).slice(0, 4).map((item, index) => (
             <View key={index} style={[styles.itemTag, dynamicStyles.categoryBadge]}>
               <Text style={[styles.itemText, dynamicStyles.categoryText]}>{item}</Text>
             </View>
           ))}
-          {deal.items.length > 4 && (
+          {(deal.items?.length ?? 0) > 4 && (
             <Text style={[styles.moreItems, dynamicStyles.venue]}>
-              +{deal.items.length - 4} more
+              +{(deal.items?.length ?? 0) - 4} more
             </Text>
           )}
         </View>
