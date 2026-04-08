@@ -24,10 +24,10 @@
 | Priority | Count |
 |----------|-------|
 | P0 | 1 |
-| P1 | 7 |
+| P1 | 6 |
 | P2 | 12 |
 | P3 | 18 |
-| Resolved | 31 |
+| Resolved | 32 |
 | **Total** | **69** |
 
 ---
@@ -135,8 +135,8 @@ A single component crash brings down the entire app with no recovery path. Users
 **P1-7. Bookmarks not persisted** (`mobile/src/screens/HomeScreen.tsx`)  
 `toggleSave()` only updates local React state. Saved venues are lost on every app restart. Users who save venues will find them gone immediately.
 
-**P1-8. Notification toggle is purely cosmetic** (`mobile/src/screens/ProfileScreen.tsx:154-159`)  
-Switch does not register for push notifications. Users who toggle it on receive no notifications; users who toggle it off expect it worked.
+~~**P1-8. Notification toggle is purely cosmetic** (`mobile/src/screens/ProfileScreen.tsx:154-159`)  
+Switch does not register for push notifications. Users who toggle it on receive no notifications; users who toggle it off expect it worked.~~ **RESOLVED** in commit `3052bc0` — `value=false`, `disabled=true`; hint text changed to "Notifications coming soon"; dead `notificationsEnabled` state removed. 5 tests in `mobile/src/__tests__/notificationToggle.test.ts`.
 
 ~~**P1-9. Points balance not refreshed after submission** (`mobile/src/screens/`)  
 User sees "+50 pts" toast but the profile total doesn't update until manual refresh. Breaks the core engagement loop.~~ **RESOLVED** in commit `30b6e27` — `useFocusEffect` added to `ProfileScreen` calling `authAPI.me()` on every focus event; result piped into `refreshUser()` to update both in-memory state and AsyncStorage. Network failures caught silently to avoid surface errors on navigation. 6 tests in `mobile/src/__tests__/profilePointsRefresh.test.ts`.
@@ -262,7 +262,7 @@ No automated linting, type-checking, or tests on push/PR. Breaking changes can b
 |----------|------|--------|
 | P0 | Mobile | 1 open — P0-3 (Google Maps placeholder) |
 | P1 | Security | 3 open — P1-1, P1-2, P1-4 |
-| P1 | Mobile | 2 open — P1-7 (bookmarks), P1-8 (notification toggle) |
+| P1 | Mobile | 1 open — P1-7 (bookmarks) |
 | P1 | Admin Web | 2 open — P1-10, P1-11 |
 | P2 | Various | 12 open — P2-1 through P2-13 except P2-7 |
 | P3 | Various | 18 (P3-1 through P3-18) |

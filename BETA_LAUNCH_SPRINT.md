@@ -152,7 +152,8 @@ useFocusEffect(
 
 ---
 
-### Fix 5 — Disable Notification Toggle (Coming Soon)
+### ✅ Fix 5 — Disable Notification Toggle (Coming Soon)
+> **DONE** — commit `3052bc0` · 5 tests in `mobile/src/__tests__/notificationToggle.test.ts`
 
 **Priority:** P1. The "Happy Hour Alerts" toggle does nothing but store local state. Beta users will toggle it on, get no notifications, and assume the app is broken.
 
@@ -379,7 +380,8 @@ When distributing, set expectations:
 | `mobile/src/__tests__/ErrorBoundary.test.ts` | **New** — 5 tests for ErrorBoundary | ✅ Fix 3 · `3edc6b1` |
 | `mobile/src/screens/ProfileScreen.tsx` | `useFocusEffect` to refresh points on focus | ✅ Fix 4 · `30b6e27` |
 | `mobile/src/__tests__/profilePointsRefresh.test.ts` | **New** — 6 tests for points refresh logic | ✅ Fix 4 · `30b6e27` |
-| `mobile/src/screens/ProfileScreen.tsx` | Disable notification toggle | ⬜ Fix 5 |
+| `mobile/src/screens/ProfileScreen.tsx` | `disabled={true}`, `value={false}`, hint text updated | ✅ Fix 5 · `3052bc0` |
+| `mobile/src/__tests__/notificationToggle.test.ts` | **New** — 5 tests for disabled toggle | ✅ Fix 5 · `3052bc0` |
 | `mobile/src/screens/HomeScreen.tsx` | Load real schedules + use `formatScheduleRange()` | ✅ Fix 7 · `a3cf535` |
 | `mobile/src/utils/scheduleUtils.ts` | **New** — `parseTimeString` + `formatScheduleRange` | ✅ Fix 7 · `a3cf535` |
 | `mobile/src/__tests__/scheduleUtils.test.ts` | **New** — 21 tests for schedule time formatting | ✅ Fix 7 · `a3cf535` |
