@@ -23,11 +23,11 @@
 
 | Priority | Count |
 |----------|-------|
-| P0 | 2 |
+| P0 | 1 |
 | P1 | 11 |
 | P2 | 13 |
 | P3 | 18 |
-| Resolved | 25 |
+| Resolved | 26 |
 | **Total** | **69** |
 
 ---
@@ -93,8 +93,8 @@
 **P0-3. Google Maps API key is a placeholder** (`mobile/app.json:18,28-30`)  
 `"YOUR_GOOGLE_MAPS_API_KEY"` still in config. The map screen will not render for any user.
 
-**P0-4. `ThemeContext` returns `null` while loading** (`mobile/src/context/ThemeContext.tsx:68-70`)  
-Causes a blank white screen on every cold start until theme resolves.
+~~**P0-4. `ThemeContext` returns `null` while loading** (`mobile/src/theme/ThemeContext.tsx:68-70`)~~  
+~~Causes a blank white screen on every cold start until theme resolves.~~ **RESOLVED** — removed `loaded` state and `if (!loaded) return null` gate; `mode` defaults to `'dark'` so the full theme is valid immediately; AsyncStorage hydrates the saved preference in the background and triggers a re-render only if it differs from the default. Zero blank-screen window on cold start.
 
 ### Backend / Infrastructure
 

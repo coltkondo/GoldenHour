@@ -27,7 +27,6 @@ const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [mode, setModeState] = useState<ThemeMode>('dark');
-  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -38,8 +37,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
       } catch {
         // ignore
-      } finally {
-        setLoaded(true);
       }
     })();
   }, []);
@@ -64,10 +61,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     spacing,
     borderRadius,
   };
-
-  if (!loaded) {
-    return null;
-  }
 
   return (
     <ThemeContext.Provider value={{ theme, mode, setMode, toggleMode }}>
