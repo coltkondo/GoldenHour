@@ -43,7 +43,8 @@ alembic/versions/*.pyc  # compiled migration files
 # =======================
 # Docker / container files
 # =======================
-*.dockerignore
+# *.dockerignore was too broad — it excluded the actual .dockerignore files
+# needed by Docker builds. Only ignore environment-specific overrides.
 docker-compose.override.yml
 
 # =======================

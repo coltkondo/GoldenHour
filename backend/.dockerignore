@@ -1,0 +1,37 @@
+# Secrets — never bake these into an image layer
+.env
+.env.*
+*.env
+
+# Git history — large and unnecessary in the image
+.git/
+.gitignore
+
+# Python bytecode — regenerated on first import inside the container
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Test artifacts
+.pytest_cache/
+tests/
+.coverage
+htmlcov/
+
+# Local virtual environments
+.venv/
+venv/
+env/
+
+# Editor / OS metadata
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Documentation (not needed at runtime)
+*.md
+README*

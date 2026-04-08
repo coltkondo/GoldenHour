@@ -23,11 +23,11 @@
 
 | Priority | Count |
 |----------|-------|
-| P0 | 4 |
+| P0 | 2 |
 | P1 | 11 |
 | P2 | 13 |
 | P3 | 18 |
-| Resolved | 23 |
+| Resolved | 25 |
 | **Total** | **69** |
 
 ---
@@ -98,14 +98,11 @@ Causes a blank white screen on every cold start until theme resolves.
 
 ### Backend / Infrastructure
 
-**P0-5. Health endpoint always returns healthy** (`backend/app/main.py:162`)  
-`GET /health` returns `{"status": "healthy"}` without checking DB or Redis connectivity. Railway/Render routes traffic to a completely broken backend; a failed DB connection is invisible to the orchestrator.
+~~**P0-5. Health endpoint always returns healthy** (`backend/app/main.py:162`)~~  
+~~`GET /health` returns `{"status": "healthy"}` without checking DB or Redis connectivity. Railway/Render routes traffic to a completely broken backend; a failed DB connection is invisible to the orchestrator.~~ **RESOLVED** — health logic extracted to `backend/app/api/health.py`; `_check_database()` executes `SELECT 1`, `_check_redis()` pings Redis with 2 s timeout. DB failure → HTTP 503 + `"status": "unhealthy"`; Redis unavailable → HTTP 200 + `"status": "degraded"` (Redis is non-critical while `cache.py` is a stub); both healthy → HTTP 200 + `"status": "healthy"`. 20 tests in `backend/tests/test_p0_health_check.py`.
 
-**P0-6. Dockerfile: runs as root, no `.dockerignore`, no `HEALTHCHECK`** (`backend/Dockerfile`)  
-Three separate issues:
-- No non-root `USER` directive — container escape grants root host access
-- `COPY . .` without `.dockerignore` can bake `.env` files with real secrets into image layers
-- No `HEALTHCHECK` instruction — orchestrators cannot detect a crashed-but-running container
+~~**P0-6. Dockerfile: runs as root, no `.dockerignore`, no `HEALTHCHECK`** (`backend/Dockerfile`)~~  
+~~Three separate issues: no non-root USER; no .dockerignore; no HEALTHCHECK.~~ **RESOLVED** — `adduser appuser` + `chown -R appuser:appuser /app` + `USER appuser` added before ENTRYPOINT; `backend/.dockerignore` created (excludes `.env*`, `.git/`, `__pycache__/`, `tests/`, `.venv/`); `HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3` probes `curl --fail http://localhost:8000/health`; `curl` added to apt-get install. 18 tests in `backend/tests/test_p0_dockerfile.py`.
 
 ---
 

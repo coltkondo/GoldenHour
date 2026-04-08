@@ -11,6 +11,7 @@ from app.core.database import SessionLocal
 from app.api.v1 import venues, deals
 from app.api.v1 import auth, submissions, points, leaderboard
 from app.api.admin import router as admin_router
+from app.api.health import router as health_router
 
 
 @asynccontextmanager
@@ -151,12 +152,10 @@ app.include_router(leaderboard.router, prefix=settings.API_V1_PREFIX)
 # Admin router (all endpoints require admin role)
 app.include_router(admin_router, prefix=settings.API_V1_PREFIX)
 
+# Health check (no prefix — must be reachable at /health by orchestrators)
+app.include_router(health_router)
+
 
 @app.get("/")
 async def root():
     return {"message": "Golden Hour API", "version": "1.0.0", "docs": "/docs"}
-
-
-@app.get("/health")
-async def health_check():
-    return {"status": "healthy"}
