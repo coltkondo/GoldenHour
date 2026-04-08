@@ -24,10 +24,10 @@
 | Priority | Count |
 |----------|-------|
 | P0 | 1 |
-| P1 | 11 |
+| P1 | 8 |
 | P2 | 13 |
 | P3 | 18 |
-| Resolved | 26 |
+| Resolved | 29 |
 | **Total** | **69** |
 
 ---
@@ -118,8 +118,8 @@ Zero rate limiting, including on `/auth/login` and `/auth/register`. Open to bru
 **P1-2. JWT stored in `localStorage` in admin-web** (`admin-web/src/context/AuthContext.tsx:25`)  
 Any XSS payload on the admin domain reads `localStorage` and steals the token, gaining full admin access (approve submissions, delete venues, export all data). Should use httpOnly cookies.
 
-**P1-3. `console.log` logs full JWT in mobile production builds** (`mobile/src/api/client.ts:24`)  
-`console.log('API Request:', config)` fires on every API request and logs the full `Authorization: Bearer <token>` header. Exposes user sessions in crash logs, Expo diagnostics, and any console capture tool.
+~~**P1-3. `console.log` logs full JWT in mobile production builds** (`mobile/src/api/client.ts:24`)  
+`console.log('API Request:', config)` fires on every API request and logs the full `Authorization: Bearer <token>` header. Exposes user sessions in crash logs, Expo diagnostics, and any console capture tool.~~ **RESOLVED** in commit `3d5fb5f` — `console.log('API Client initialized with base URL:', API_URL)` wrapped in `if (__DEV__)`; fires in dev builds only. 3 tests in `mobile/src/__tests__/apiClient.test.ts`.
 
 **P1-4. `docker-compose.yml` exposes database with default credentials** (`docker-compose.yml:5-10,19-28`)  
 PostgreSQL port 5432 bound to host with `postgres:postgres`. Redis port 6379 bound to host with no password. On any shared or cloud machine this is full DB compromise and Redis RCE via `CONFIG SET`.
@@ -129,8 +129,8 @@ If `DEBUG` env var is not explicitly set in production, SQLAlchemy `echo=True` d
 
 ### Mobile — Broken Features Users Notice in Session 1
 
-**P1-6. No error boundary** (entire mobile app)  
-A single component crash brings down the entire app with no recovery path. Users must force-quit and reopen. Add a top-level error boundary with a "Something went wrong — tap to retry" screen.
+~~**P1-6. No error boundary** (entire mobile app)  
+A single component crash brings down the entire app with no recovery path. Users must force-quit and reopen. Add a top-level error boundary with a "Something went wrong — tap to retry" screen.~~ **RESOLVED** in commit `3edc6b1` — `ErrorBoundary` class component created at `mobile/src/components/ErrorBoundary.tsx`; wraps the entire tree in `mobile/App.tsx` outside `ThemeProvider`; catches any render crash and shows a branded recovery screen with a "Tap to retry" button that resets `hasError`. 5 tests in `mobile/src/__tests__/ErrorBoundary.test.ts`.
 
 **P1-7. Bookmarks not persisted** (`mobile/src/screens/HomeScreen.tsx`)  
 `toggleSave()` only updates local React state. Saved venues are lost on every app restart. Users who save venues will find them gone immediately.
@@ -138,8 +138,8 @@ A single component crash brings down the entire app with no recovery path. Users
 **P1-8. Notification toggle is purely cosmetic** (`mobile/src/screens/ProfileScreen.tsx:154-159`)  
 Switch does not register for push notifications. Users who toggle it on receive no notifications; users who toggle it off expect it worked.
 
-**P1-9. Points balance not refreshed after submission** (`mobile/src/screens/`)  
-User sees "+50 pts" toast but the profile total doesn't update until manual refresh. Breaks the core engagement loop.
+~~**P1-9. Points balance not refreshed after submission** (`mobile/src/screens/`)  
+User sees "+50 pts" toast but the profile total doesn't update until manual refresh. Breaks the core engagement loop.~~ **RESOLVED** in commit `30b6e27` — `useFocusEffect` added to `ProfileScreen` calling `authAPI.me()` on every focus event; result piped into `refreshUser()` to update both in-memory state and AsyncStorage. Network failures caught silently to avoid surface errors on navigation. 6 tests in `mobile/src/__tests__/profilePointsRefresh.test.ts`.
 
 ### Admin Web — Broken Flows
 
@@ -260,12 +260,11 @@ No automated linting, type-checking, or tests on push/PR. Breaking changes can b
 
 | Priority | Area | Issues |
 |----------|------|--------|
-| P0 | Mobile | 4 (P0-1 through P0-4) |
-| P0 | Backend/Infra | 2 (P0-5 through P0-6) |
-| P1 | Security | 5 (P1-1 through P1-5) |
-| P1 | Mobile | 4 (P1-6 through P1-9) |
-| P1 | Admin Web | 2 (P1-10 through P1-11) |
+| P0 | Mobile | 1 open — P0-3 (Google Maps placeholder) |
+| P1 | Security | 4 open — P1-1, P1-2, P1-4, P1-5 |
+| P1 | Mobile | 2 open — P1-7 (bookmarks), P1-8 (notification toggle) |
+| P1 | Admin Web | 2 open — P1-10, P1-11 |
 | P2 | Various | 13 (P2-1 through P2-13) |
 | P3 | Various | 18 (P3-1 through P3-18) |
-| Resolved | — | 17 |
+| Resolved | — | 29 |
 | **Total** | | **69** |
