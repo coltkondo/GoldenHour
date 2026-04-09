@@ -1,4 +1,5 @@
 import time
+import uuid
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, HTTPException
@@ -22,6 +23,7 @@ async def lifespan(app: FastAPI):
     )
 
     db = SessionLocal()
+    seed_error: Exception | None = None
     try:
         from scripts.import_csv import seed_if_empty
 
@@ -29,8 +31,12 @@ async def lifespan(app: FastAPI):
         logger.info("Database seeding completed")
     except Exception as e:
         logger.exception("Auto-seed failed", error=str(e))
+        seed_error = e
     finally:
         db.close()
+
+    if seed_error is not None:
+        raise RuntimeError(f"Database seeding failed on startup: {seed_error}") from seed_error
 
     logger.info("API startup complete", docs="/docs", health="/health")
     yield
@@ -54,7 +60,9 @@ async def global_exception_handler(request: Request, exc: Exception):
     # Let FastAPI handle validation errors and HTTPExceptions normally
     if isinstance(exc, (RequestValidationError, HTTPException)):
         raise exc
+    trace_id = str(uuid.uuid4())
     logger.bind(
+        trace_id=trace_id,
         exception_type=type(exc).__name__,
         exception_message=str(exc),
         request_url=str(request.url),
@@ -68,7 +76,7 @@ async def global_exception_handler(request: Request, exc: Exception):
         content={
             "error": "Internal server error",
             "detail": "An unexpected error occurred",
-            "trace_id": str(id(exc)),
+            "trace_id": trace_id,
         },
     )
 
@@ -104,7 +112,7 @@ async def add_security_headers(request: Request, call_next):
 async def log_requests(request: Request, call_next):
     """Log all requests with timing and contextual info."""
     start_time = time.time()
-    request_id = str(id(request))
+    request_id = str(uuid.uuid4())
 
     logger.bind(
         request_id=request_id,
