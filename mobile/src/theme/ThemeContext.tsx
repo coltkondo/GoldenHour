@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ColorPalette, ThemeMode, getColors, deriveTokens } from './colors';
 import { typography, spacing, borderRadius } from './typography';
@@ -50,20 +50,19 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setMode(mode === 'dark' ? 'light' : 'dark');
   }, [mode, setMode]);
 
-  const baseColors = getColors(mode);
-  const derived = deriveTokens(baseColors);
+  const theme = useMemo<Theme>(() => {
+    const baseColors = getColors(mode);
+    const derived = deriveTokens(baseColors);
+    return { colors: baseColors, derived, mode, typography, spacing, borderRadius };
+  }, [mode]);
 
-  const theme: Theme = {
-    colors: baseColors,
-    derived,
-    mode,
-    typography,
-    spacing,
-    borderRadius,
-  };
+  const contextValue = useMemo(
+    () => ({ theme, mode, setMode, toggleMode }),
+    [theme, mode, setMode, toggleMode],
+  );
 
   return (
-    <ThemeContext.Provider value={{ theme, mode, setMode, toggleMode }}>
+    <ThemeContext.Provider value={contextValue}>
       {children}
     </ThemeContext.Provider>
   );
