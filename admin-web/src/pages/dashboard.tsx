@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { venuesApi, dealsApi } from '../services/adminApi';
+import { useAuth } from '../context/AuthContext';
 
 export default function Dashboard() {
+  const { token } = useAuth();
   const [stats, setStats] = useState({
     totalVenues: 0,
     activeVenues: 0,
@@ -10,6 +12,20 @@ export default function Dashboard() {
     activeDeals: 0,
   });
   const [loading, setLoading] = useState(true);
+
+  async function downloadCSV(path: string, filename: string) {
+    const res = await fetch(path, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) return;
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   useEffect(() => {
     Promise.all([
@@ -64,12 +80,18 @@ export default function Dashboard() {
           <Link to="/deals/new" className="btn btn-primary">
             Add New Deal
           </Link>
-          <a href="/api/v1/admin/export/venues.csv" className="btn btn-secondary">
+          <button
+            className="btn btn-secondary"
+            onClick={() => downloadCSV('/api/v1/admin/export/venues.csv', 'venues.csv')}
+          >
             Export Bars CSV
-          </a>
-          <a href="/api/v1/admin/export/deals.csv" className="btn btn-secondary">
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={() => downloadCSV('/api/v1/admin/export/deals.csv', 'deals.csv')}
+          >
             Export Deals CSV
-          </a>
+          </button>
         </div>
       </div>
     </div>
