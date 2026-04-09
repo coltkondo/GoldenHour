@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 from typing import Optional
 
 _PLACEHOLDER_SECRETS = {
@@ -11,6 +11,11 @@ _PLACEHOLDER_SECRETS = {
     "your-secret-key",
     "your-secret-here",
     "replace-me",
+}
+
+# These are acceptable in local dev but must never reach production
+_DEV_ONLY_SECRETS = {
+    "123456789abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
 }
 
 
@@ -62,6 +67,26 @@ class Settings(BaseSettings):
                 f'Generate one: python3 -c "import secrets; print(secrets.token_hex(32))"'
             )
         return v
+
+    @model_validator(mode="after")
+    def production_guards(self) -> "Settings":
+        if self.ENVIRONMENT == "production":
+            if self.DEBUG:
+                raise ValueError(
+                    "DEBUG=True is not allowed in production. "
+                    "Set DEBUG=False or remove it from your environment variables."
+                )
+            if self.SECRET_KEY in _DEV_ONLY_SECRETS:
+                raise ValueError(
+                    "SECRET_KEY is set to the example/dev placeholder. "
+                    'Generate a real one: python3 -c "import secrets; print(secrets.token_hex(32))"'
+                )
+            origins = [o.strip() for o in self.ALLOWED_ORIGINS.split(",")]
+            if "*" in origins:
+                raise ValueError(
+                    "ALLOWED_ORIGINS cannot contain '*' in production when allow_credentials is enabled."
+                )
+        return self
 
     class Config:
         env_file = ".env"
