@@ -21,16 +21,18 @@ const TYPE_LABELS: Record<string, string> = {
 export default function PendingReview() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState('pending');
   const [typeFilter, setTypeFilter] = useState('');
   const [totalCount, setTotalCount] = useState(0);
 
   useEffect(() => {
     load();
-  }, [statusFilter, typeFilter]);
+  }, [statusFilter, typeFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function load() {
     setLoading(true);
+    setLoadError(null);
     try {
       const [subs, cnt] = await Promise.all([
         submissionsApi.list({
@@ -41,6 +43,9 @@ export default function PendingReview() {
       ]);
       setSubmissions(subs);
       setTotalCount(cnt.count);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to load submissions';
+      setLoadError(msg);
     } finally {
       setLoading(false);
     }
@@ -70,6 +75,14 @@ export default function PendingReview() {
         </select>
       </div>
 
+      {loadError && (
+        <div className="error-banner">
+          Failed to load submissions: {loadError} —{' '}
+          <button className="link-btn" onClick={load}>
+            Retry
+          </button>
+        </div>
+      )}
       {loading ? (
         <div className="loading">Loading...</div>
       ) : submissions.length === 0 ? (

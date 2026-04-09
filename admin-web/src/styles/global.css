@@ -473,6 +473,31 @@ h2 {
   font-size: 14px;
 }
 
+.link-btn {
+  background: none;
+  border: none;
+  color: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: inherit;
+  padding: 0;
+}
+.link-btn:hover {
+  opacity: 0.8;
+}
+
+.confirm-dialog {
+  background: var(--bg-elevated);
+  border: 1px solid var(--warning);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.confirm-dialog p {
+  margin-bottom: 12px;
+  color: var(--text);
+}
+
 /* ===== Login Page ===== */
 .login-page {
   min-height: 100vh;

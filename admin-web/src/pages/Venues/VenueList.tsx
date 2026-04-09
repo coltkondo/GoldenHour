@@ -7,6 +7,7 @@ import StatusToggle from '../../components/StatusToggle';
 export default function VenueList() {
   const [venues, setVenues] = useState<VenueWithDeals[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [neighborhood, setNeighborhood] = useState('');
   const [venueType, setVenueType] = useState('');
@@ -18,6 +19,7 @@ export default function VenueList() {
 
   const fetchVenues = useCallback(async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const data = await venuesApi.list({
         search: search || undefined,
@@ -29,10 +31,12 @@ export default function VenueList() {
         limit: 200,
       });
       setVenues(data as VenueWithDeals[]);
-    } catch (err) {
-      console.error('Failed to load venues', err);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to load bars';
+      setLoadError(msg);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [search, neighborhood, venueType, activeFilter, sortBy, sortOrder]);
 
   useEffect(() => {
@@ -121,6 +125,14 @@ export default function VenueList() {
         </select>
       </div>
 
+      {loadError && (
+        <div className="error-banner">
+          Failed to load bars: {loadError} —{' '}
+          <button className="link-btn" onClick={fetchVenues}>
+            Retry
+          </button>
+        </div>
+      )}
       {loading ? (
         <div className="loading">Loading...</div>
       ) : (
