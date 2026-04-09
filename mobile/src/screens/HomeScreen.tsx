@@ -215,12 +215,21 @@ export const HomeScreen = () => {
   const [toastVisible, setToastVisible] = useState(false);
   const [toastData, setToastData] = useState<ToastData | null>(null);
   const [scheduleMap, setScheduleMap] = useState<Map<string, HappyHourSchedule>>(new Map());
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!locationLoading && location) {
       loadData();
     }
-  }, [locationLoading, location]);
+    // Depend on primitives so a new location object reference doesn't retrigger.
+  }, [locationLoading, location?.latitude, location?.longitude]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadData = async () => {
     try {
@@ -229,6 +238,7 @@ export const HomeScreen = () => {
         venuesAPI.getNearby(location.latitude, location.longitude, 10000),
         dealsAPI.getActive().catch(() => []),
       ]);
+      if (!isMounted.current) return;
       setVenues(venueData);
       setDeals(dealData);
 
@@ -239,6 +249,7 @@ export const HomeScreen = () => {
       const scheduleSets = await Promise.all(
         venueIds.map((id) => venuesAPI.getSchedules(id).catch(() => [] as HappyHourSchedule[])),
       );
+      if (!isMounted.current) return;
       const newScheduleMap = new Map<string, HappyHourSchedule>();
       for (const schedules of scheduleSets) {
         for (const s of schedules) {
@@ -249,16 +260,17 @@ export const HomeScreen = () => {
       }
       setScheduleMap(newScheduleMap);
     } catch (err) {
+      if (!isMounted.current) return;
       console.error('Error loading home data:', err);
     } finally {
-      setLoading(false);
+      if (isMounted.current) setLoading(false);
     }
   };
 
   const onRefresh = async () => {
     setRefreshing(true);
     await loadData();
-    setRefreshing(false);
+    if (isMounted.current) setRefreshing(false);
   };
 
   const navigateToVenue = (venue: Venue) => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -28,14 +28,19 @@ export const ExplorerScreen = () => {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const isMounted = useRef(true);
 
   const today = new Date().getDay();
   const todayDb = today === 0 ? 6 : today - 1;
   const todayName = DAY_NAMES[todayDb];
 
   useEffect(() => {
+    isMounted.current = true;
     loadData();
-  }, []);
+    return () => {
+      isMounted.current = false;
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadData = async () => {
     try {
@@ -43,12 +48,14 @@ export const ExplorerScreen = () => {
         venuesAPI.getAll({ limit: 100 }),
         dealsAPI.getToday(),
       ]);
+      if (!isMounted.current) return;
       setVenues(venueData);
       setTodayDeals(dealData);
     } catch {
+      if (!isMounted.current) return;
       setLoadError(true);
     } finally {
-      setLoading(false);
+      if (isMounted.current) setLoading(false);
     }
   };
 

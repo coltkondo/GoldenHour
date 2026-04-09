@@ -95,12 +95,22 @@ export const MapScreen = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedVenueId, setSelectedVenueId] = useState<string | null>(null);
   const [mapRegion, setMapRegion] = useState<Region | null>(location ?? null);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!locationLoading && !locationError) {
       loadNearbyVenues();
     }
-  }, [locationLoading, locationError, location]);
+    // Depend on the lat/lng primitives, not the location object, to avoid
+    // re-fetching on every render if the object reference changes.
+  }, [locationLoading, locationError, location?.latitude, location?.longitude]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (mapRegion && venues.length > 0) {
@@ -112,13 +122,15 @@ export const MapScreen = () => {
     try {
       setLoading(true);
       const nearbyVenues = await venuesAPI.getNearby(location.latitude, location.longitude, 10000);
+      if (!isMounted.current) return;
       setVenues(nearbyVenues);
       setVisibleVenues(nearbyVenues);
     } catch (err) {
+      if (!isMounted.current) return;
       console.error('Error loading venues:', err);
       setError('Failed to load venues');
     } finally {
-      setLoading(false);
+      if (isMounted.current) setLoading(false);
     }
   };
 
