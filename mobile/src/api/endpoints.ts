@@ -5,7 +5,6 @@ import type { AuthUser, Submission, LeaderboardEntry } from '../types/api';
 export const venuesAPI = {
   getAll: async (params?: { skip?: number; limit?: number; neighborhood?: string }) => {
     const response = await apiClient.get<Venue[]>('/venues', { params });
-    console.log('Fetched venues:', response);
     return response.data;
   },
 
