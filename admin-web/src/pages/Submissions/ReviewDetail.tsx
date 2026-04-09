@@ -29,6 +29,7 @@ export default function ReviewDetail() {
   const [adminNotes, setAdminNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<'approved' | 'rejected' | null>(null);
 
   useEffect(() => {
     submissionsApi.get(id!).then((data) => {
@@ -37,15 +38,26 @@ export default function ReviewDetail() {
     });
   }, [id]);
 
-  async function handleReview(status: 'approved' | 'rejected') {
+  function requestReview(status: 'approved' | 'rejected') {
+    setPendingAction(status);
+  }
+
+  function cancelReview() {
+    setPendingAction(null);
+  }
+
+  async function confirmReview() {
+    if (!pendingAction) return;
+    setPendingAction(null);
     setSubmitting(true);
     setResult(null);
     try {
-      await submissionsApi.review(id!, { status, admin_notes: adminNotes || undefined });
-      setResult(status === 'approved' ? 'Approved! Changes applied.' : 'Rejected.');
+      await submissionsApi.review(id!, { status: pendingAction, admin_notes: adminNotes || undefined });
+      setResult(pendingAction === 'approved' ? 'Approved! Changes applied.' : 'Rejected.');
       setTimeout(() => navigate('/submissions'), 1500);
-    } catch (err: any) {
-      setResult(`Error: ${err.message}`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      setResult(`Error: ${msg}`);
     } finally {
       setSubmitting(false);
     }
@@ -120,22 +132,47 @@ export default function ReviewDetail() {
               {result}
             </div>
           )}
-          <div className="review-btns">
-            <button
-              className="btn btn-approve"
-              onClick={() => handleReview('approved')}
-              disabled={submitting}
-            >
-              Approve & Apply
-            </button>
-            <button
-              className="btn btn-reject"
-              onClick={() => handleReview('rejected')}
-              disabled={submitting}
-            >
-              Reject
-            </button>
-          </div>
+          {pendingAction && (
+            <div className="confirm-dialog">
+              <p>
+                <strong>
+                  {pendingAction === 'approved'
+                    ? 'Approve and apply these changes?'
+                    : 'Reject this submission?'}
+                </strong>
+              </p>
+              <div className="review-btns">
+                <button
+                  className={`btn ${pendingAction === 'approved' ? 'btn-approve' : 'btn-reject'}`}
+                  onClick={confirmReview}
+                  disabled={submitting}
+                >
+                  Confirm {pendingAction === 'approved' ? 'Approve' : 'Reject'}
+                </button>
+                <button className="btn btn-secondary" onClick={cancelReview}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+          {!pendingAction && (
+            <div className="review-btns">
+              <button
+                className="btn btn-approve"
+                onClick={() => requestReview('approved')}
+                disabled={submitting}
+              >
+                Approve & Apply
+              </button>
+              <button
+                className="btn btn-reject"
+                onClick={() => requestReview('rejected')}
+                disabled={submitting}
+              >
+                Reject
+              </button>
+            </div>
+          )}
         </div>
       ) : (
         <div className="detail-section">
