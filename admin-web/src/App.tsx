@@ -11,8 +11,9 @@ import ReviewDetail from './pages/Submissions/ReviewDetail';
 import LoginPage from './pages/auth/LoginPage';
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
-  const { token } = useAuth();
-  if (!token) return <Navigate to="/login" replace />;
+  const { token, isAdmin, validating } = useAuth();
+  if (validating) return <div style={{ padding: 32, color: '#ccc' }}>Verifying session…</div>;
+  if (!token || !isAdmin) return <Navigate to="/login" replace />;
   return <>{children}</>;
 }
 
