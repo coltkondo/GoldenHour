@@ -56,6 +56,7 @@ def _check_redis() -> str:
       "unavailable" – ConnectionError (Redis not running / wrong URL)
       "error: <X>"  – any other unexpected exception
     """
+    client = None
     try:
         client = redis_lib.from_url(
             settings.REDIS_URL,
@@ -68,6 +69,9 @@ def _check_redis() -> str:
         return "unavailable"
     except Exception as exc:
         return f"error: {type(exc).__name__}"
+    finally:
+        if client is not None:
+            client.close()
 
 
 @router.get("/health")
