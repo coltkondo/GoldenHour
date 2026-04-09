@@ -31,6 +31,10 @@ python-dotenv==1.2.1
 # Redis client (installed so it's available; active caching is a future feature)
 redis==7.1.0
 
+# Rate limiting (brute-force protection on auth + admin endpoints)
+slowapi==0.1.9
+limits==5.8.0
+
 # Structured logging
 loguru==0.7.2
 
