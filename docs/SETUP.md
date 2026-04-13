@@ -2,9 +2,9 @@
 
 How to get Golden Hour running on your machine.
 
-## Option A: Quick Local Development (No Database)
+## Option A: Read-Only Local Dev (No Database)
 
-This is the fastest way to get started. The local dev server reads CSV files directly and serves the same API endpoints the mobile app expects.
+The `serve_local.py` script serves venue/deal data directly from CSV files without a database. It is useful for quickly testing UI changes but **does not support login, signup, or submissions**.
 
 ### Requirements
 
@@ -24,16 +24,6 @@ pip3 install fastapi uvicorn
 
 ```bash
 python3 serve_local.py
-```
-
-You should see output like:
-
-```
-Loaded: 12 venues, 84 deals, 67 schedules
-Golden Hour Local Dev Server
-Serving 12 State College venues, 84 deals, 67 schedules
-API at http://localhost:8000/api/v1
-Docs at http://localhost:8000/docs
 ```
 
 3. In a separate terminal, start the mobile app:
@@ -163,8 +153,10 @@ The mobile app uses this URL automatically when built in release mode. In develo
 |----------|----------|-------------|
 | `DATABASE_URL` | Yes | PostgreSQL connection string |
 | `REDIS_URL` | No | Redis connection string (defaults to localhost:6379) |
-| `SECRET_KEY` | Yes | Secret key for JWT tokens |
+| `SECRET_KEY` | Yes | Secret key for JWT tokens (32+ chars in production) |
 | `ENVIRONMENT` | No | `development` or `production` |
+| `DEBUG` | No | `false` (default); `true` enables SQLAlchemy query logging — never use in production |
+| `ALLOWED_ORIGINS` | No | Comma-separated allowed CORS origins. Cannot be `*` in production. |
 
 ### Mobile
 

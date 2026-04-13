@@ -4,11 +4,14 @@ Database schema and model definitions used throughout the Golden Hour applicatio
 
 ## Overview
 
-The application uses three core models:
+The application uses six models:
 
 - **Venue** -- A bar, restaurant, or other establishment that offers happy hour deals.
 - **Deal** -- A specific food or drink deal offered at a venue.
 - **HappyHourSchedule** -- A time window on a given day when deals are active at a venue.
+- **User** -- Registered user account with a role and points balance.
+- **Submission** -- A user-submitted tip waiting for admin review.
+- **PointTransaction** -- A record of points awarded (or deducted) for a specific action.
 
 All models use UUID primary keys and include `created_at` and `updated_at` timestamps.
 
@@ -122,6 +125,64 @@ During import, schedule entries are grouped by (venue, day, start_time, end_time
 
 ---
 
+---
+
+## User
+
+Database table: `users`
+
+| Column | Type | Nullable | Description |
+|--------|------|----------|-------------|
+| id | UUID | No | Primary key |
+| username | String(50) | No | Unique display name |
+| email | String(255) | No | Unique email (lowercased on write) |
+| hashed_password | String | No | bcrypt hash |
+| role | String(20) | No | "user" or "admin" |
+| points_balance | Integer | No | Current points total (CHECK >= 0) |
+| active | Boolean | No | Soft disable flag |
+| created_at | DateTime | No | Record creation timestamp |
+| updated_at | DateTime | No | Last update timestamp |
+
+---
+
+## Submission
+
+Database table: `submissions`
+
+| Column | Type | Nullable | Description |
+|--------|------|----------|-------------|
+| id | UUID | No | Primary key |
+| submitter_id | UUID (FK) | No | References `users.id` |
+| submission_type | String(50) | No | One of: new_bar, bar_closed, bar_update, new_deal, deal_expired, deal_update |
+| status | String(20) | No | "pending", "approved", or "rejected" |
+| submitted_data | JSONB | No | Validated payload (type-specific schema) |
+| related_bar_id | UUID | Yes | Venue this submission refers to |
+| related_deal_id | UUID | Yes | Deal this submission refers to |
+| admin_notes | Text | Yes | Notes left by reviewer |
+| points_awarded | Integer | No | Points awarded on approval (0 until then) |
+| reviewed_at | DateTime | Yes | When admin processed the submission |
+| created_at | DateTime | No | Record creation timestamp |
+| updated_at | DateTime | No | Last update timestamp |
+
+`submitted_data` is validated against a type-specific Pydantic schema in `schemas/submission_data.py` before the submission is saved.
+
+---
+
+## PointTransaction
+
+Database table: `point_transactions`
+
+| Column | Type | Nullable | Description |
+|--------|------|----------|-------------|
+| id | UUID | No | Primary key |
+| user_id | UUID (FK) | No | References `users.id` |
+| submission_id | UUID (FK) | Yes | References `submissions.id` (null for manual adjustments) |
+| delta | Integer | No | Points change (positive = awarded, negative = deducted) |
+| reason | String(100) | No | Human-readable reason |
+| created_at | DateTime | No | Record creation timestamp |
+
+---
+
 ## Pydantic Schemas
 
 The backend uses Pydantic schemas for request validation and response serialization. These are defined in `backend/app/schemas/`.
@@ -145,3 +206,16 @@ The backend uses Pydantic schemas for request validation and response serializat
 - `HappyHourScheduleResponse` -- Schedule with `start_time` and `end_time` serialized as "HH:MM" strings.
 
 Time fields use a `field_validator` to convert Python `time` objects to "HH:MM" formatted strings for JSON serialization.
+
+### User Schemas
+
+- `UserCreate` -- `username`, `email`, `password` (validated for complexity).
+- `UserLogin` -- `email`, `password`.
+- `UserResponse` -- Public user fields (no password hash).
+- `Token` -- `access_token`, `token_type`.
+
+### Submission Schemas
+
+- `SubmissionCreate` -- `submission_type`, `submitted_data`, optional `related_bar_id`/`related_deal_id`.
+- `SubmissionResponse` -- Full submission with `submitter_username`, `status`, `points_awarded`, timestamps.
+- `ReviewRequest` -- `status` ("approved" or "rejected"), optional `admin_notes`.

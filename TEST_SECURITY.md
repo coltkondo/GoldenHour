@@ -17,10 +17,18 @@ curl -s -X POST http://localhost:8000/api/v1/auth/register \
 
 # Save the access_token from the response → USER_TOKEN
 
-# 2. Login as admin (seeded admin account)
+# 2. Register an admin user (then promote via psql below)
+curl -s -X POST http://localhost:8000/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"adminuser","email":"admin@test.com","password":"AdminPass1"}' | python3 -m json.tool
+
+# Promote to admin:
+# docker compose exec db psql -U postgres -d goldenhour -c "UPDATE users SET role = 'admin' WHERE email = 'admin@test.com';"
+
+# 3. Login as admin
 curl -s -X POST http://localhost:8000/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@goldenhour.com","password":"AdminPass1"}' | python3 -m json.tool
+  -d '{"email":"admin@test.com","password":"AdminPass1"}' | python3 -m json.tool
 
 # Save the access_token → ADMIN_TOKEN
 ```

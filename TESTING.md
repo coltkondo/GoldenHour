@@ -1,248 +1,134 @@
-# GoldenHour Testing Scripts
+# GoldenHour Testing
 
-Quick scripts to test your GoldenHour system after cloning or deploying.
+Overview of all test coverage in the project.
 
-## Available Scripts
+---
 
-### 1. **Complete System Test** (Recommended)
-Tests everything: containers, database, API endpoints, data quality
-```powershell
-.\test-system.ps1
-```
-- ✅ Checks Docker containers health
-- ✅ Verifies database seeding (12 venues, 84 deals, 67 schedules)
-- ✅ Tests all API endpoints
-- ✅ Validates data quality
-- ⏱️ Takes ~30 seconds
+## Backend Tests (Python / pytest)
 
-### 2. **Quick Health Check**
-One-line status of system health
-```powershell
-.\health-check.ps1
-```
-- ✅ Container status
-- ✅ Database connection
-- ✅ API availability
-- ⏱️ Takes ~5 seconds
+Test files live in `backend/tests/`. Run from the `backend/` directory:
 
-### 3. **API Testing**
-Detailed tests of API endpoints with sample responses
-```powershell
-.\test-api.ps1
-```
-- ✅ Venues endpoint
-- ✅ Deals endpoint
-- ✅ Happy hours endpoint
-- ✅ Data structure validation
-- ⏱️ Takes ~10 seconds
-
-## Quick Start
-
-### First Time Setup
-```powershell
-# 1. Clone repo and navigate
-git clone <repo-url>
-cd GoldenHour
-
-# 2. Start services
-docker compose up -d
-
-# 3. Wait for initialization
-Start-Sleep -Seconds 15
-
-# 4. Run complete test
-.\test-system.ps1
+```bash
+cd backend
+pip install -r requirements.txt   # includes pytest and httpx
+pytest tests/                     # run all tests
+pytest tests/ -k test_name        # run a single test
+pytest tests/ -v                  # verbose output
 ```
 
-### Daily Testing
-```powershell
-# Quick health check
-.\health-check.ps1
+### Test Files
 
-# If all checks pass, you're good to go!
-# If any fail, run full test for details
-.\test-system.ps1
-```
+| File | What it tests |
+|------|--------------|
+| `test_fix6_debug_default.py` | DEBUG defaults to False; production guard blocks DEBUG=True |
+| `test_issue1_deals_timezone.py` | Deals timezone handling |
+| `test_issue2_points_atomic.py` | Points balance atomicity |
+| `test_issue4_security_headers.py` | Security headers on responses |
+| `test_issue5_password_validation.py` | Password complexity requirements |
+| `test_issue6_email_normalization.py` | Email normalization on register/login |
+| `test_issue7_submission_data_validation.py` | Submission data whitelist (no injected `verified`/`active`) |
+| `test_issue10_cors.py` | CORS restricted to allowed origins |
+| `test_issue15_leaderboard_ranking.py` | Leaderboard ranking order |
+| `test_p0_dockerfile.py` | Dockerfile correctness |
+| `test_p0_health_check.py` | Health check endpoint |
 
-## Expected Output
+---
 
-### ✅ Successful Test
-```
-╔════════════════════════════════════════════╗
-║   GoldenHour Complete System Test         ║
-╚════════════════════════════════════════════╝
+## Mobile Tests (Jest)
 
-PHASE 1: Docker Containers
-  • backend: Up
-  • db: Up (healthy)
-  • redis: Up (healthy)
-✅ All containers running
+Test files live in `mobile/src/__tests__/`. Run from the `mobile/` directory:
 
-PHASE 2: Database Seeding
-  • Venues: 12
-  • Deals: 84
-  • Schedules: 67
-✅ Database correctly seeded
-
-PHASE 3: API Endpoints
-Test 1: GET /api/v1/venues
-  ✅ Returned 12 venues
-Test 2: GET /api/v1/venues/{id}/deals
-  ✅ Returned X deals
-...
-
-════════════════════════════════════════════
-✅ ALL TESTS PASSED!
-```
-
-### ❌ Failed Test
-```
-❌ Tests Failed
-
-Troubleshooting:
-  • Check Docker: docker compose ps
-  • Check logs: docker compose logs backend
-  • Verify seeding: docker compose logs backend | Select-String 'imported'
-  • Restart: docker compose restart
-```
-
-## Troubleshooting
-
-### "Docker is not running"
-```powershell
-# Start Docker Desktop (Windows/Mac) or:
-sudo systemctl start docker  # Linux
-```
-
-### "Backend container not running"
-```powershell
-docker compose up -d
-Start-Sleep -Seconds 15
-.\health-check.ps1
-```
-
-### "Database not seeded"
-```powershell
-# Check if auto-seed ran
-docker compose logs backend | Select-String "Done! Imported"
-
-# If not, restart backend
-docker compose restart backend
-Start-Sleep -Seconds 10
-docker compose logs backend | Select-String "imported"
-```
-
-### "API returning 404"
-```powershell
-# Verify backend is fully started
-docker compose logs backend | Select-String "Application startup complete"
-
-# Check if port 8000 is in use
-netstat -ano | findstr :8000
-```
-
-## Testing Workflow
-
-```
-┌─────────────────────────────────────┐
-│   1. Clone Repository               │
-└─────────────┬───────────────────────┘
-              │
-              ▼
-┌─────────────────────────────────────┐
-│   2. docker compose up -d           │
-└─────────────┬───────────────────────┘
-              │
-              ▼
-┌─────────────────────────────────────┐
-│   3. .\health-check.ps1             │
-└─────────────┬───────────────────────┘
-              │
-        ┌─────┴──────┐
-        │ All pass?  │
-        └─────┬──────┘
-         Yes  │  No
-             ▼
-        Wait & retry
-        
-        │
-        ▼
-┌──────────────────────────────────────┐
-│   4. .\test-system.ps1 (full test)   │
-└──────────────────────────────────────┘
-              │
-              ▼
-        ✅ Ready to use!
-```
-
-## API Endpoints to Test
-
-Once tests pass, try these in your browser:
-
-| Endpoint | Purpose |
-|----------|---------|
-| `http://localhost:8000/docs` | Interactive API docs (Swagger) |
-| `http://localhost:8000/api/v1/venues` | List all venues |
-| `http://localhost:8000/api/v1/venues?neighborhood=Downtown` | Filter venues |
-
-## Next Steps After Passing Tests
-
-### Start Admin Web UI
-```powershell
-cd admin-web
-npm install  # first time only
-npm run dev
-# Open http://localhost:5173
-```
-
-### Start Mobile App
-```powershell
+```bash
 cd mobile
-npm install  # first time only
-npx expo start
-# Scan QR code with Expo Go app
+npm test                          # run all tests
+npm test -- --watch               # watch mode
+npm test -- --coverage            # with coverage report
 ```
 
-## For Developers
+### Test Files
 
-### Running Tests Multiple Times
+| File | What it tests |
+|------|--------------|
+| `apiClient.test.ts` | JWT logging wrapped in `__DEV__` guard |
+| `ErrorBoundary.test.ts` | Error boundary renders fallback UI on crash |
+| `profilePointsRefresh.test.ts` | Points balance re-fetches on screen focus |
+| `notificationToggle.test.ts` | Notification toggle is disabled (coming soon) |
+| `scheduleUtils.test.ts` | `parseTimeString` and `formatScheduleRange` utilities |
+| `homeFilters.test.ts` | Home screen deal filter logic |
+| `authUtils.test.ts` | Auth utility functions |
+
+---
+
+## Security Testing (curl)
+
+Manual security verification scripts are documented in `TEST_SECURITY.md`.
+
+Use `curl` against `http://localhost:8000` with the backend running via Docker.
+
+Key checks:
+- Admin routes reject unauthenticated and non-admin requests
+- Rate limiting fires after 10 login attempts per minute
+- CORS does not allow arbitrary origins
+- Submission data whitelist blocks injected `verified`/`active` fields
+
+---
+
+## Integration Tests (PowerShell)
+
+Require Docker running with all services healthy.
+
 ```powershell
-# Full reset between tests
-docker compose down
-docker volume rm goldenhour_postgres_data -f
+.\test-system.ps1     # full system test (~30s)
+.\health-check.ps1    # quick health check (~5s)
+.\test-api.ps1        # API endpoint tests (~10s)
+```
+
+These scripts check container health, database seeding, and API endpoint responses.
+
+---
+
+## Full Stack Workflow
+
+```bash
+# 1. Start all services
 docker compose up -d
-Start-Sleep -Seconds 20
-.\test-system.ps1
-```
 
-### Viewing Database Directly
-```powershell
-# Connect to database
-docker compose exec db psql -U postgres -d goldenhour
+# 2. Run backend tests
+cd backend && pytest tests/ -v
 
-# In psql terminal:
-\dt public.*          # List all tables
-SELECT * FROM venues LIMIT 5;
-SELECT * FROM deals WHERE venue_id = '...';
-SELECT COUNT(*) FROM happy_hour_schedules;
-\q                    # Quit
-```
+# 3. Run mobile tests
+cd ../mobile && npm test
 
-### Checking Backend Logs
-```powershell
-# Last 50 lines
-docker compose logs backend --tail 50
+# 4. Run security checks
+# See TEST_SECURITY.md for curl commands
 
-# Follow logs in real-time (Ctrl+C to stop)
-docker compose logs -f backend
-
-# Search for specific messages
-docker compose logs backend | Select-String "imported|error|failed"
+# 5. Run PowerShell integration tests (if on Windows/Mac with pwsh)
+cd .. && .\test-system.ps1
 ```
 
 ---
 
-**Questions?** Check the main README.md or run:
-```powershell
-.\test-system.ps1
+## Database Access for Debugging
+
+```bash
+docker compose exec db psql -U postgres -d goldenhour
+
+# In psql:
+\dt public.*                          # list all tables
+SELECT COUNT(*) FROM venues;
+SELECT COUNT(*) FROM deals;
+SELECT COUNT(*) FROM happy_hour_schedules;
+SELECT COUNT(*) FROM users;
+SELECT COUNT(*) FROM submissions;
+\q
+```
+
+---
+
+## Backend Logs
+
+```bash
+docker compose logs backend --tail 50       # last 50 lines
+docker compose logs -f backend              # follow in real-time
+docker compose logs backend | grep "error\|failed\|imported"
 ```

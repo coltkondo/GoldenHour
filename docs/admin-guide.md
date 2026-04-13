@@ -123,7 +123,19 @@ cd admin-web
 npm run dev
 ```
 
-Open http://localhost:5173 in your browser. The admin dashboard proxies API requests to the backend at localhost:8000.
+Open http://localhost:5173 in your browser. Log in with your admin account credentials.
+
+If you do not have an admin account yet, create any account via the mobile app, then promote it via psql:
+
+```bash
+docker compose exec db psql -U postgres -d goldenhour
+```
+```sql
+UPDATE users SET role = 'admin' WHERE email = 'your@email.com';
+\q
+```
+
+The admin dashboard validates your token server-side on every page load. Storing a random string in localStorage will not grant access — the backend's `/auth/me` endpoint must confirm you are an active admin.
 
 ---
 
@@ -166,16 +178,28 @@ All admin endpoints are under `/api/v1/admin/`.
 
 ---
 
+## 8a. Submission Review Queue
+
+The **Submissions** page shows all user-submitted tips. Each submission can be:
+
+- **Approved** — The change is automatically applied to the database (venue created/updated, deal created/updated, etc.) and points are awarded to the submitter.
+- **Rejected** — The submission is marked rejected. You can add admin notes explaining why.
+
+Both actions show a confirmation dialog before executing.
+
+---
+
 ## 9. Export Data for Backup
 
-Download CSVs directly from the API:
+Export buttons in the admin dashboard download CSVs using authenticated requests. To export via curl, include your token:
 
 ```bash
-curl http://localhost:8000/api/v1/admin/export/venues.csv -o backup_venues.csv
-curl http://localhost:8000/api/v1/admin/export/deals.csv -o backup_deals.csv
+TOKEN="your-jwt-token-here"
+curl -H "Authorization: Bearer $TOKEN" \
+  http://localhost:8000/api/v1/admin/export/venues.csv -o backup_venues.csv
+curl -H "Authorization: Bearer $TOKEN" \
+  http://localhost:8000/api/v1/admin/export/deals.csv -o backup_deals.csv
 ```
-
-Or use the export links in the admin dashboard sidebar.
 
 ---
 

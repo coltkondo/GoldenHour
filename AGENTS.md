@@ -48,20 +48,53 @@ npm run build                         # tsc && vite build
 ### Data Import
 
 ```bash
+# From project root (connects to local DB via backend path)
 python scripts/import_data.py                    # full import
 python scripts/import_data.py --dry-run          # validate only
-python -m scripts.import_csv                     # import inside container
+
+# From inside backend container or with backend venv activated
+python -m scripts.import_csv                     # import Penn State CSV data
+python -m scripts.import_csv --force             # clear and re-import
 ```
 
 ---
 
 ## Testing
 
-**No unit test frameworks are installed.** There are no `pytest`, `jest`, or `vitest` configs.
+### Backend (Python / pytest)
 
-- Python tests: install `pytest` + `httpx` if needed. Use `pytest backend/tests/` or `pytest -k test_name` for a single test.
-- TypeScript tests: no test runner configured in either mobile or admin-web.
-- Integration testing is done via the PowerShell scripts above.
+```bash
+cd backend
+pip install -r requirements.txt   # includes pytest, httpx
+pytest tests/                     # run all tests
+pytest tests/ -k test_name        # run a single test
+```
+
+Test files live in `backend/tests/` — 14 test files covering auth, security headers, CORS, points, leaderboard, health check, and more.
+
+### Mobile (Jest)
+
+```bash
+cd mobile
+npm test                          # run all Jest tests
+npm test -- --watch               # watch mode
+```
+
+Test files live in `mobile/src/__tests__/` — 7 test files covering API client, error boundary, profile points refresh, notification toggle, schedule utilities, home screen filters, and auth utilities.
+
+### Admin Web
+
+No test runner configured. Manual testing via browser.
+
+### Integration Tests (PowerShell)
+
+```bash
+.\test-system.ps1                 # full system test (~30s)
+.\health-check.ps1                # quick health check (~5s)
+.\test-api.ps1                    # API endpoint tests (~10s)
+```
+
+These scripts require Docker running with all services healthy.
 
 ---
 
@@ -203,10 +236,10 @@ Both projects have `strict: true` enabled. `admin-web` targets ES2020 with `reac
 ## Key Gaps (no tooling configured)
 
 - **No linter/formatter**: no ESLint, Prettier, Ruff, Black, or mypy
-- **No unit tests**: `backend/tests/` is empty; no test runner in mobile/admin-web
 - **No pre-commit hooks** or CI/CD pipeline
 - **`shared/` directory is empty**: types are duplicated in `mobile/src/types/`
-- **No `.dockerignore`**
+- **No `.dockerignore`**: Docker builds include `.git`, `__pycache__`, etc.
+- **No test runner in admin-web**: admin-web has no Jest or Vitest config
 
 ---
 

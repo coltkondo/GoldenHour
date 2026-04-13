@@ -207,7 +207,7 @@ The backend is not running. Run `docker compose up -d` and wait for the health c
 Your phone and computer must be on the same Wi-Fi network. The app auto-detects your machine's IP via Expo's `hostUri`.
 
 **Map is blank on Android**
-Google Maps requires an API key in `mobile/app.json`. On iOS, Apple Maps works without a key.
+Android uses Google Maps which requires an API key in `mobile/app.json`. The current beta is iOS-only — Apple Maps works without a key on iOS.
 
 **Location permission denied**
 The app falls back to a default State College, PA location. All data still loads normally.

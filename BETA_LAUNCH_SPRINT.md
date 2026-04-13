@@ -341,17 +341,36 @@ python3 -c "import secrets; print(secrets.token_hex(32))"
 
 ---
 
+## Code Audit Fixes (Done — Pre-Launch Hardening)
+
+These were identified in a separate security/quality audit and fixed before launch.
+
+| Fix | Files | Status |
+|-----|-------|--------|
+| Rate limiting on login/register (slowapi) | `backend/app/core/limiter.py`, `auth.py`, `main.py` | ✅ Done |
+| Production config guards (DEBUG, SECRET_KEY, CORS) | `backend/app/core/config.py` | ✅ Done |
+| Auto-seed failure halts startup | `backend/app/main.py` | ✅ Done |
+| Real trace_id in 500 errors (uuid4 not memory address) | `backend/app/main.py` | ✅ Done |
+| Redis connection leak in health check | `backend/app/api/health.py` | ✅ Done |
+| Admin token validated server-side on load | `admin-web/src/context/AuthContext.tsx`, `App.tsx` | ✅ Done |
+| Admin export buttons use authenticated fetch | `admin-web/src/pages/dashboard.tsx` | ✅ Done |
+| Admin approve/reject confirmation dialog | `admin-web/src/pages/Submissions/ReviewDetail.tsx` | ✅ Done |
+| Error banners in admin list pages | `VenueList.tsx`, `PendingReview.tsx` | ✅ Done |
+| isMounted ref on all data-fetching screens | `HomeScreen.tsx`, `ExplorerScreen.tsx`, `MapScreen.tsx` | ✅ Done |
+| Stable location deps in useEffect (no infinite loop) | `HomeScreen.tsx`, `MapScreen.tsx` | ✅ Done |
+| useMemo on ThemeContext (prevent re-renders) | `mobile/src/theme/ThemeContext.tsx` | ✅ Done |
+
+---
+
 ## What We're NOT Building for Beta (Intentional Scope Cuts)
 
 | Feature | Why Deferred |
 |---------|-------------|
 | Push notifications | Backend not implemented; toggle disabled in UI (Fix 5) |
 | Bookmarks persistence | Good beta feedback item; marked as known gap |
-| Rate limiting | Safe at 10–15 users; add before public launch |
 | Token refresh | Session expires at 30 min; user re-logs in; acceptable |
 | Offline support | Not needed for testing in bars |
 | Android support | iOS-only beta |
-| Admin-web hardening | Admin-facing, internal-only |
 
 ---
 
