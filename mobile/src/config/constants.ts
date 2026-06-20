@@ -26,10 +26,10 @@ export const DEFAULT_LOCATION = {
 export const SEARCH_RADIUS_METERS = 10000;
 // Points awarded per submission type (mirrors backend points_config.py)
 export const POINTS_CONFIG: Record<string, number> = {
-  new_deal: 50,
-  new_bar: 50,
-  deal_expired: 25,
-  bar_closed: 25,
-  deal_update: 15,
-  bar_update: 15,
+  new_deal: 5,
+  new_bar: 10,
+  deal_expired: 5,
+  bar_closed: 10,
+  deal_update: 5,
+  bar_update: 5,
 };
