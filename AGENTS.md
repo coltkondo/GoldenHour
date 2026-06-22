@@ -247,5 +247,5 @@ Both projects have `strict: true` enabled. `admin-web` targets ES2020 with `reac
 
 - `README.md` — project overview and API reference
 - `FIRSTSTEP.md` — full setup walkthrough for new developers
-- `TESTING.md` — PowerShell test scripts guide
-- `docs/` — additional docs (SETUP, API, DATA_MODELS, admin-guide)
+- `docs/` — additional docs (SETUP, API, DATA_MODELS, ECONOMY_SPEC, TODO, admin-guide)
+- `archive/` — historical sprint plans, audits, and one-time scripts

@@ -14,7 +14,7 @@ _Last updated: 2026-06-20. This is the authoritative source of truth for the poi
 | New bar added | `new_bar` | 100 |
 | Bar marked closed | `bar_closed` | 100 |
 | Corroborate existing deal | `corroborate` | 2 |
-| Duplicate submission (same deal already exists) | — | 5 |
+| Duplicate submission (same deal already exists) | — | 4 |
 
 **Special event deals** (e.g. game-day specials, limited-time promotions) are treated as `new_deal` or `deal_update` depending on whether the deal is new or a change to an existing one. No special category needed.
 
