@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
 
 from app.core.database import get_db
+from app.core.limiter import limiter
 from app.core.security import get_current_user
 from app.models.submission import Submission
 from app.models.user import User
@@ -13,7 +14,9 @@ router = APIRouter(prefix="/submissions", tags=["submissions"])
 
 
 @router.post("/", response_model=SubmissionResponse, status_code=201)
+@limiter.limit("10/minute")
 def create_submission(
+    request: Request,
     data: SubmissionCreate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),

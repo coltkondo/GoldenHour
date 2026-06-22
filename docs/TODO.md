@@ -8,10 +8,10 @@ _Economy spec: see [ECONOMY_SPEC.md](ECONOMY_SPEC.md)._
 ## Ship before any beta user touches the app
 
 - [x] Fix point values in `points_config.py` and `constants.ts` — was 50/25/15, now 50/100 per economy spec
-- [ ] Add `@limiter.limit("10/minute")` to `POST /submissions/` in `api/v1/submissions.py` — currently unthrottled, a logged-in user can spam the queue
+- [x] Add `@limiter.limit("10/minute")` to `POST /submissions/` in `api/v1/submissions.py` — currently unthrottled, a logged-in user can spam the queue
 - [ ] Implement 25pt/day corroboration cap — max 10 corroborations × 2pts per user per day, enforced server-side in the corroboration endpoint (not yet built)
 - [ ] Add 401 token refresh interceptor to `mobile/src/api/client.ts` — tokens expire after 30 minutes with no silent refresh, users get kicked mid-session
-- [ ] Require `latitude` + `longitude` for `new_bar` submissions in `_apply_submission` — currently optional, creates venues that silently disappear from the map
+- [x] Auto-geocode `new_bar` submissions via Nominatim on admin approval — `_apply_submission` resolves name+address to lat/lng when coordinates are missing
 
 ---
 

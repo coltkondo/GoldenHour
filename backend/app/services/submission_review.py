@@ -19,6 +19,7 @@ from app.models.point_transaction import PointTransaction
 from app.schemas.submission import ReviewAction, SubmissionResponse
 from app.schemas.submission_data import VenueData, DealData
 from app.core.logging import logger
+from app.services.geocoding import geocode
 
 
 def _validated_venue(data: dict) -> dict:
@@ -132,7 +133,13 @@ def _apply_submission(sub: Submission, db: Session) -> None:
     data = sub.submitted_data or {}
 
     if sub.submission_type == "new_bar":
-        venue = Venue(**_validated_venue(data))
+        venue_fields = _validated_venue(data)
+        if not venue_fields.get("latitude") and venue_fields.get("name") and venue_fields.get("address"):
+            coords = geocode(venue_fields["name"], venue_fields["address"])
+            if coords:
+                venue_fields["latitude"], venue_fields["longitude"] = coords
+                logger.bind(name=venue_fields["name"], lat=coords[0], lon=coords[1]).info("venue_geocoded")
+        venue = Venue(**venue_fields)
         db.add(venue)
 
     elif sub.submission_type == "bar_closed":
