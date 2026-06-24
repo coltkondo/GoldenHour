@@ -19,14 +19,10 @@ _The submit flow is the app's growth engine. Make it prominent and rewarding._
 
 _Home should answer: "What's happening now, and what's coming up tonight?"_
 
-- [ ] **Home page redesign** — model after Explore > Tonight tab but better. Prominent deal cards, bigger text, appealing banners. No map (Map tab covers that).
-- [ ] **"Happening Now" section** — deals currently in their active happy hour window, based on current day/time.
-- [ ] **"Coming Up Tonight" section** — deals later today that haven't started yet.
-- [ ] **Working filter bubbles** — filter by category, deal type, neighborhood, etc. Currently non-functional on Home.
-- [ ] **Center-justify GLDNHR title**
-- [ ] **Remove or wire up dead UI elements** — bell icon, dropdown arrow, search bar all do nothing currently. Remove until functionality is built.
-- [ ] **Fix "live" deal status accuracy** — deals showing as "live" when they aren't. Ensure live/upcoming status is driven by current day + time vs. happy hour schedule.
-- [ ] **Fix Upcoming section randomness** — sort by start time, not arbitrary order.
+- [x] **Home page redesign** — "Happening Now" and "Coming Up Tonight" sections, driven by real schedule data. No map, no dead UI.
+- [x] **Working filter bubbles** — All, Cocktails, Beer, Wine, Food — keyword-match against deal title/category/items.
+- [x] **Dead UI removed** — bell icon, dropdown arrow, search bar, sort panel, floating animated icons all removed.
+- [x] **Live deal accuracy** — "Happening Now" checks current time against schedule start/end. "Coming Up" sorted by start time.
 
 ---
 
