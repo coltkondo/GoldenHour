@@ -93,6 +93,13 @@ export const authAPI = {
     const response = await apiClient.get<AuthUser>('/auth/me');
     return response.data;
   },
+
+  refresh: async () => {
+    const response = await apiClient.post<{ access_token: string; user: AuthUser }>(
+      '/auth/refresh',
+    );
+    return response.data;
+  },
 };
 
 export const submissionsAPI = {

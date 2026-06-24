@@ -68,7 +68,7 @@ _Current seed data is placeholder-quality. Founder will build better synthetic d
 - [x] Add `@limiter.limit("10/minute")` to `POST /submissions/` in `api/v1/submissions.py`
 - [x] Auto-geocode `new_bar` submissions via Nominatim on admin approval
 - [ ] Implement 25pt/day corroboration cap — max 10 corroborations × 2pts per user per day, enforced server-side in the corroboration endpoint (not yet built)
-- [ ] Add 401 token refresh interceptor to `mobile/src/api/client.ts` — tokens expire after 30 minutes with no silent refresh, users get kicked mid-session
+- [x] Add 401 token refresh interceptor to `mobile/src/api/client.ts` — silently refreshes expired tokens and retries the failed request
 
 ---
 
