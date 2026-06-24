@@ -39,9 +39,9 @@ _Current seed data is placeholder-quality. Founder will build better synthetic d
 
 ## Explore page tweaks
 
-- [ ] **Browse tab** — remove top banner stats (bars/deals/categories count). Keep "deals tonight" count at most. Trim filter tags — too many bubbles, reduce to meaningful categories.
-- [ ] **Tonight tab** — fix deal descriptions to be specific (what's actually on special, not just "Happy Hour Package"). Fix incorrect "live" badges.
-- [ ] **Submit tab** — remove once the "+" bottom tab exists (redundant).
+- [x] **Browse tab** — removed stats banner, replaced with subtle "X deals tonight" count. Tag deduplication (Gaffeoke → Karaoke). Removed per-venue tag chips for cleaner cards.
+- [x] **Tonight tab** — live badges now driven by real schedule data (current time vs start/end). Shows time range and "Live" label only for actually-live deals.
+- [x] **Submit tab** — removed (replaced by "+" bottom tab).
 
 ---
 
