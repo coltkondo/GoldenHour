@@ -66,11 +66,6 @@ export const ProfileScreen = () => {
           </View>
           <View style={[styles.statDivider, { backgroundColor: d.divider }]} />
           <View style={styles.statItem}>
-            <Text style={[styles.statNum, { color: d.text }]}>—</Text>
-            <Text style={[styles.statLabel, { color: d.textMuted }]}>Rank</Text>
-          </View>
-          <View style={[styles.statDivider, { backgroundColor: d.divider }]} />
-          <View style={styles.statItem}>
             <Text style={[styles.statNum, { color: d.live }]}>—</Text>
             <Text style={[styles.statLabel, { color: d.textMuted }]}>Approved</Text>
           </View>
@@ -82,22 +77,6 @@ export const ProfileScreen = () => {
           <View style={[styles.card, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
             <TouchableOpacity
               style={styles.row}
-              onPress={() => navigation.navigate('QuickSubmit')}
-              activeOpacity={0.7}
-            >
-              <View style={styles.rowLeft}>
-                <View style={[styles.rowIcon, { backgroundColor: d.filterInactive }]}>
-                  <AppIcon name="plus" size={18} role="brand" />
-                </View>
-                <Text style={[styles.rowLabel, { color: d.text }]}>Submit a Deal</Text>
-              </View>
-              <AppIcon name="chevronRight" size={16} role="muted" />
-            </TouchableOpacity>
-
-            <View style={[styles.separator, { backgroundColor: d.divider }]} />
-
-            <TouchableOpacity
-              style={styles.row}
               onPress={() => navigation.navigate('MySubmissions')}
               activeOpacity={0.7}
             >
@@ -106,22 +85,6 @@ export const ProfileScreen = () => {
                   <AppIcon name="list" size={18} role="brand" />
                 </View>
                 <Text style={[styles.rowLabel, { color: d.text }]}>My Submissions</Text>
-              </View>
-              <AppIcon name="chevronRight" size={16} role="muted" />
-            </TouchableOpacity>
-
-            <View style={[styles.separator, { backgroundColor: d.divider }]} />
-
-            <TouchableOpacity
-              style={styles.row}
-              onPress={() => navigation.navigate('Leaderboard')}
-              activeOpacity={0.7}
-            >
-              <View style={styles.rowLeft}>
-                <View style={[styles.rowIcon, { backgroundColor: d.filterInactive }]}>
-                  <AppIcon name="trophy" size={18} role="brand" />
-                </View>
-                <Text style={[styles.rowLabel, { color: d.text }]}>Leaderboard</Text>
               </View>
               <AppIcon name="chevronRight" size={16} role="muted" />
             </TouchableOpacity>

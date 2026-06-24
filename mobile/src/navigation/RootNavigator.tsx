@@ -5,7 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import { TabNavigator } from './TabNavigator';
 import { HappyHourScreen } from '../screens/HappyHourScreen';
-import { QuickSubmitScreen } from '../screens/QuickSubmitScreen';
+
 import { MySubmissionsScreen } from '../screens/MySubmissionsScreen';
 import { LeaderboardScreen } from '../screens/LeaderboardScreen';
 import { AdminReviewScreen } from '../screens/AdminReviewScreen';
@@ -53,11 +53,6 @@ function AppNavigator() {
         name="HappyHour"
         component={HappyHourScreen}
         options={{ animation: 'slide_from_right' }}
-      />
-      <Stack.Screen
-        name="QuickSubmit"
-        component={QuickSubmitScreen}
-        options={{ animation: 'slide_from_bottom' }}
       />
       <Stack.Screen
         name="MySubmissions"

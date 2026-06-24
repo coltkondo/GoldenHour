@@ -22,7 +22,7 @@ export const ExplorerScreen = () => {
   const { theme } = useTheme();
   const d = theme.derived;
   const navigation = useNavigation<any>();
-  const [selectedTab, setSelectedTab] = useState<'browse' | 'tonight' | 'submit'>('browse');
+  const [selectedTab, setSelectedTab] = useState<'browse' | 'tonight'>('browse');
   const [venues, setVenues] = useState<Venue[]>([]);
   const [todayDeals, setTodayDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -154,7 +154,7 @@ export const ExplorerScreen = () => {
 
         {/* Tab Selector */}
         <View style={[styles.tabBar, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
-          {(['browse', 'tonight', 'submit'] as const).map((tab) => (
+          {(['browse', 'tonight'] as const).map((tab) => (
             <TouchableOpacity
               key={tab}
               style={[
@@ -171,7 +171,7 @@ export const ExplorerScreen = () => {
               <Text
                 style={[styles.tabText, { color: selectedTab === tab ? d.primary : d.textMuted }]}
               >
-                {tab === 'browse' ? 'Browse' : tab === 'tonight' ? 'Tonight' : 'Submit'}
+                {tab === 'browse' ? 'Browse' : 'Tonight'}
               </Text>
             </TouchableOpacity>
           ))}
@@ -338,61 +338,6 @@ export const ExplorerScreen = () => {
           </View>
         )}
 
-        {/* Submit Tab */}
-        {selectedTab === 'submit' && (
-          <View style={styles.section}>
-            <Text style={[styles.sectionLabel, { color: d.text }]}>Submit a Happy Hour</Text>
-
-            <View
-              style={[
-                styles.submitCard,
-                { backgroundColor: d.cardBackground, borderColor: d.border },
-              ]}
-            >
-              <View style={styles.submitIconContainer}>
-                <AppIcon name="location" size={48} role="brand" />
-              </View>
-              <Text style={[styles.submitTitle, { color: d.text }]}>
-                Know a spot we're missing?
-              </Text>
-              <Text style={[styles.submitDesc, { color: d.textMuted }]}>
-                Help the community by adding a new happy hour venue or deal.
-              </Text>
-              <TouchableOpacity
-                onPress={() => navigation.navigate('QuickSubmit')}
-                style={[styles.submitButton, { backgroundColor: d.primary }]}
-                activeOpacity={0.8}
-              >
-                <Text style={[styles.submitButtonText, { color: d.buttonPrimaryText }]}>
-                  Submit New Venue
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            <View
-              style={[
-                styles.tipsCard,
-                { backgroundColor: d.cardBackground, borderColor: d.border },
-              ]}
-            >
-              <Text style={[styles.tipsTitle, { color: d.text }]}>Tips</Text>
-              {[
-                'Include the venue name and address',
-                'Add happy hour days and times',
-                'List specific deals (e.g. $5 drafts)',
-                'Mention any food specials',
-              ].map((tip, i) => (
-                <View key={i} style={styles.tipRow}>
-                  <View style={[styles.tipCheckIcon, { backgroundColor: d.live }]}>
-                    <AppIcon name="check" size={12} role="positive" color={d.buttonPrimaryText} />
-                  </View>
-                  <Text style={[styles.tipText, { color: d.textMuted }]}>{tip}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
-
         <View style={{ height: 140 }} />
       </ScrollView>
     </View>
@@ -503,40 +448,4 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 15, fontWeight: '600' },
   emptySubtext: { fontSize: 13, fontWeight: '500', textAlign: 'center', marginTop: 4 },
 
-  submitCard: {
-    borderRadius: 16,
-    borderWidth: 1,
-    padding: 24,
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  submitIconContainer: { marginBottom: 16 },
-  submitTitle: { fontSize: 16, fontWeight: '600', marginBottom: 8, textAlign: 'center' },
-  submitDesc: {
-    fontSize: 13,
-    fontWeight: '500',
-    textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: 20,
-  },
-  submitButton: {
-    width: '100%',
-    height: 48,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  submitButtonText: { fontSize: 14, fontWeight: '700' },
-
-  tipsCard: { borderRadius: 16, borderWidth: 1, padding: 16 },
-  tipsTitle: { fontSize: 12, fontWeight: '600', marginBottom: 14 },
-  tipRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
-  tipCheckIcon: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  tipText: { fontSize: 12, fontWeight: '500', flex: 1 },
 });
