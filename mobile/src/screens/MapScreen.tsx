@@ -106,11 +106,9 @@ export const MapScreen = () => {
 
   useEffect(() => {
     if (!locationLoading && !locationError) {
-      loadNearbyVenues();
+      loadAllVenues();
     }
-    // Depend on the lat/lng primitives, not the location object, to avoid
-    // re-fetching on every render if the object reference changes.
-  }, [locationLoading, locationError, location?.latitude, location?.longitude]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [locationLoading, locationError]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (mapRegion && venues.length > 0) {
@@ -118,16 +116,16 @@ export const MapScreen = () => {
     }
   }, [mapRegion, venues]);
 
-  const loadNearbyVenues = async () => {
+  const loadAllVenues = async () => {
     try {
       setLoading(true);
-      const nearbyVenues = await venuesAPI.getNearby(location.latitude, location.longitude, 10000);
+      const allVenues = await venuesAPI.getAll({ limit: 200 });
       if (!isMounted.current) return;
-      setVenues(nearbyVenues);
-      setVisibleVenues(nearbyVenues);
+      const withCoords = allVenues.filter((v) => v.latitude != null && v.longitude != null);
+      setVenues(withCoords);
+      setVisibleVenues(withCoords);
     } catch (err) {
       if (!isMounted.current) return;
-      console.error('Error loading venues:', err);
       setError('Failed to load venues');
     } finally {
       if (isMounted.current) setLoading(false);
@@ -261,7 +259,7 @@ export const MapScreen = () => {
         >
           <AppIcon name="location" size={12} role="brand" />
           <Text style={[styles.venueCountText, { color: d.text }]}>
-            {visibleVenues.length} happy hours nearby
+            {visibleVenues.length} {visibleVenues.length === 1 ? 'venue' : 'venues'} in view
           </Text>
         </View>
       </View>

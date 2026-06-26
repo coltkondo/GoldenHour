@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Query, Request
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List
 from uuid import UUID
 
@@ -45,6 +45,7 @@ def my_submissions(
     """Return the current user's submission history."""
     subs = (
         db.query(Submission)
+        .options(joinedload(Submission.submitter))
         .filter(Submission.user_id == current_user.id)
         .order_by(Submission.created_at.desc())
         .offset(skip)

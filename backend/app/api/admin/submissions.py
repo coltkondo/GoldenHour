@@ -2,7 +2,7 @@
 Admin submissions review queue — list and approve/reject.
 """
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
 from typing import List, Optional
 from uuid import UUID
@@ -27,7 +27,7 @@ def list_submissions(
     db: Session = Depends(get_db),
 ):
     """List all submissions with optional status/type filters."""
-    query = db.query(Submission).order_by(Submission.created_at.desc())
+    query = db.query(Submission).options(joinedload(Submission.submitter)).order_by(Submission.created_at.desc())
     if status:
         query = query.filter(Submission.status == status)
     if submission_type:
@@ -57,7 +57,7 @@ def get_submission(
 ):
     """Get a single submission by ID."""
     from fastapi import HTTPException
-    sub = db.query(Submission).filter(Submission.id == submission_id).first()
+    sub = db.query(Submission).options(joinedload(Submission.submitter)).filter(Submission.id == submission_id).first()
     if not sub:
         raise HTTPException(status_code=404, detail="Submission not found")
     return SubmissionResponse.from_orm_with_username(sub)

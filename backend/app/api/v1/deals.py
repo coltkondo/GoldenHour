@@ -39,7 +39,7 @@ async def get_active_deals(
     """
     Get all currently active deals. Optionally filter by venue or category.
     """
-    query = db.query(Deal).filter(Deal.active == True)
+    query = db.query(Deal).options(joinedload(Deal.venue)).filter(Deal.active == True)
 
     if category:
         query = query.filter(Deal.category == category)
@@ -60,6 +60,7 @@ async def get_todays_deals(db: Session = Depends(get_db)):
 
     deals = (
         db.query(Deal)
+        .options(joinedload(Deal.venue))
         .filter(
             Deal.active == True,
             Deal.id.in_(

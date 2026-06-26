@@ -54,7 +54,7 @@ _Current seed data is placeholder-quality. Founder will build better synthetic d
 
 ## Map page
 
-- [ ] **Verify venues appear in State College** — currently shows nothing when dragging to State College. Likely a data/coordinate issue.
+- [x] **Venues now appear in State College** — map was using `getNearby` (user GPS only). Switched to `getAll` so venues load regardless of user location and appear when panning.
 
 ---
 

@@ -7,10 +7,12 @@ from datetime import datetime, timezone
 
 from fastapi import HTTPException
 from pydantic import ValidationError as PydanticValidationError
-from sqlalchemy import update as sa_update
+from sqlalchemy import update as sa_update, func as sa_func
 from sqlalchemy.orm import Session
 
 from app.core.points_config import POINTS_CONFIG
+
+DAILY_POINTS_CAP = 200
 from app.models.submission import Submission
 from app.models.user import User
 from app.models.venue import Venue
@@ -20,6 +22,17 @@ from app.schemas.submission import ReviewAction, SubmissionResponse
 from app.schemas.submission_data import VenueData, DealData
 from app.core.logging import logger
 from app.services.geocoding import geocode
+
+
+def _points_earned_today(user_id, db: Session) -> int:
+    """Sum points awarded to a user since midnight UTC today."""
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    total = db.query(sa_func.coalesce(sa_func.sum(PointTransaction.points), 0)).filter(
+        PointTransaction.user_id == user_id,
+        PointTransaction.created_at >= today_start,
+        PointTransaction.points > 0,
+    ).scalar()
+    return total
 
 
 def _validated_venue(data: dict) -> dict:
@@ -85,12 +98,26 @@ def review_submission(
             logger.bind(submission_id=str(sub.id)).info("submission_applied")
 
             points = POINTS_CONFIG.get(sub.submission_type, 0)
+
+            if points > 0:
+                earned_today = _points_earned_today(sub.user_id, db)
+                if earned_today >= DAILY_POINTS_CAP:
+                    points = 0
+                    logger.bind(
+                        user_id=str(sub.user_id),
+                        earned_today=earned_today,
+                        cap=DAILY_POINTS_CAP,
+                    ).info("daily_cap_reached")
+                elif earned_today + points > DAILY_POINTS_CAP:
+                    points = DAILY_POINTS_CAP - earned_today
+                    logger.bind(
+                        user_id=str(sub.user_id),
+                        reduced_to=points,
+                    ).info("daily_cap_partial")
+
             sub.points_awarded = points
 
             if points > 0:
-                # Atomic SQL-level increment — generates:
-                #   UPDATE users SET points_balance = points_balance + :x WHERE id = :id
-                # This is safe under concurrent approvals without relying on ORM-level locking.
                 result = db.execute(
                     sa_update(User)
                     .where(User.id == sub.user_id)
