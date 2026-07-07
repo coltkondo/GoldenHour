@@ -31,6 +31,7 @@ export const LoginScreen = () => {
     try {
       const data = await authAPI.login({ email: email.trim(), password });
       await login(data.access_token, data.user);
+      navigation.navigate('Main');
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Invalid email or password');
     } finally {
@@ -50,7 +51,7 @@ export const LoginScreen = () => {
 
         <Text style={[styles.title, { color: d.text }]}>Welcome back</Text>
         <Text style={[styles.subtitle, { color: d.textMuted }]}>
-          Sign in to earn points & submit deals
+          Sign in to submit deals and help build the map
         </Text>
 
         {error ? (

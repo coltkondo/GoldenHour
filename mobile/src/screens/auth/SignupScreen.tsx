@@ -60,6 +60,7 @@ export const SignupScreen = () => {
         password,
       });
       await login(data.access_token, data.user);
+      navigation.navigate('Main');
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Sign up failed — try again');
     } finally {
@@ -79,7 +80,7 @@ export const SignupScreen = () => {
 
         <Text style={[styles.title, { color: d.text }]}>Join Golden Hour</Text>
         <Text style={[styles.subtitle, { color: d.textMuted }]}>
-          Submit deals & earn points for prizes
+          Help build the State College happy hour map
         </Text>
 
         {error ? (

@@ -40,3 +40,6 @@ export const POINTS_CONFIG: Record<string, number> = {
 };
 
 export const REWARDS_THRESHOLD = 1000;
+
+// Arts Fest beta: economy is off. Flip to true for August public launch.
+export const REWARDS_ENABLED = false;

@@ -9,6 +9,8 @@ import { authAPI } from '../api/endpoints';
 
 export const ProfileScreen = () => {
   const { user, isAdmin, logout, refreshUser } = useAuth();
+  const navigation = useNavigation<any>();
+  const { theme, mode, toggleMode } = useTheme();
 
   useFocusEffect(
     useCallback(() => {
@@ -18,9 +20,36 @@ export const ProfileScreen = () => {
         .catch(() => {}); // network failure: keep showing stale balance
     }, [user?.id]),
   );
-  const navigation = useNavigation<any>();
-  const { theme, mode, toggleMode } = useTheme();
+
   const d = theme.derived;
+
+  if (!user) {
+    return (
+      <View style={[styles.container, { backgroundColor: d.background, justifyContent: 'center', alignItems: 'center', padding: 32 }]}>
+        <Text style={[styles.userName, { color: d.text, textAlign: 'center', marginBottom: 8 }]}>
+          Sign In to Your Account
+        </Text>
+        <Text style={[{ color: d.textMuted, textAlign: 'center', fontSize: 13, marginBottom: 32, lineHeight: 20 }]}>
+          Track your submissions and contribute to the map.
+        </Text>
+        <TouchableOpacity
+          style={[{ borderRadius: 14, height: 48, justifyContent: 'center', alignItems: 'center', width: '100%', backgroundColor: d.primary }]}
+          onPress={() => navigation.navigate('Signup')}
+          activeOpacity={0.85}
+        >
+          <Text style={[{ fontSize: 15, fontWeight: '700', color: d.buttonPrimaryText }]}>
+            Sign Up — It's Free
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={{ marginTop: 16 }} onPress={() => navigation.navigate('Login')}>
+          <Text style={[{ fontSize: 14, fontWeight: '600', color: d.primary }]}>
+            Already have an account? Log in
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   const getInitials = () => {
     const username = user?.username ?? 'Guest';
     if (username.length >= 2) return username.substring(0, 2).toUpperCase();

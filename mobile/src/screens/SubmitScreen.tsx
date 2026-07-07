@@ -15,7 +15,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { useAuth } from '../context/AuthContext';
 import { submissionsAPI, authAPI } from '../api/endpoints';
-import { POINTS_CONFIG, REWARDS_THRESHOLD } from '../config/constants';
+import { POINTS_CONFIG, REWARDS_THRESHOLD, REWARDS_ENABLED } from '../config/constants';
 import { AppIcon } from '../components/icons';
 
 type SubmissionType =
@@ -87,6 +87,32 @@ export const SubmitScreen = () => {
   const progress = Math.min(points / REWARDS_THRESHOLD, 1);
   const ptsToGo = Math.max(REWARDS_THRESHOLD - points, 0);
 
+  if (!user) {
+    return (
+      <View style={[styles.container, { backgroundColor: d.background, justifyContent: 'center', alignItems: 'center', padding: 32 }]}>
+        <AppIcon name="plus" size={48} role="muted" />
+        <Text style={[styles.screenTitle, { color: d.text, textAlign: 'center', marginTop: 20 }]}>
+          Help Build the Map
+        </Text>
+        <Text style={[styles.successSubtext, { color: d.textMuted }]}>
+          Create a free account to submit happy hour deals for State College bars.
+        </Text>
+        <TouchableOpacity
+          style={[styles.submitBtn, { backgroundColor: d.primary, width: '100%', marginTop: 8 }]}
+          onPress={() => navigation.navigate('Signup')}
+          activeOpacity={0.85}
+        >
+          <Text style={[styles.submitBtnText, { color: d.buttonPrimaryText }]}>
+            Sign Up — It's Free
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={{ marginTop: 16 }} onPress={() => navigation.navigate('Login')}>
+          <Text style={[styles.linkText, { color: d.primary }]}>Already have an account? Log in</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   if (submitted) {
     const pts = POINTS_CONFIG[selectedType!] ?? 0;
     return (
@@ -97,7 +123,7 @@ export const SubmitScreen = () => {
           <Text style={[styles.successSubtext, { color: d.textMuted }]}>
             Thanks for helping keep GLDNHR accurate.
           </Text>
-          {pts > 0 && (
+          {REWARDS_ENABLED && pts > 0 && (
             <View
               style={[
                 styles.pointsBadge,
@@ -109,6 +135,11 @@ export const SubmitScreen = () => {
                 +{pts} pts when approved
               </Text>
             </View>
+          )}
+          {!REWARDS_ENABLED && (
+            <Text style={[styles.successSubtext, { color: d.textMuted, fontSize: 12 }]}>
+              Rewards coming at full launch this fall.
+            </Text>
           )}
           <TouchableOpacity
             style={[styles.submitBtn, { backgroundColor: d.primary, marginTop: 8 }]}
@@ -144,39 +175,41 @@ export const SubmitScreen = () => {
           {/* Header */}
           <Text style={[styles.screenTitle, { color: d.text }]}>Contribute</Text>
 
-          {/* Rewards Progress */}
-          <View style={[styles.progressCard, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
-            <View style={styles.progressHeader}>
-              <View style={styles.progressLeft}>
-                <AppIcon name="points" size={18} role="brand" />
-                <Text style={[styles.progressPoints, { color: d.primary }]}>
-                  {points.toLocaleString()}
-                </Text>
-                <Text style={[styles.progressLabel, { color: d.textMuted }]}>
-                  / {REWARDS_THRESHOLD.toLocaleString()} pts
-                </Text>
+          {/* Rewards Progress — hidden during Arts Fest beta */}
+          {REWARDS_ENABLED && (
+            <View style={[styles.progressCard, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+              <View style={styles.progressHeader}>
+                <View style={styles.progressLeft}>
+                  <AppIcon name="points" size={18} role="brand" />
+                  <Text style={[styles.progressPoints, { color: d.primary }]}>
+                    {points.toLocaleString()}
+                  </Text>
+                  <Text style={[styles.progressLabel, { color: d.textMuted }]}>
+                    / {REWARDS_THRESHOLD.toLocaleString()} pts
+                  </Text>
+                </View>
+                <AppIcon name="rewards" size={20} role={progress >= 1 ? 'brand' : 'muted'} />
               </View>
-              <AppIcon name="rewards" size={20} role={progress >= 1 ? 'brand' : 'muted'} />
-            </View>
 
-            <View style={[styles.progressTrack, { backgroundColor: d.filterInactive }]}>
-              <View
-                style={[
-                  styles.progressFill,
-                  {
-                    backgroundColor: d.primary,
-                    width: `${Math.max(progress * 100, 2)}%`,
-                  },
-                ]}
-              />
-            </View>
+              <View style={[styles.progressTrack, { backgroundColor: d.filterInactive }]}>
+                <View
+                  style={[
+                    styles.progressFill,
+                    {
+                      backgroundColor: d.primary,
+                      width: `${Math.max(progress * 100, 2)}%`,
+                    },
+                  ]}
+                />
+              </View>
 
-            <Text style={[styles.progressHint, { color: d.textMuted }]}>
-              {progress >= 1
-                ? "You've earned a reward! Redeem from your profile."
-                : `${ptsToGo.toLocaleString()} pts to your next $20 reward`}
-            </Text>
-          </View>
+              <Text style={[styles.progressHint, { color: d.textMuted }]}>
+                {progress >= 1
+                  ? "You've earned a reward! Redeem from your profile."
+                  : `${ptsToGo.toLocaleString()} pts to your next $20 reward`}
+              </Text>
+            </View>
+          )}
 
           {/* Type Selection */}
           <Text style={[styles.prompt, { color: d.text }]}>What did you find?</Text>
@@ -208,9 +241,11 @@ export const SubmitScreen = () => {
                 >
                   {opt.label}
                 </Text>
-                <Text style={[styles.typePts, { color: d.textMuted }]}>
-                  +{opt.pts} pts
-                </Text>
+                {REWARDS_ENABLED && (
+                  <Text style={[styles.typePts, { color: d.textMuted }]}>
+                    +{opt.pts} pts
+                  </Text>
+                )}
               </TouchableOpacity>
             ))}
           </View>
@@ -280,7 +315,7 @@ export const SubmitScreen = () => {
                   <ActivityIndicator color={d.buttonPrimaryText} />
                 ) : (
                   <Text style={[styles.submitBtnText, { color: d.buttonPrimaryText }]}>
-                    Submit — Earn {POINTS_CONFIG[selectedType] ?? 0} pts
+                    {REWARDS_ENABLED ? `Submit — Earn ${POINTS_CONFIG[selectedType] ?? 0} pts` : 'Submit'}
                   </Text>
                 )}
               </TouchableOpacity>

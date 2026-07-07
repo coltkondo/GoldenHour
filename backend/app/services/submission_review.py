@@ -10,6 +10,7 @@ from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy import update as sa_update, func as sa_func
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.points_config import POINTS_CONFIG
 
 DAILY_POINTS_CAP = 200
@@ -97,23 +98,24 @@ def review_submission(
             _apply_submission(sub, db)
             logger.bind(submission_id=str(sub.id)).info("submission_applied")
 
-            points = POINTS_CONFIG.get(sub.submission_type, 0)
-
-            if points > 0:
-                earned_today = _points_earned_today(sub.user_id, db)
-                if earned_today >= DAILY_POINTS_CAP:
-                    points = 0
-                    logger.bind(
-                        user_id=str(sub.user_id),
-                        earned_today=earned_today,
-                        cap=DAILY_POINTS_CAP,
-                    ).info("daily_cap_reached")
-                elif earned_today + points > DAILY_POINTS_CAP:
-                    points = DAILY_POINTS_CAP - earned_today
-                    logger.bind(
-                        user_id=str(sub.user_id),
-                        reduced_to=points,
-                    ).info("daily_cap_partial")
+            points = 0
+            if settings.REWARDS_ENABLED:
+                points = POINTS_CONFIG.get(sub.submission_type, 0)
+                if points > 0:
+                    earned_today = _points_earned_today(sub.user_id, db)
+                    if earned_today >= DAILY_POINTS_CAP:
+                        points = 0
+                        logger.bind(
+                            user_id=str(sub.user_id),
+                            earned_today=earned_today,
+                            cap=DAILY_POINTS_CAP,
+                        ).info("daily_cap_reached")
+                    elif earned_today + points > DAILY_POINTS_CAP:
+                        points = DAILY_POINTS_CAP - earned_today
+                        logger.bind(
+                            user_id=str(sub.user_id),
+                            reduced_to=points,
+                        ).info("daily_cap_partial")
 
             sub.points_awarded = points
 
