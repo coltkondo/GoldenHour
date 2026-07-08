@@ -19,16 +19,13 @@ The `request: Request` parameter is required by slowapi for key extraction
 """
 from slowapi import Limiter
 from slowapi.util import get_remote_address
-from limits.storage import RedisStorage, MemoryStorage
 
 from app.core.config import settings
 from app.core.logging import logger
 
 try:
-    _storage = RedisStorage(settings.REDIS_URL)
+    limiter = Limiter(key_func=get_remote_address, storage_uri=settings.REDIS_URL)
     logger.info("rate_limiter_using_redis")
 except Exception:
-    _storage = MemoryStorage()
+    limiter = Limiter(key_func=get_remote_address)
     logger.warning("rate_limiter_fallback_to_memory")
-
-limiter = Limiter(key_func=get_remote_address, storage_uri=None, storage=_storage)

@@ -325,6 +325,15 @@ export const HomeScreen = () => {
   );
 };
 
+/* ── Helpers ── */
+
+const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function formatValidThrough(dateStr: string): string {
+  const [, m, d] = dateStr.split('-').map(Number);
+  return `Thru ${MONTH_SHORT[m - 1]} ${d}`;
+}
+
 /* ── Deal Row Component ── */
 
 interface DealRowProps {
@@ -360,21 +369,30 @@ const DealRow: React.FC<DealRowProps> = ({ deal, d, onPress, isLive }) => {
           <Text style={[styles.dealVenue, { color: d.textMuted }]} numberOfLines={1}>
             {deal.venueName}
           </Text>
-          {timeLabel ? (
-            <View style={[
-              styles.timeBadge,
-              {
-                backgroundColor: isLive ? 'rgba(45,212,160,0.12)' : d.filterInactive,
-                borderColor: isLive ? d.live : 'transparent',
-                borderWidth: isLive ? 1 : 0,
-              },
-            ]}>
-              {isLive && <StatusDot status="live" size={5} pulse={false} />}
-              <Text style={[styles.timeText, { color: isLive ? d.live : d.textMuted }]}>
-                {timeLabel}
-              </Text>
-            </View>
-          ) : null}
+          <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
+            {deal.valid_through && (
+              <View style={[styles.timeBadge, { backgroundColor: 'rgba(245,166,35,0.10)', borderColor: d.primary, borderWidth: 1 }]}>
+                <Text style={[styles.timeText, { color: d.primary }]}>
+                  {formatValidThrough(deal.valid_through)}
+                </Text>
+              </View>
+            )}
+            {timeLabel ? (
+              <View style={[
+                styles.timeBadge,
+                {
+                  backgroundColor: isLive ? 'rgba(45,212,160,0.12)' : d.filterInactive,
+                  borderColor: isLive ? d.live : 'transparent',
+                  borderWidth: isLive ? 1 : 0,
+                },
+              ]}>
+                {isLive && <StatusDot status="live" size={5} pulse={false} />}
+                <Text style={[styles.timeText, { color: isLive ? d.live : d.textMuted }]}>
+                  {timeLabel}
+                </Text>
+              </View>
+            ) : null}
+          </View>
         </View>
       </View>
       <AppIcon name="chevronRight" size={14} role="muted" />
