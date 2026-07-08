@@ -17,6 +17,7 @@ import { venuesAPI, dealsAPI } from '../api/endpoints';
 import { Venue, Deal, HappyHourSchedule, DAY_NAMES } from '../types/api';
 import { formatScheduleRange, parseTimeString } from '../utils/scheduleUtils';
 import { AppIcon } from '../components/icons';
+import { REWARDS_ENABLED } from '../config/constants';
 import { LiveBadge } from '../components/ui/LiveBadge';
 import { StatusDot } from '../components/ui/StatusDot';
 
@@ -193,16 +194,18 @@ export const HomeScreen = () => {
         {/* Header */}
         <View style={styles.header}>
           <Text style={[styles.wordmark, { color: d.primary }]}>GLDNHR</Text>
-          <TouchableOpacity
-            style={[styles.pointsPill, { borderColor: d.border, backgroundColor: d.cardBackground }]}
-            activeOpacity={0.7}
-            onPress={() => navigation.navigate('ProfileTab')}
-          >
-            <AppIcon name="points" size={12} role="brand" />
-            <Text style={[styles.pointsText, { color: d.primary }]}>
-              {user?.points_balance ?? 0}
-            </Text>
-          </TouchableOpacity>
+          {REWARDS_ENABLED && user && (
+            <TouchableOpacity
+              style={[styles.pointsPill, { borderColor: d.border, backgroundColor: d.cardBackground }]}
+              activeOpacity={0.7}
+              onPress={() => navigation.navigate('ProfileTab')}
+            >
+              <AppIcon name="points" size={12} role="brand" />
+              <Text style={[styles.pointsText, { color: d.primary }]}>
+                {user.points_balance}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Day title */}
