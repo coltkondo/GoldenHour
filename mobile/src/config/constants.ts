@@ -2,6 +2,11 @@ import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
 const getLocalApiUrl = (): string => {
+  // Manual override via app.json "extra.apiUrl" (useful for Expo tunnel)
+  const extra = Constants.expoConfig?.extra;
+  if (extra?.apiUrl) {
+    return extra.apiUrl;
+  }
   // Expo Go on a physical device: extract the dev machine's LAN IP from hostUri
   const hostUri = Constants.expoConfig?.hostUri ?? Constants.manifest?.debuggerHost;
   if (hostUri) {

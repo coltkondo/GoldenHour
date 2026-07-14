@@ -91,6 +91,21 @@ async def get_nearby_venues(
     return venues
 
 
+@router.get("/neighborhoods/list", response_model=List[str])
+async def list_neighborhoods(db: Session = Depends(get_db)):
+    """
+    Get list of all neighborhoods with active venues.
+    """
+    neighborhoods = (
+        db.query(Venue.neighborhood)
+        .filter(Venue.active == True, Venue.neighborhood.isnot(None))
+        .distinct()
+        .all()
+    )
+
+    return [n[0] for n in neighborhoods]
+
+
 @router.get("/{venue_id}", response_model=VenueResponse)
 async def get_venue(venue_id: UUID, db: Session = Depends(get_db)):
     """
@@ -122,18 +137,3 @@ async def get_venue_schedules(venue_id: UUID, db: Session = Depends(get_db)):
         .all()
     )
     return schedules
-
-
-@router.get("/neighborhoods/list", response_model=List[str])
-async def list_neighborhoods(db: Session = Depends(get_db)):
-    """
-    Get list of all neighborhoods with active venues.
-    """
-    neighborhoods = (
-        db.query(Venue.neighborhood)
-        .filter(Venue.active == True, Venue.neighborhood.isnot(None))
-        .distinct()
-        .all()
-    )
-
-    return [n[0] for n in neighborhoods]
