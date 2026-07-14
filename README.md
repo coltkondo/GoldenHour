@@ -53,7 +53,7 @@ GoldenHour/
 - **Framework**: React Native with Expo SDK 54
 - **Language**: TypeScript
 - **Auth**: JWT stored in `AsyncStorage`, injected on every API request
-- **Navigation**: React Navigation (auth-gated stack + bottom tabs)
+- **Navigation**: React Navigation (anonymous browse enabled; auth gated at contribute actions, not the root)
 - **Maps**: react-native-maps (Apple Maps on iOS)
 - **HTTP**: Axios with request interceptor for auth
 
@@ -111,13 +111,20 @@ UPDATE users SET role = 'admin' WHERE email = 'your@email.com';
 
 ## Points System
 
-Submitting information that gets approved earns points:
+Submitting information that gets approved earns points. The authoritative values are in [docs/ECONOMY_SPEC.md](docs/ECONOMY_SPEC.md).
 
 | Submission type | Points |
 |-----------------|--------|
-| New bar or new deal | 50 |
-| Deal expired or bar closed | 25 |
-| Deal update or bar update | 15 |
+| New deal or deal correction | 50 |
+| Deal marked expired | 50 |
+| New bar added | 100 |
+| Bar marked closed | 100 |
+| Bar info correction | 50 |
+| Corroborate an existing deal | 2 |
+
+1,000 points = $20 cash via Venmo, requested by the user. Daily cap: 200 pts/user.
+
+> **Arts Fest build:** The economy layer is disabled via `REWARDS_ENABLED=false` in `backend/.env` and `mobile/src/config/constants.ts`. Points are not awarded and rewards UI is hidden. Flip both flags to `true` for the August public launch.
 
 ## Data
 
@@ -140,5 +147,7 @@ https://goldenhour-production.up.railway.app
 - [FIRSTSTEP.md](FIRSTSTEP.md) — Full setup walkthrough for new developers
 - [docs/SETUP.md](docs/SETUP.md) — Detailed environment setup
 - [docs/API.md](docs/API.md) — Full API reference
-- [docs/DATA_MODELS.md](docs/DATA_MODELS.md) — Database schema
+- [docs/DATA_MODELS.md](docs/DATA_MODELS.md) — Database schema and CSV import reference
+- [docs/ECONOMY_SPEC.md](docs/ECONOMY_SPEC.md) — Points economy: values, cap, payout threshold
+- [docs/APP_STORE_COMPLIANCE.md](docs/APP_STORE_COMPLIANCE.md) — Apple App Store review checklist and known gaps
 - [docs/admin-guide.md](docs/admin-guide.md) — Admin dashboard guide
