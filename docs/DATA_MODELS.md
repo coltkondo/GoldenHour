@@ -1,221 +1,182 @@
 # Data Models
 
-Database schema and model definitions used throughout the Golden Hour application.
+Database schema for the Golden Hour application. Generated from the live SQLAlchemy models — treat this as the source of truth for CSV import, direct SQL, and API work.
 
-## Overview
-
-The application uses six models:
-
-- **Venue** -- A bar, restaurant, or other establishment that offers happy hour deals.
-- **Deal** -- A specific food or drink deal offered at a venue.
-- **HappyHourSchedule** -- A time window on a given day when deals are active at a venue.
-- **User** -- Registered user account with a role and points balance.
-- **Submission** -- A user-submitted tip waiting for admin review.
-- **PointTransaction** -- A record of points awarded (or deducted) for a specific action.
-
-All models use UUID primary keys and include `created_at` and `updated_at` timestamps.
+_Last updated: 2026-07-08_
 
 ---
 
 ## Venue
 
-Database table: `venues`
+Table: `venues`
 
-| Column | Type | Nullable | Description |
-|--------|------|----------|-------------|
-| id | UUID | No | Primary key |
-| name | String(255) | No | Venue name |
-| nickname | String(100) | Yes | Common short name |
-| address | String(500) | No | Street address |
-| latitude | Float | No | GPS latitude |
-| longitude | Float | No | GPS longitude |
-| phone | String(20) | Yes | Phone number |
-| website | String(500) | Yes | Website URL |
-| neighborhood | String(100) | Yes | Neighborhood name (indexed) |
-| venue_type | String(50) | Yes | Type: "Bar", "Restaurant", "Brewery", etc. |
-| tags | ARRAY(String) | Yes | Descriptive tags like "dive-bar", "rooftop" |
-| cash_only | Boolean | No | Whether the venue only accepts cash |
-| google_place_id | String(255) | Yes | Google Places ID for deduplication |
-| price_level | Integer | Yes | Price level (1-4) |
-| rating | Float | Yes | Average rating |
-| verified | Boolean | No | Whether the venue data has been verified |
-| active | Boolean | No | Soft delete flag |
-| description | Text | Yes | Venue description |
-| created_at | DateTime | No | Record creation timestamp |
-| updated_at | DateTime | No | Last update timestamp |
+| Column | Type | Nullable | Default | Notes |
+|--------|------|----------|---------|-------|
+| id | UUID | No | auto | Primary key |
+| name | VARCHAR(255) | No | | Indexed |
+| nickname | VARCHAR(100) | Yes | | Short display name |
+| address | VARCHAR(500) | No | | |
+| latitude | FLOAT | Yes | | Required for map pin |
+| longitude | FLOAT | Yes | | Required for map pin |
+| phone | VARCHAR(20) | Yes | | |
+| website | VARCHAR(500) | Yes | | |
+| neighborhood | VARCHAR(100) | Yes | | Indexed |
+| venue_type | VARCHAR(50) | Yes | | "bar", "restaurant", "rooftop", etc. |
+| tags | ARRAY(VARCHAR) | Yes | | e.g. `["Sports Bar","Karaoke"]` |
+| cash_only | BOOLEAN | No | false | |
+| google_place_id | VARCHAR(255) | Yes | | Unique; used for dedup |
+| price_level | INTEGER | Yes | | 1–4 |
+| rating | FLOAT | Yes | | |
+| verified | BOOLEAN | No | false | |
+| active | BOOLEAN | No | true | Soft delete |
+| description | TEXT | Yes | | |
+| created_at | TIMESTAMPTZ | No | now() | |
+| updated_at | TIMESTAMPTZ | No | now() | |
 
-Indexes: `neighborhood`, `active`, `google_place_id`.
-
-### Relationships
-
-- A venue has many deals (`deals` backref).
-- A venue has many schedules (`schedules` backref).
+**CSV ref key:** `venue_id` (e.g. `SC001`) — maps to UUID on import, used as a join key in deals/schedules CSVs.
 
 ---
 
 ## Deal
 
-Database table: `deals`
+Table: `deals`
 
-| Column | Type | Nullable | Description |
-|--------|------|----------|-------------|
-| id | UUID | No | Primary key |
-| venue_id | UUID (FK) | No | References `venues.id` |
-| title | String(255) | No | Deal title, e.g. "$3 Draft Beers" |
-| description | Text | Yes | Longer description |
-| category | String(50) | Yes | "food", "drinks", or "both" |
-| deal_type | String(50) | Yes | "special_price", "discount", "bogo", "free" |
-| original_price | Float | Yes | Regular price before deal |
-| deal_price | Float | Yes | Discounted price |
-| discount_percentage | Float | Yes | Calculated percentage off |
-| items | ARRAY(String) | Yes | List of items included |
-| active | Boolean | No | Soft delete flag |
-| verified | Boolean | No | Whether the deal has been verified |
-| source | String(50) | Yes | Data source, e.g. "import", "manual" |
-| created_at | DateTime | No | Record creation timestamp |
-| updated_at | DateTime | No | Last update timestamp |
+| Column | Type | Nullable | Default | Notes |
+|--------|------|----------|---------|-------|
+| id | UUID | No | auto | Primary key |
+| venue_id | UUID (FK→venues) | No | | |
+| title | VARCHAR(255) | No | | e.g. "$3 Miller Lites" |
+| description | TEXT | Yes | | |
+| category | VARCHAR(50) | Yes | | `"drinks"` / `"food"` / `"both"` |
+| deal_type | VARCHAR(50) | Yes | | `"special_price"` / `"discount"` / `"bogo"` / `"free"` |
+| original_price | FLOAT | Yes | | Must be ≥ deal_price if both set |
+| deal_price | FLOAT | Yes | | |
+| discount_percentage | FLOAT | Yes | | 0–100; auto-calculated on import if both prices given |
+| items | ARRAY(VARCHAR) | Yes | | e.g. `["Draft beer","House wine"]` |
+| active | BOOLEAN | No | true | Soft delete |
+| verified | BOOLEAN | No | false | |
+| source | VARCHAR(50) | Yes | "manual" | `"import"` / `"manual"` / `"user"` |
+| valid_through | DATE | Yes | null | Auto-expires deal after this date. Use for Arts Fest one-offs. |
+| created_at | TIMESTAMPTZ | No | now() | |
+| updated_at | TIMESTAMPTZ | No | now() | |
 
-Indexes: `venue_id`, `active`, `category`.
+**CSV ref key:** `deal_id` (e.g. `D001`) — used as a join key in the schedules CSV.
+
+**Import note:** `category` and `deal_type` are derived from `is_food` / `is_drink` boolean columns in the CSV, not set directly.
 
 ---
 
 ## HappyHourSchedule
 
-Database table: `happy_hour_schedules`
+Table: `happy_hour_schedules`
 
-| Column | Type | Nullable | Description |
-|--------|------|----------|-------------|
-| id | UUID | No | Primary key |
-| venue_id | UUID (FK) | No | References `venues.id` |
-| day_of_week | Integer | No | 0=Monday through 6=Sunday |
-| start_time | Time | No | Start time of happy hour |
-| end_time | Time | No | End time of happy hour |
-| deal_ids | ARRAY(UUID) | Yes | UUIDs of deals active during this window |
-| notes | Text | Yes | Additional info like "Patio only" |
-| restrictions | Text | Yes | Restrictions like "Dine-in only" |
-| active | Boolean | No | Soft delete flag |
-| created_at | DateTime | No | Record creation timestamp |
-| updated_at | DateTime | No | Last update timestamp |
+| Column | Type | Nullable | Default | Notes |
+|--------|------|----------|---------|-------|
+| id | UUID | No | auto | Primary key |
+| venue_id | UUID (FK→venues) | No | | Indexed |
+| day_of_week | INTEGER | No | | 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat, 6=Sun. Indexed. |
+| start_time | TIME | No | | 24hr, e.g. `16:00` |
+| end_time | TIME | No | | Must be after start_time |
+| deal_ids | ARRAY(UUID) | Yes | | UUIDs of deals in this window — the link between deals and times |
+| notes | TEXT | Yes | | e.g. "Patio only" |
+| restrictions | TEXT | Yes | | e.g. "Dine-in only" |
+| active | BOOLEAN | No | true | |
+| created_at | TIMESTAMPTZ | No | now() | |
+| updated_at | TIMESTAMPTZ | No | now() | |
 
-Indexes: `venue_id`, `day_of_week`.
-
-A schedule entry represents a single time window on a single day. Multiple deals can share the same schedule window. For example, a venue might have both food and drink deals available Monday from 4pm to 7pm -- those deals would be listed in the same schedule entry's `deal_ids` array.
-
----
-
-## CSV Source Data
-
-The raw data is stored in `data/` as three CSV files. The import process maps CSV IDs (like SC001, D001) to UUIDs and normalizes fields.
-
-### pennstate_venues.csv
-
-Key columns: `venue_id`, `name`, `nickname`, `address`, `latitude`, `longitude`, `phone`, `website`, `neighborhood`, `venue_type`, `tags`, `cash_only`, `is_active`.
-
-### pennstate_deals.csv
-
-Key columns: `deal_id`, `venue_id`, `deal_name`, `description`, `deal_price`, `original_price`, `is_food`, `is_drink`, `is_active`.
-
-The `is_food` and `is_drink` boolean columns are converted to a `category` value: both true = "both", only food = "food", otherwise = "drinks".
-
-### pennstate_schedules.csv
-
-Key columns: `venue_id`, `deal_id`, `day_of_week`, `start_time`, `end_time`.
-
-During import, schedule entries are grouped by (venue, day, start_time, end_time) so that multiple deals sharing the same time window are combined into a single schedule record.
-
----
+**Import note:** The CSV has one row per deal. The script groups rows with the same `(venue_id, day_of_week, start_time, end_time)` into a single schedule record, combining their `deal_ids`. One deal can appear in multiple schedule rows (Mon + Tue = two rows → two schedule records).
 
 ---
 
 ## User
 
-Database table: `users`
+Table: `users`
 
-| Column | Type | Nullable | Description |
-|--------|------|----------|-------------|
-| id | UUID | No | Primary key |
-| username | String(50) | No | Unique display name |
-| email | String(255) | No | Unique email (lowercased on write) |
-| hashed_password | String | No | bcrypt hash |
-| role | String(20) | No | "user" or "admin" |
-| points_balance | Integer | No | Current points total (CHECK >= 0) |
-| active | Boolean | No | Soft disable flag |
-| created_at | DateTime | No | Record creation timestamp |
-| updated_at | DateTime | No | Last update timestamp |
+| Column | Type | Nullable | Default | Notes |
+|--------|------|----------|---------|-------|
+| id | UUID | No | auto | Primary key |
+| username | VARCHAR(50) | No | | Unique |
+| email | VARCHAR(255) | No | | Unique; lowercased on write |
+| hashed_password | VARCHAR | No | | bcrypt |
+| role | VARCHAR(20) | No | "user" | `"user"` or `"admin"` |
+| points_balance | INTEGER | No | 0 | CHECK >= 0 |
+| active | BOOLEAN | No | true | Soft disable |
+| created_at | TIMESTAMPTZ | No | now() | |
+| updated_at | TIMESTAMPTZ | No | now() | |
 
 ---
 
 ## Submission
 
-Database table: `submissions`
+Table: `submissions`
 
-| Column | Type | Nullable | Description |
-|--------|------|----------|-------------|
-| id | UUID | No | Primary key |
-| submitter_id | UUID (FK) | No | References `users.id` |
-| submission_type | String(50) | No | One of: new_bar, bar_closed, bar_update, new_deal, deal_expired, deal_update |
-| status | String(20) | No | "pending", "approved", or "rejected" |
-| submitted_data | JSONB | No | Validated payload (type-specific schema) |
-| related_bar_id | UUID | Yes | Venue this submission refers to |
-| related_deal_id | UUID | Yes | Deal this submission refers to |
-| admin_notes | Text | Yes | Notes left by reviewer |
-| points_awarded | Integer | No | Points awarded on approval (0 until then) |
-| reviewed_at | DateTime | Yes | When admin processed the submission |
-| created_at | DateTime | No | Record creation timestamp |
-| updated_at | DateTime | No | Last update timestamp |
-
-`submitted_data` is validated against a type-specific Pydantic schema in `schemas/submission_data.py` before the submission is saved.
+| Column | Type | Nullable | Default | Notes |
+|--------|------|----------|---------|-------|
+| id | UUID | No | auto | Primary key |
+| user_id | UUID (FK→users) | No | | The submitter |
+| submission_type | ENUM | No | | `new_deal`, `deal_update`, `deal_expired`, `new_bar`, `bar_closed`, `bar_update` |
+| submitted_data | JSONB | No | `{}` | Type-specific payload validated against Pydantic schema |
+| related_bar_id | UUID (FK→venues) | Yes | | Venue this submission references |
+| related_deal_id | UUID (FK→deals) | Yes | | Deal this submission references |
+| status | ENUM | No | "pending" | `"pending"` / `"approved"` / `"rejected"` |
+| admin_notes | TEXT | Yes | | Reviewer notes |
+| points_awarded | INTEGER | No | 0 | Set on approval; 0 when REWARDS_ENABLED=false |
+| reviewed_by | UUID (FK→users) | Yes | | Admin who reviewed |
+| reviewed_at | TIMESTAMPTZ | Yes | | |
+| created_at | TIMESTAMPTZ | No | now() | |
+| updated_at | TIMESTAMPTZ | No | now() | |
 
 ---
 
 ## PointTransaction
 
-Database table: `point_transactions`
+Table: `point_transactions`
 
-| Column | Type | Nullable | Description |
-|--------|------|----------|-------------|
-| id | UUID | No | Primary key |
-| user_id | UUID (FK) | No | References `users.id` |
-| submission_id | UUID (FK) | Yes | References `submissions.id` (null for manual adjustments) |
-| delta | Integer | No | Points change (positive = awarded, negative = deducted) |
-| reason | String(100) | No | Human-readable reason |
-| created_at | DateTime | No | Record creation timestamp |
+| Column | Type | Nullable | Default | Notes |
+|--------|------|----------|---------|-------|
+| id | UUID | No | auto | Primary key |
+| user_id | UUID (FK→users) | No | | |
+| submission_id | UUID (FK→submissions) | Yes | | Null for manual adjustments |
+| points | INTEGER | No | | Positive = awarded |
+| transaction_type | ENUM | No | | `"submission_approved"`, `"bonus"`, `"redemption"`, `"adjustment"` |
+| description | TEXT | No | `""` | Human-readable reason |
+| created_at | TIMESTAMPTZ | No | now() | |
 
 ---
 
-## Pydantic Schemas
+## CSV Import Column Reference
 
-The backend uses Pydantic schemas for request validation and response serialization. These are defined in `backend/app/schemas/`.
+### `data/pennstate_venues.csv`
+```
+venue_id, name, nickname, address, latitude, longitude, phone, website,
+neighborhood, venue_type, tags, cash_only, is_active
+```
+- `tags`: comma-separated string inside quotes: `"Sports Bar,Karaoke,Dive"`
+- `cash_only`, `is_active`: `TRUE` / `FALSE`
+- Rows with no `latitude` or `longitude` are skipped
 
-### Venue Schemas
+### `data/pennstate_deals.csv`
+```
+deal_id, venue_id, deal_name, description, category, deal_price,
+original_price, is_food, is_drink, is_active, valid_through
+```
+- `venue_id` must match a `venue_id` from the venues file
+- `is_food` / `is_drink`: `TRUE` / `FALSE` — determines `category` field
+- `deal_price` / `original_price`: optional, leave blank if no price to show
+- `category` column: only checked for `"half"` / `"1/2"` → sets `deal_type="discount"`, otherwise `"special_price"`
+- `valid_through`: optional, `YYYY-MM-DD` format. Leave blank for permanent deals. Set to `2026-07-12` for Arts Fest one-offs.
 
-- `VenueCreate` -- Fields required to create a new venue.
-- `VenueUpdate` -- Optional fields for partial updates.
-- `VenueResponse` -- Full venue object returned by the API.
-- `VenueWithDeals` -- Venue with `deals_count` and `active_deals_count` (admin only).
+### `data/pennstate_schedules.csv`
+```
+schedule_id, deal_id, venue_id, day_of_week, start_time, end_time, is_active
+```
+- `deal_id` + `venue_id` must match their respective files
+- `day_of_week`: full English name — `Monday`, `Tuesday`, `Wednesday`, `Thursday`, `Friday`, `Saturday`, `Sunday`
+- `start_time` / `end_time`: 24hr format — `16:00`, `21:30`. Use `0:00` as end to mean "until close" (script converts to `23:59`)
+- One deal per row — duplicate `(venue_id, day, start, end)` combos are merged into one schedule record
 
-### Deal Schemas
-
-- `DealCreate` -- Fields required to create a new deal (includes `venue_id`).
-- `DealUpdate` -- Optional fields for partial updates.
-- `DealResponse` -- Full deal object returned by the API.
-- `DealWithVenue` -- Deal with `venue_name` attached (admin only).
-
-### HappyHour Schemas
-
-- `HappyHourScheduleResponse` -- Schedule with `start_time` and `end_time` serialized as "HH:MM" strings.
-
-Time fields use a `field_validator` to convert Python `time` objects to "HH:MM" formatted strings for JSON serialization.
-
-### User Schemas
-
-- `UserCreate` -- `username`, `email`, `password` (validated for complexity).
-- `UserLogin` -- `email`, `password`.
-- `UserResponse` -- Public user fields (no password hash).
-- `Token` -- `access_token`, `token_type`.
-
-### Submission Schemas
-
-- `SubmissionCreate` -- `submission_type`, `submitted_data`, optional `related_bar_id`/`related_deal_id`.
-- `SubmissionResponse` -- Full submission with `submitter_username`, `status`, `points_awarded`, timestamps.
-- `ReviewRequest` -- `status` ("approved" or "rejected"), optional `admin_notes`.
+### Running the import
+```bash
+# Wipe existing venues/deals/schedules and re-import from all three CSVs:
+docker compose run --rm backend_image python -m scripts.import_csv --force
+```

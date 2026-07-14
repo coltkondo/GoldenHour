@@ -6,7 +6,7 @@ Run with: cd backend && python -m scripts.import_csv
 import sys
 import csv
 from pathlib import Path
-from datetime import time
+from datetime import time, date
 
 # Add parent directory to path
 sys.path.append(str(Path(__file__).parent.parent))
@@ -32,6 +32,16 @@ DAY_MAP = {
 
 def parse_bool(val: str) -> bool:
     return val.strip().upper() == "TRUE"
+
+
+def parse_date(val: str):
+    """Parse YYYY-MM-DD date string, returning None for empty values."""
+    if not val or val.strip() == "":
+        return None
+    try:
+        return date.fromisoformat(val.strip())
+    except ValueError:
+        return None
 
 
 def parse_float(val: str):
@@ -182,6 +192,7 @@ def import_data(db: Session):
                 active=parse_bool(row.get("is_active", "TRUE")),
                 verified=True,
                 source="import",
+                valid_through=parse_date(row.get("valid_through", "")),
             )
             db.add(deal)
             db.flush()
