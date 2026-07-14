@@ -1,5 +1,6 @@
 from sqlalchemy import (
     Column,
+    Date,
     String,
     Float,
     Boolean,
@@ -53,6 +54,9 @@ class Deal(Base, TimestampMixin):
     # Status
     active = Column(Boolean, default=True)
     verified = Column(Boolean, default=False)
+
+    # Optional expiry — NULL means permanent. Set for time-limited / event deals.
+    valid_through = Column(Date, nullable=True)
 
     # Tracking
     source = Column(String(50), default="manual")  # "manual", "import", "user"

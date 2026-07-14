@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import and_, func
+from sqlalchemy import and_, func, or_
 from typing import List, Optional
 from uuid import UUID
 from datetime import datetime, time
@@ -39,7 +39,15 @@ async def get_active_deals(
     """
     Get all currently active deals. Optionally filter by venue or category.
     """
-    query = db.query(Deal).filter(Deal.active == True)
+    today_date = _now_eastern().date()
+    query = (
+        db.query(Deal)
+        .options(joinedload(Deal.venue))
+        .filter(
+            Deal.active == True,
+            or_(Deal.valid_through == None, Deal.valid_through >= today_date),
+        )
+    )
 
     if category:
         query = query.filter(Deal.category == category)
@@ -58,10 +66,13 @@ async def get_todays_deals(db: Session = Depends(get_db)):
     """
     today = _now_eastern().weekday()  # 0=Monday
 
+    today_date = _now_eastern().date()
     deals = (
         db.query(Deal)
+        .options(joinedload(Deal.venue))
         .filter(
             Deal.active == True,
+            or_(Deal.valid_through == None, Deal.valid_through >= today_date),
             Deal.id.in_(
                 db.query(func.unnest(HappyHourSchedule.deal_ids)).filter(
                     HappyHourSchedule.day_of_week == today,

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, model_validator
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, date
 from uuid import UUID
 
 
@@ -57,6 +57,7 @@ class DealResponse(DealBase):
     active: bool
     verified: bool
     source: Optional[str] = "manual"
+    valid_through: Optional[date] = None
     created_at: datetime
     updated_at: datetime
 

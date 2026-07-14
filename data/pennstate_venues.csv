@@ -1,14 +1,10 @@
-venue_id,name,nickname,address,phone,website,latitude,longitude,venue_type,tags,cash_only,neighborhood,city,state,Zip Code,college_affiliation,is_active
-SC001,Champs Downtown,Champs,"108 S Pugh St, State College, PA 16801",,,40.7934,-77.86,Bar,"Sports Bar,Dance,College Bar",FALSE,Downtown,State College,PA,16801,Penn State,TRUE
-SC002,Cafe 210 West,Cafe,"210 W College Ave, State College, PA 16801",,,40.7923,-77.8631,Bar,"Dive Bar,College Bar,Classic",FALSE,Downtown,State College,PA,16801,Penn State,TRUE
-SC003,The Phyrst,Phyrst,"113 S Pugh St, State College, PA 16801",,,40.7932,-77.8602,Bar,"Sports Bar,Live Music,Dueling Pianos",FALSE,Downtown,State College,PA,16801,Penn State,TRUE
-SC004,Local Whiskey,Local,"117 S Pugh St, State College, PA 16801",,,40.7931,-77.8601,RestoBar,"Cocktail Bar,Upscale,Craft Drinks",FALSE,Downtown,State College,PA,16801,Penn State,TRUE
-SC005,Doggie's Pub,Doggies,"134 S Allen St, State College, PA 16801",,,40.7924,-77.8622,Bar,"Dive Bar,College Bar,Pizza",FALSE,Downtown,State College,PA,16801,Penn State,TRUE
-SC006,Bill Pickles Tap Room,Pickles,"108 E College Ave, State College, PA 16801",,,40.7931,-77.8585,Bar,"Dive Bar,Country Music,Dance",FALSE,Downtown,State College,PA,16801,Penn State,TRUE
-SC007,Primanti Brothers,Pmans,"332 W College Ave, State College, PA 16801",,,40.7917,-77.8667,RestoBar,"Wings,Sports Bar,Casual",FALSE,Downtown,State College,PA,16801,Penn State,TRUE
-SC008,Jax Pub,Jax,,,,,,Dive Bar,,FALSE,Downtown,State College,PA,16801,Penn State,FALSE
-SC009,The Shandygaff,Gaff,"119 Heister St, State College, PA 16801",,,40.7936,-77.8609,Bar,"Dive Bar,Karaoke,Gaffeoke",FALSE,Downtown,State College,PA,16801,Penn State,TRUE
-SC010,Central Reservation,Central,"113 S Allen St, State College, PA 16801",,,40.793,-77.8621,RestoBar,"Restaurant, Fancy, Cocktails",FALSE,Downtown,State College,PA,16801,Penn State,TRUE
-SC011,Basement Nightspot,Basement,"112 W College Ave, State College, PA 16801",,,40.7941,-77.8619,Club,"Club, Dance, College Bar",FALSE,Downtown,State College,PA,16801,Penn State,TRUE
-SC012,Lion's Den,The Den,"118 S Garner St, State College, PA 16801",,,40.7976,-77.8567,Bar,"College Bar, Dance, Club, Basement",FALSE,Downtown,State College,PA,16801,Penn State,TRUE
-SC013,Brothers Bar & Grill,Brothers,"110 S Pugh St, State College, PA 16801",,,40.7925,-77.8619,RestoBar,"Restaurant Bar,Trivia,Food",FALSE,Downtown,State College,PA,16801,Penn State,TRUE
+venue_id,name,nickname,address,latitude,longitude,venue_type,tags,cash_only,neighborhood,is_active
+SC001,Lion's Den,Den,"118 S Garner St, State College, PA 16801",40.796191,-77.859664,Bar,"College Bar,Shots,Patio",FALSE,Downtown,TRUE
+SC002,The Shandygaff,Gaff,"212 E College Ave, State College, PA 16801",40.7952827,-77.8598581,Bar,"College Bar,Dive Bar,Karaoke",FALSE,College Ave,TRUE
+SC003,Cafe 210 West,Cafe 210,"210 W College Ave, State College, PA 16801",40.7931773,-77.8630037,Bar,"College Bar,Patio",FALSE,College Ave,TRUE
+SC004,Brothers Bar & Grill,Brothers,"134 S Allen St, State College, PA 16801",40.7936366,-77.8607833,Bar,"College Bar,DJ,Late Night",FALSE,Downtown,TRUE
+SC005,Doggie's Pub,Doggies,"108 S Pugh St, State College, PA 16801",40.7950443,-77.8602538,Bar,"Pub,Beer Garden,Pizza",FALSE,Downtown,TRUE
+SC006,The Phyrst,Phyrst,"111 E Beaver Ave, State College, PA 16801",40.7937487,-77.8600643,Bar,"Irish Pub,Live Music,Basement Bar",FALSE,Downtown,TRUE
+SC007,Bill Pickle's Tap Room,Pickles,"106 S Allen St, State College, PA 16801",40.7937,-77.8601,Bar,"Sports Bar,BBQ,Whiskey Bar,Country Night",FALSE,Downtown,TRUE
+SC008,Primanti Bros Restaurant and Bar,Pmans,"130 Hiester Street, State College, PA 16801",40.796987,-77.857018,Bar,"Sports Bar,Frat Bar,Dance,Club",FALSE,Downtown,TRUE
+SC009,Champs Downtown,Champs,"139 S Allen St, State College, PA 16801",40.794818,-77.861324,Bar,"Sports Bar,Pool Tables, Dance,Arcade,Basement Bar",FALSE,Downtown,TRUE

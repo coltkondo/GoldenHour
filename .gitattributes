@@ -1,0 +1,4 @@
+# Shell scripts must always use LF — CRLF breaks exec in Docker Linux containers
+*.sh text eol=lf
+
+# Default: let Git handle everything else with its normal CRLF conversion on Windows

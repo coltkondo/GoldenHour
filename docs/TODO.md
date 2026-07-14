@@ -19,14 +19,10 @@ _The submit flow is the app's growth engine. Make it prominent and rewarding._
 
 _Home should answer: "What's happening now, and what's coming up tonight?"_
 
-- [ ] **Home page redesign** — model after Explore > Tonight tab but better. Prominent deal cards, bigger text, appealing banners. No map (Map tab covers that).
-- [ ] **"Happening Now" section** — deals currently in their active happy hour window, based on current day/time.
-- [ ] **"Coming Up Tonight" section** — deals later today that haven't started yet.
-- [ ] **Working filter bubbles** — filter by category, deal type, neighborhood, etc. Currently non-functional on Home.
-- [ ] **Center-justify GLDNHR title**
-- [ ] **Remove or wire up dead UI elements** — bell icon, dropdown arrow, search bar all do nothing currently. Remove until functionality is built.
-- [ ] **Fix "live" deal status accuracy** — deals showing as "live" when they aren't. Ensure live/upcoming status is driven by current day + time vs. happy hour schedule.
-- [ ] **Fix Upcoming section randomness** — sort by start time, not arbitrary order.
+- [x] **Home page redesign** — "Happening Now" and "Coming Up Tonight" sections, driven by real schedule data. No map, no dead UI.
+- [x] **Working filter bubbles** — All, Cocktails, Beer, Wine, Food — keyword-match against deal title/category/items.
+- [x] **Dead UI removed** — bell icon, dropdown arrow, search bar, sort panel, floating animated icons all removed.
+- [x] **Live deal accuracy** — "Happening Now" checks current time against schedule start/end. "Coming Up" sorted by start time.
 
 ---
 
@@ -43,9 +39,9 @@ _Current seed data is placeholder-quality. Founder will build better synthetic d
 
 ## Explore page tweaks
 
-- [ ] **Browse tab** — remove top banner stats (bars/deals/categories count). Keep "deals tonight" count at most. Trim filter tags — too many bubbles, reduce to meaningful categories.
-- [ ] **Tonight tab** — fix deal descriptions to be specific (what's actually on special, not just "Happy Hour Package"). Fix incorrect "live" badges.
-- [ ] **Submit tab** — remove once the "+" bottom tab exists (redundant).
+- [x] **Browse tab** — removed stats banner, replaced with subtle "X deals tonight" count. Tag deduplication (Gaffeoke → Karaoke). Removed per-venue tag chips for cleaner cards.
+- [x] **Tonight tab** — live badges now driven by real schedule data (current time vs start/end). Shows time range and "Live" label only for actually-live deals.
+- [x] **Submit tab** — removed (replaced by "+" bottom tab).
 
 ---
 
@@ -58,7 +54,7 @@ _Current seed data is placeholder-quality. Founder will build better synthetic d
 
 ## Map page
 
-- [ ] **Verify venues appear in State College** — currently shows nothing when dragging to State College. Likely a data/coordinate issue.
+- [x] **Venues now appear in State College** — map was using `getNearby` (user GPS only). Switched to `getAll` so venues load regardless of user location and appear when panning.
 
 ---
 
@@ -68,7 +64,7 @@ _Current seed data is placeholder-quality. Founder will build better synthetic d
 - [x] Add `@limiter.limit("10/minute")` to `POST /submissions/` in `api/v1/submissions.py`
 - [x] Auto-geocode `new_bar` submissions via Nominatim on admin approval
 - [ ] Implement 25pt/day corroboration cap — max 10 corroborations × 2pts per user per day, enforced server-side in the corroboration endpoint (not yet built)
-- [ ] Add 401 token refresh interceptor to `mobile/src/api/client.ts` — tokens expire after 30 minutes with no silent refresh, users get kicked mid-session
+- [x] Add 401 token refresh interceptor to `mobile/src/api/client.ts` — silently refreshes expired tokens and retries the failed request
 
 ---
 

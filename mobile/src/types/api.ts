@@ -33,6 +33,7 @@ export interface Deal {
   items: string[] | null;
   active: boolean;
   verified: boolean;
+  valid_through: string | null;
   created_at: string;
   updated_at: string;
 }

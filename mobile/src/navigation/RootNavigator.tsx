@@ -13,19 +13,9 @@ import { LoginScreen } from '../screens/auth/LoginScreen';
 import { SignupScreen } from '../screens/auth/SignupScreen';
 
 const Stack = createNativeStackNavigator();
-const AuthStack = createNativeStackNavigator();
-
-function AuthNavigator() {
-  return (
-    <AuthStack.Navigator screenOptions={{ headerShown: false }}>
-      <AuthStack.Screen name="Login" component={LoginScreen} />
-      <AuthStack.Screen name="Signup" component={SignupScreen} />
-    </AuthStack.Navigator>
-  );
-}
 
 function AppNavigator() {
-  const { token, loading } = useAuth();
+  const { loading } = useAuth();
 
   if (loading) {
     return (
@@ -42,13 +32,20 @@ function AppNavigator() {
     );
   }
 
-  if (!token) {
-    return <AuthNavigator />;
-  }
-
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Main" component={TabNavigator} />
+      {/* Auth modals — reachable from SubmitScreen/ProfileScreen auth gates */}
+      <Stack.Screen
+        name="Login"
+        component={LoginScreen}
+        options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
+      />
+      <Stack.Screen
+        name="Signup"
+        component={SignupScreen}
+        options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
+      />
       <Stack.Screen
         name="HappyHour"
         component={HappyHourScreen}

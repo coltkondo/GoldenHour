@@ -49,6 +49,10 @@ class Settings(BaseSettings):
     # Timezone for business-hours comparisons (happy hour schedules stored in local time)
     APP_TIMEZONE: str = "America/New_York"
 
+    # Feature flags
+    # Set REWARDS_ENABLED=false in .env to disable all point awarding (Arts Fest beta mode)
+    REWARDS_ENABLED: bool = True
+
     # Optional: Maps and external services
     GOOGLE_MAPS_API_KEY: Optional[str] = None
     MAPBOX_TOKEN: Optional[str] = None

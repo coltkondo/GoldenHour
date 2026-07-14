@@ -51,7 +51,7 @@ class Submission(Base, TimestampMixin):
     admin_notes = Column(Text, nullable=True)
     points_awarded = Column(Integer, nullable=False, default=0)
     reviewed_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
-    reviewed_at = Column(DateTime, nullable=True)
+    reviewed_at = Column(DateTime(timezone=True), nullable=True)
 
     submitter = relationship(
         "User", foreign_keys=[user_id], back_populates="submissions"
