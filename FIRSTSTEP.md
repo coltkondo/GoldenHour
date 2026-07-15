@@ -99,32 +99,52 @@ npx expo start
 
 ---
 
-## Step 4: Create Your Account
+## Step 4: Seed the Database
 
-Open the app on your phone or simulator. You will land on the **Sign In** screen. Tap **Sign Up** to create an account.
-
-The account is created in your local PostgreSQL database. Every new account starts as a regular `user` role.
-
----
-
-## Step 5: Create an Admin Account
-
-To use the admin review queue (approve/reject submissions), one account needs the `admin` role. Promote an account like this:
+The database auto-seeds on first startup if it is empty. To wipe and re-import at any time (e.g. after updating the CSVs in `data/`):
 
 ```bash
-# Open a psql shell inside the running database container
-docker compose exec db psql -U postgres -d goldenhour
-
-# Inside psql, run:
-UPDATE users SET role = 'admin' WHERE email = 'your@email.com';
-\q
+docker compose run --rm backend_image python -m scripts.import_csv --force
 ```
 
-Sign out and back in on the mobile app to pick up the new role. The **Review Queue** option will appear in your Profile.
+This clears venues, deals, and schedules, then re-imports from the three CSV files in `data/`. Use this command every time you update the source data — it is safe to run repeatedly.
+
+> **Always use `docker compose run --rm backend_image`** for the import, not `docker compose exec backend`. The `run` form spins up a dedicated one-off container for the job; `exec` is a side door into the live server process.
 
 ---
 
-## Step 6: Start the Admin Web (Optional)
+## Step 5: Create Your Account
+
+The app supports anonymous browsing — you can view deals and the map without an account. To submit deals or access the admin dashboard, you need an account.
+
+**Option A — terminal (fastest):**
+
+```bash
+curl.exe -X POST http://localhost:8000/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username": "yourname", "email": "you@email.com", "password": "yourpassword"}'
+```
+
+**Option B — mobile app:** open the app, tap any contribute action, and tap **Sign Up**.
+
+Every new account starts as a regular `user` role.
+
+---
+
+## Step 6: Create an Admin Account
+
+To use the admin review queue and admin web dashboard, promote an account to `admin`:
+
+```bash
+docker compose exec db psql -U postgres -d goldenhour -c \
+  "UPDATE users SET role = 'admin' WHERE email = 'you@email.com';"
+```
+
+Sign out and back in on the mobile app to pick up the new role.
+
+---
+
+## Step 7: Start the Admin Web (Optional)
 
 The admin web dashboard is used for managing venues, deals, and reviewing the submission queue from a browser.
 
@@ -156,11 +176,18 @@ Open **http://localhost:5173** in a browser and log in with your admin account c
 
 ### Points system
 
+> **Arts Fest build:** rewards are disabled (`REWARDS_ENABLED=false`). Points are not awarded until the August public launch.
+
 | Action | Points |
 |--------|--------|
-| New bar or new deal submitted and approved | 50 pts |
-| Deal expired or bar closed report approved | 25 pts |
-| Deal update or bar update approved | 15 pts |
+| New deal or deal correction approved | 50 pts |
+| Deal marked expired, approved | 50 pts |
+| New bar added, approved | 100 pts |
+| Bar marked closed, approved | 100 pts |
+| Bar info correction approved | 50 pts |
+| Corroborate an existing deal | 2 pts |
+
+1,000 pts = $20 cash. Daily cap: 200 pts/user. See [docs/ECONOMY_SPEC.md](docs/ECONOMY_SPEC.md).
 
 ---
 

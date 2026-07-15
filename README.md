@@ -130,9 +130,17 @@ Submitting information that gets approved earns points. The authoritative values
 
 All source data lives in `data/` as CSV files:
 
-- `pennstate_venues.csv` — 13 venues
-- `pennstate_deals.csv` — 97 deals
-- `pennstate_schedules.csv` — 167 schedule entries
+- `pennstate_venues.csv` — venues
+- `pennstate_deals.csv` — deals
+- `pennstate_schedules.csv` — schedule entries (one row per deal-per-slot; grouped into schedule records on import)
+
+To wipe the database and re-import from the CSVs:
+
+```bash
+docker compose run --rm backend_image python -m scripts.import_csv --force
+```
+
+Always use `docker compose run --rm backend_image` for this — not `exec backend`. See [docs/DATA_MODELS.md](docs/DATA_MODELS.md) for the full CSV column reference.
 
 ## Production
 
