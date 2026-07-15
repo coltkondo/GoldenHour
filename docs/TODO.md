@@ -80,6 +80,17 @@ _The beta can run without these, but each one is a real operational or financial
 
 ---
 
+## App Store submission gate
+
+_Required before any production App Store submission. See [APP_STORE_COMPLIANCE.md](APP_STORE_COMPLIANCE.md) for full detail._
+
+- [ ] **User-initiated account deletion** — `DELETE /api/v1/users/me` endpoint + "Delete Account" UI in ProfileScreen. Mandatory per Guideline 5.1.1(v). This is the most commonly rejected item.
+- [ ] **Privacy policy** — write one, host it publicly, add a clickable link in ProfileScreen, enter URL in App Store Connect. Covers email, location, submissions, deletion policy.
+- [ ] **In-app contact/support path** — "Contact / Support" row in ProfileScreen → `mailto:` link. Also enter in App Store Connect Support URL field.
+- [ ] **App Review Notes draft** — document the admin-review content filter, the points/submission loop, and include reviewer demo account credentials.
+
+---
+
 ## August public launch gate
 
 _Required before opening to the student body. Farming surface is too wide without these._
