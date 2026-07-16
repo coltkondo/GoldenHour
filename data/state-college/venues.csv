@@ -1,0 +1,10 @@
+venue_id,name,nickname,address,latitude,longitude,venue_type,tags,cash_only,neighborhood,is_active
+SC001,Lion's Den,Den,"118 S Garner St, State College, PA 16801",40.796191,-77.859664,Bar,"College Bar,Shots,Patio",FALSE,Downtown,TRUE
+SC002,The Shandygaff,Gaff,"212 E College Ave, State College, PA 16801",40.7952827,-77.8598581,Bar,"College Bar,Dive Bar,Karaoke",FALSE,College Ave,TRUE
+SC003,Cafe 210 West,Cafe 210,"210 W College Ave, State College, PA 16801",40.7931773,-77.8630037,Bar,"College Bar,Patio",FALSE,College Ave,TRUE
+SC004,Brothers Bar & Grill,Brothers,"134 S Allen St, State College, PA 16801",40.7936366,-77.8607833,Bar,"College Bar,DJ,Late Night",FALSE,Downtown,TRUE
+SC005,Doggie's Pub,Doggies,"108 S Pugh St, State College, PA 16801",40.7950443,-77.8602538,Bar,"Pub,Beer Garden,Pizza",FALSE,Downtown,TRUE
+SC006,The Phyrst,Phyrst,"111 E Beaver Ave, State College, PA 16801",40.7937487,-77.8600643,Bar,"Irish Pub,Live Music,Basement Bar",FALSE,Downtown,TRUE
+SC007,Bill Pickle's Tap Room,Pickles,"106 S Allen St, State College, PA 16801",40.7937,-77.8601,Bar,"Sports Bar,BBQ,Whiskey Bar,Country Night",FALSE,Downtown,TRUE
+SC008,Primanti Bros Restaurant and Bar,Pmans,"130 Hiester Street, State College, PA 16801",40.796987,-77.857018,Bar,"Sports Bar,Frat Bar,Dance,Club",FALSE,Downtown,TRUE
+SC009,Champs Downtown,Champs,"139 S Allen St, State College, PA 16801",40.794818,-77.861324,Bar,"Sports Bar,Pool Tables, Dance,Arcade,Basement Bar",FALSE,Downtown,TRUE

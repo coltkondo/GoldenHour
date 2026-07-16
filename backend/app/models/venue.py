@@ -7,6 +7,7 @@ from sqlalchemy import (
     Integer,
     ARRAY,
     CheckConstraint,
+    ForeignKey,
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -29,6 +30,7 @@ class Venue(Base, TimestampMixin):
     )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    market_id = Column(UUID(as_uuid=True), ForeignKey("markets.id"), nullable=False, index=True)
     name = Column(String(255), nullable=False, index=True)
     nickname = Column(String(100), nullable=True)
     address = Column(String(500), nullable=False)
@@ -64,6 +66,7 @@ class Venue(Base, TimestampMixin):
     description = Column(Text)
 
     # Relationships
+    market = relationship("Market", back_populates="venues")
     deals = relationship("Deal", back_populates="venue")
     schedules = relationship("HappyHourSchedule", back_populates="venue")
 

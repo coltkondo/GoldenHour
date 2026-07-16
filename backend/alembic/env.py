@@ -26,6 +26,7 @@ target_metadata = Base.metadata
 
 # Import all models so Alembic autogenerate sees them
 try:
+    import app.models.market as _market  # noqa: F401
     import app.models.venue as _venue  # noqa: F401
     import app.models.deal as _deal    # noqa: F401
     import app.models.happy_hour as _happy  # noqa: F401

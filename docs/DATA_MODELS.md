@@ -2,7 +2,35 @@
 
 Database schema for the Golden Hour application. Generated from the live SQLAlchemy models — treat this as the source of truth for CSV import, direct SQL, and API work.
 
-_Last updated: 2026-07-08_
+_Last updated: 2026-07-16_
+
+---
+
+## Market
+
+Table: `markets`
+
+| Column | Type | Nullable | Default | Notes |
+|--------|------|----------|---------|-------|
+| id | UUID | No | auto | Primary key |
+| name | VARCHAR(255) | No | | Display name e.g. "State College" |
+| slug | VARCHAR(100) | No | | URL-safe key e.g. `state-college`. Unique, indexed. |
+| region_center_lat | FLOAT | No | | Centroid latitude for geo-matching |
+| region_center_lng | FLOAT | No | | Centroid longitude for geo-matching |
+| region_radius_meters | INTEGER | No | | Radius of the market catchment area |
+| daily_points_cap | INTEGER | No | 200 | Per-user per-day points ceiling for this market |
+| monthly_burn_cap_cents | INTEGER | Yes | null | Optional monthly payout cap in cents |
+| launch_status | VARCHAR(50) | No | "rehearsal" | `"rehearsal"` / `"public"` |
+| active | BOOLEAN | No | true | |
+| created_at | TIMESTAMPTZ | No | now() | |
+| updated_at | TIMESTAMPTZ | No | now() | |
+
+**Seeded markets:**
+
+| slug | launch_status | center_lat | center_lng | radius_m |
+|---|---|---|---|---|
+| `state-college` | public | 40.794732 | -77.860230 | 3000 |
+| `arlington` | rehearsal | 38.881600 | -77.091000 | 8000 |
 
 ---
 
@@ -13,6 +41,7 @@ Table: `venues`
 | Column | Type | Nullable | Default | Notes |
 |--------|------|----------|---------|-------|
 | id | UUID | No | auto | Primary key |
+| market_id | UUID (FK→markets) | No | | Indexed |
 | name | VARCHAR(255) | No | | Indexed |
 | nickname | VARCHAR(100) | Yes | | Short display name |
 | address | VARCHAR(500) | No | | |
@@ -33,7 +62,7 @@ Table: `venues`
 | created_at | TIMESTAMPTZ | No | now() | |
 | updated_at | TIMESTAMPTZ | No | now() | |
 
-**CSV ref key:** `venue_id` (e.g. `SC001`) — maps to UUID on import, used as a join key in deals/schedules CSVs.
+**CSV ref key:** `venue_id` (e.g. `SC001`) — maps to UUID on import, used as a join key in deals/schedules CSVs. `market_id` is set automatically by the import script from `--market <slug>`.
 
 ---
 
@@ -95,9 +124,12 @@ Table: `users`
 | Column | Type | Nullable | Default | Notes |
 |--------|------|----------|---------|-------|
 | id | UUID | No | auto | Primary key |
+| market_id | UUID (FK→markets) | No | | Set at signup by geo-matching against market centroids. Indexed. Never recomputed. |
 | username | VARCHAR(50) | No | | Unique |
 | email | VARCHAR(255) | No | | Unique; lowercased on write |
-| hashed_password | VARCHAR | No | | bcrypt |
+| password_hash | VARCHAR | No | | bcrypt |
+| signup_latitude | FLOAT | No | | Location at time of registration |
+| signup_longitude | FLOAT | No | | Location at time of registration |
 | role | VARCHAR(20) | No | "user" | `"user"` or `"admin"` |
 | points_balance | INTEGER | No | 0 | CHECK >= 0 |
 | active | BOOLEAN | No | true | Soft disable |
@@ -146,7 +178,9 @@ Table: `point_transactions`
 
 ## CSV Import Column Reference
 
-### `data/pennstate_venues.csv`
+CSVs live in a per-market subdirectory: `data/<slug>/venues.csv`, `data/<slug>/deals.csv`, `data/<slug>/schedules.csv`.
+
+### `venues.csv`
 ```
 venue_id, name, nickname, address, latitude, longitude, phone, website,
 neighborhood, venue_type, tags, cash_only, is_active
@@ -154,8 +188,9 @@ neighborhood, venue_type, tags, cash_only, is_active
 - `tags`: comma-separated string inside quotes: `"Sports Bar,Karaoke,Dive"`
 - `cash_only`, `is_active`: `TRUE` / `FALSE`
 - Rows with no `latitude` or `longitude` are skipped
+- `market_id` is set automatically from `--market <slug>` — do not include it in the CSV
 
-### `data/pennstate_deals.csv`
+### `deals.csv`
 ```
 deal_id, venue_id, deal_name, description, category, deal_price,
 original_price, is_food, is_drink, is_active, valid_through
@@ -164,9 +199,9 @@ original_price, is_food, is_drink, is_active, valid_through
 - `is_food` / `is_drink`: `TRUE` / `FALSE` — determines `category` field
 - `deal_price` / `original_price`: optional, leave blank if no price to show
 - `category` column: only checked for `"half"` / `"1/2"` → sets `deal_type="discount"`, otherwise `"special_price"`
-- `valid_through`: optional, `YYYY-MM-DD` format. Leave blank for permanent deals. Set to `2026-07-12` for Arts Fest one-offs.
+- `valid_through`: optional, `YYYY-MM-DD` format. Leave blank for permanent deals.
 
-### `data/pennstate_schedules.csv`
+### `schedules.csv`
 ```
 schedule_id, deal_id, venue_id, day_of_week, start_time, end_time, is_active
 ```
@@ -177,6 +212,14 @@ schedule_id, deal_id, venue_id, day_of_week, start_time, end_time, is_active
 
 ### Running the import
 ```bash
-# Wipe existing venues/deals/schedules and re-import from all three CSVs:
-docker compose run --rm backend_image python -m scripts.import_csv --force
+# Seed a market (skips if already has data):
+docker compose exec backend python -m scripts.import_csv --market state-college
+
+# Wipe a market's data and re-import:
+docker compose exec backend python -m scripts.import_csv --market state-college --force
+
+# Same for Arlington once CSVs are in data/arlington/:
+docker compose exec backend python -m scripts.import_csv --market arlington --force
 ```
+
+`--force` deletes only the venues/deals/schedules belonging to the specified market. Other markets are untouched.
