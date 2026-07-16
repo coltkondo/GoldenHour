@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 import { useTheme } from '../../theme';
 import { useCalendar } from '../CalendarContext';
 import { EventBlock } from './EventBlock';
@@ -58,7 +58,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
               const col = it.column ?? 0;
               const cols = it.columns ?? 1;
               const widthPct = 100 / cols;
-              const wrap = {
+              const wrap: ViewStyle = {
                 top,
                 height,
                 left: `${col * widthPct}%`,
