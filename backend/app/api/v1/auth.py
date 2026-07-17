@@ -1,3 +1,5 @@
+import math
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -10,8 +12,18 @@ from app.core.security import (
     create_access_token,
     get_current_user,
 )
+from app.models.market import Market
 from app.models.user import User
 from app.schemas.user import UserCreate, UserLogin, UserResponse, Token
+
+
+def _haversine_m(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+    R = 6_371_000
+    φ1, φ2 = math.radians(lat1), math.radians(lat2)
+    dφ = math.radians(lat2 - lat1)
+    dλ = math.radians(lng2 - lng1)
+    a = math.sin(dφ / 2) ** 2 + math.cos(φ1) * math.cos(φ2) * math.sin(dλ / 2) ** 2
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -26,10 +38,27 @@ def register(request: Request, data: UserCreate, db: Session = Depends(get_db)):
     if db.query(User).filter(User.username == data.username).first():
         raise HTTPException(status_code=409, detail="Username already taken")
 
+    markets = db.query(Market).filter(Market.active == True).all()
+    matched = None
+    best_dist = float("inf")
+    for m in markets:
+        dist = _haversine_m(data.latitude, data.longitude, m.region_center_lat, m.region_center_lng)
+        if dist <= m.region_radius_meters and dist < best_dist:
+            matched = m
+            best_dist = dist
+    if matched is None:
+        raise HTTPException(
+            status_code=422,
+            detail="Golden Hour isn't available in your area yet — stay tuned!",
+        )
+
     user = User(
+        market_id=matched.id,
         username=data.username,
         email=data.email,
         password_hash=hash_password(data.password),
+        signup_latitude=data.latitude,
+        signup_longitude=data.longitude,
         role="user",
     )
     db.add(user)
