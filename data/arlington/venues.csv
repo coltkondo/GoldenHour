@@ -1,0 +1,14 @@
+venue_id,name,nickname,address,latitude,longitude,phone,website,neighborhood,venue_type,tags,cash_only,is_active
+ARL001,Quinn's on the Corner,Quinn's,"1776 Wilson Blvd, Arlington, VA 22209",38.8939031,-77.0782588,,,Clarendon,bar,"Sports Bar,Karaoke,Trivia,Live DJ",FALSE,TRUE
+ARL002,Quincy Hall,Quincy Hall,"4001 Fairfax Dr, Arlington, VA 22203",38.882749,-77.10823,,,Clarendon,bar,"Sports Bar,Trivia,Karaoke,Pizza",FALSE,TRUE
+ARL003,Bronson Bierhall,Bronsons,"4100 Fairfax Dr, Arlington, VA 22203",38.882149,-77.109676,,,Clarendon,bar,"Sports Bar,German,Beer Hall",FALSE,TRUE
+ARL004,Ballston Local,Ballston Local,"900 N Glebe Rd, Arlington, VA 22203",38.8805473,-77.1145055,,,Ballston,bar,"Sports Bar,Pizza,Cocktails",FALSE,TRUE
+ARL005,Clarendon Ballroom Nightclub and Rooftop,Ballroom,"3185 Wilson Blvd, Arlington, VA 22201",38.8864932,-77.0967666,,,Clarendon,bar,"Rooftop,Cocktails",FALSE,TRUE
+ARL007,Don Tito,Titos,"3165 Wilson Blvd, Arlington, VA 22201",38.886702,-77.0964167,,,Clarendon,bar,"Mexican,Tacos,Margaritas",FALSE,TRUE
+ARL008,BOE Arlington,BOE,"2854 Wilson Blvd Suite B, Arlington, VA 22201",38.8885986,-77.0929038,,,Clarendon,bar,"Country Bar,Mechanical Bull,Southern",FALSE,TRUE
+ARL009,Courthouse Social,,"2300 Clarendon Blvd, Arlington, VA 22201",38.8899819,-77.0866761,703-000-0000,courthaussocial.com,Courthouse,bar,"Sports Bar,Trivia,Dog Friendly",FALSE,TRUE
+ARL010,Bar Bao,,"3100 Clarendon Blvd, Arlington, VA 22201",38.8864256,-77.0952568,,barbao-va.com,Clarendon,restaurant,"Asian,Dumplings,Sushi",FALSE,TRUE
+ARL011,Spider Kelly's,,"3181 Wilson Blvd, Arlington, VA 22201",38.886635,-77.0966338,,,Clarendon,bar,"Sports Bar,Wings",FALSE,TRUE
+ARL012,Carpool,,"900 N Glebe Rd, Arlington, VA 22203",38.8805473,-77.1145055,,,Clarendon,bar,,FALSE,TRUE
+ARL013,Ireland's Four Courts,Four Courts,"2051 Wilson Blvd, Arlington, VA 22201",38.8918992,-77.0842156,,,Clarendon,bar,Irish Pub,FALSE,TRUE
+ARL006,First Down Sports Bar & Grill,First Down,"4213 Fairfax Dr, Arlington, VA 22203",38.8820474,-77.1120448,,,Clarendon,bar,Sports Bar,FALSE,TRUE
