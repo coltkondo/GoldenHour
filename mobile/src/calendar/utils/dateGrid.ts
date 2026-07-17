@@ -52,16 +52,16 @@ export function isSameMonth(a: Date, b: Date): boolean {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
 }
 
-// Timeline domain: 11:00 -> 02:00 next day (i.e. up to minute 26*60).
-export const TIMELINE_START_MIN = 11 * 60;
-export const TIMELINE_END_MIN = 26 * 60;
-export const HOUR_HEIGHT = 48;
+// Timeline domain: 00:00 -> 23:59 (full day).
+export const TIMELINE_START_MIN = 0;
+export const TIMELINE_END_MIN = 24 * 60;
+export const HOUR_HEIGHT = 72;
 export const PX_PER_MIN = HOUR_HEIGHT / 60;
 export const TIMELINE_HEIGHT = ((TIMELINE_END_MIN - TIMELINE_START_MIN) * HOUR_HEIGHT) / 60;
 
 export function timelineHours(): number[] {
   const hours: number[] = [];
-  for (let h = 11; h <= 26; h++) hours.push(h);
+  for (let h = 0; h <= 23; h++) hours.push(h);
   return hours;
 }
 

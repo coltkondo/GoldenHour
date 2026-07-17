@@ -15,6 +15,8 @@ import {
   TIMELINE_START_MIN,
 } from '../utils/dateGrid';
 
+const HOUR_OFFSET = TIMELINE_START_MIN / 60;
+
 interface TimelineGridProps {
   dates: Date[];
   onEventPress: (event: CalendarEvent) => void;
@@ -36,7 +38,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
     <View style={[styles.row, { height: TIMELINE_HEIGHT }]}>
       <View style={[styles.gutter, { height: TIMELINE_HEIGHT }]}>
         {hours.map((h) => (
-          <View key={h} style={[styles.hourLabelWrap, { top: (h - 11) * HOUR_HEIGHT }]}>
+          <View key={h} style={[styles.hourLabelWrap, { top: (h - HOUR_OFFSET) * HOUR_HEIGHT }]}>
             <Text style={[styles.hourLabel, { color: d.textMuted }]}>{hourLabel(h)}</Text>
           </View>
         ))}
@@ -49,7 +51,7 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
             {hours.map((h) => (
               <View
                 key={h}
-                style={[styles.line, { top: (h - 11) * HOUR_HEIGHT, backgroundColor: d.border }]}
+                style={[styles.line, { top: (h - HOUR_OFFSET) * HOUR_HEIGHT, backgroundColor: d.border }]}
               />
             ))}
             {items.map((it, i) => {

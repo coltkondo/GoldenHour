@@ -7,10 +7,12 @@ import React, {
   useCallback,
   useRef,
 } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { venuesAPI, dealsAPI } from '../api/endpoints';
 import { Venue, Deal, HappyHourSchedule, DAY_NAMES } from '../types/api';
 import { parseTimeString } from '../utils/scheduleUtils';
 import { useLocation } from '../hooks/useLocation';
+import { useAuth } from '../context/AuthContext';
 import { haversineMeters } from './utils/geo';
 import { jsDayToDow } from './utils/dateGrid';
 import {
@@ -44,16 +46,15 @@ interface CalendarContextValue {
   toggleNeighborhood: (n: string) => void;
   toggleDay: (dow: number) => void;
   togglePriceTier: (t: PriceTier) => void;
+  toggleVenue: (id: string) => void;
   events: CalendarEvent[]; // all derived (unfiltered)
   userLocation: UserLoc | null;
   neighborhoods: string[];
+  venues: Venue[];
   loading: boolean;
   error: string | null;
   refresh: () => void;
-  // Filtered events for the *current* view (respects all filters except the
-  // per-day projection, which each view applies via eventsForDay).
   getEventsForView: () => CalendarEvent[];
-  // Events that occur on a specific calendar date.
   eventsForDay: (date: Date) => CalendarEvent[];
 }
 
@@ -64,6 +65,10 @@ function passAlwaysFilters(
   filters: Filters,
   userLoc: UserLoc | null,
 ): boolean {
+  if (filters.venueIds.length > 0 && !filters.venueIds.includes(ev.venue.id)) {
+    return false;
+  }
+
   if (
     filters.neighborhoods.length > 0 &&
     !(ev.venue.neighborhood && filters.neighborhoods.includes(ev.venue.neighborhood))
@@ -115,9 +120,11 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [neighborhoods, setNeighborhoods] = useState<string[]>([]);
+  const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const { user } = useAuth();
   const { location } = useLocation();
   const userLocation = useMemo<UserLoc | null>(
     () =>
@@ -131,12 +138,19 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     let cancelled = false;
+    // Invalidate the deal cache when market changes so we re-fetch for the right city.
+    dealCache = null;
+    scheduleCache.clear();
     (async () => {
       try {
         setLoading(true);
         setError(null);
 
-        const venues = await venuesAPI.getAll({ limit: 100 });
+        const marketSlug = user
+          ? user.market_slug
+          : await AsyncStorage.getItem('gh_guest_market');
+
+        const venues = await venuesAPI.getAll({ limit: 100, market_slug: marketSlug });
         if (cancelled) return;
 
         const pairs: [string, HappyHourSchedule[]][] = await Promise.all(
@@ -194,6 +208,7 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({
 
         if (cancelled) return;
         setEvents(built);
+        setVenues(venues);
         setNeighborhoods(Array.from(hoodSet).sort());
       } catch (err) {
         if (!cancelled) setError('Could not load happy hours. Pull to refresh.');
@@ -204,7 +219,7 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => {
       cancelled = true;
     };
-  }, [refreshKey]);
+  }, [refreshKey, user?.market_slug]);
 
   const clearFilters = useCallback(() => setFilters(DEFAULT_FILTERS), []);
   const toggleNeighborhood = useCallback(
@@ -238,14 +253,22 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({
     [],
   );
 
+  const toggleVenue = useCallback(
+    (id: string) =>
+      setFilters((f) => ({
+        ...f,
+        venueIds: f.venueIds.includes(id)
+          ? f.venueIds.filter((x) => x !== id)
+          : [...f.venueIds, id],
+      })),
+    [],
+  );
+
   const activeFilterCount = useMemo(() => {
     let c = 0;
-    if (filters.neighborhoods.length) c++;
-    if (filters.dealType) c++;
-    if (filters.priceTiers.length) c++;
+    if (filters.venueIds.length) c++;
     if (filters.daysOfWeek.length) c++;
     if (filters.happeningNow) c++;
-    if (filters.radiusMeters != null) c++;
     return c;
   }, [filters]);
 
@@ -278,9 +301,11 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({
       toggleNeighborhood,
       toggleDay,
       togglePriceTier,
+      toggleVenue,
       events,
       userLocation,
       neighborhoods,
+      venues,
       loading,
       error,
       refresh,
@@ -296,9 +321,11 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({
       toggleNeighborhood,
       toggleDay,
       togglePriceTier,
+      toggleVenue,
       events,
       userLocation,
       neighborhoods,
+      venues,
       loading,
       error,
       refresh,

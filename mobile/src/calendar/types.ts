@@ -8,15 +8,17 @@ export type DealTypeFilter = 'drinks' | 'food' | 'both';
 export type PriceTier = 1 | 2 | 3 | 4;
 
 export interface Filters {
+  venueIds: string[];
   neighborhoods: string[];
   dealType: DealTypeFilter | null;
   priceTiers: PriceTier[];
   daysOfWeek: number[]; // 0=Mon .. 6=Sun
   happeningNow: boolean;
-  radiusMeters: number | null; // null = no distance filter
+  radiusMeters: number | null;
 }
 
 export const DEFAULT_FILTERS: Filters = {
+  venueIds: [],
   neighborhoods: [],
   dealType: null,
   priceTiers: [],

@@ -8,7 +8,7 @@ import { useCalendar } from './CalendarContext';
 import { TimelineGrid } from './components/TimelineGrid';
 import { EmptyState } from './components/EmptyState';
 import { CalendarEvent, DAY_NAMES } from './types';
-import { getWeekDays, isSameDay, jsDayToDow } from './utils/dateGrid';
+import { getWeekDays, isSameDay, jsDayToDow, HOUR_HEIGHT } from './utils/dateGrid';
 
 interface WeekViewProps {
   onClusterPress?: (events: CalendarEvent[]) => void;
@@ -56,7 +56,7 @@ export const WeekView: React.FC<WeekViewProps> = ({ onClusterPress }) => {
       {total === 0 ? (
         <EmptyState />
       ) : (
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView showsVerticalScrollIndicator={false} contentOffset={{ x: 0, y: HOUR_HEIGHT * 11 }}>
           <TimelineGrid
             dates={dates}
             onEventPress={onEventPress}
