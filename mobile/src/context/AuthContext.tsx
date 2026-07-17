@@ -11,6 +11,7 @@ export interface AuthUser {
   email: string;
   role: string;
   points_balance: number;
+  market_slug: string | null;
 }
 
 interface AuthContextValue {
