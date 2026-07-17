@@ -119,7 +119,7 @@ export const MapScreen = () => {
   const loadAllVenues = async () => {
     try {
       setLoading(true);
-      const allVenues = await venuesAPI.getAll({ limit: 200 });
+      const allVenues = await venuesAPI.getAll({ limit: 500 });
       if (!isMounted.current) return;
       const withCoords = allVenues.filter((v) => v.latitude != null && v.longitude != null);
       setVenues(withCoords);

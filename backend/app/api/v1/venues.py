@@ -20,7 +20,7 @@ router = APIRouter(prefix="/venues", tags=["venues"])
 @router.get("/", response_model=List[VenueResponse])
 async def list_venues(
     skip: int = Query(0, ge=0),
-    limit: int = Query(100, ge=1, le=100),
+    limit: int = Query(100, ge=1, le=500),
     neighborhood: Optional[str] = None,
     active_only: bool = True,
     market_slug: Optional[str] = None,
