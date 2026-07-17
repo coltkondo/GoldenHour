@@ -7,6 +7,7 @@ const VALID_USER: AuthUser = {
   email: 'test@example.com',
   role: 'user',
   points_balance: 150,
+  market_slug: null,
   created_at: '2025-01-01T00:00:00Z',
 };
 

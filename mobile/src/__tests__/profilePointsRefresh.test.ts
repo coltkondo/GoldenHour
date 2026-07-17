@@ -23,6 +23,7 @@ const STALE_USER: AuthUser = {
   email: 'alice@example.com',
   role: 'user',
   points_balance: 0,
+  market_slug: null,
   created_at: '2025-01-01T00:00:00Z',
 };
 

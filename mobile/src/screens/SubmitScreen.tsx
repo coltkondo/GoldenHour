@@ -77,7 +77,11 @@ export const SubmitScreen = () => {
       });
       setSubmitted(true);
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Submission failed — please try again');
+      if (err.response?.status === 401) {
+        setError('Your session expired — please log out and log back in.');
+      } else {
+        setError(err.response?.data?.detail || 'Submission failed — please try again');
+      }
     } finally {
       setLoading(false);
     }
