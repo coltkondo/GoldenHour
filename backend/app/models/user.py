@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Boolean, Enum as SAEnum, CheckConstraint
+from sqlalchemy import Column, String, Integer, Boolean, Float, Enum as SAEnum, CheckConstraint, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 import uuid
@@ -14,6 +14,7 @@ class User(Base, TimestampMixin):
     )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    market_id = Column(UUID(as_uuid=True), ForeignKey("markets.id"), nullable=False, index=True)
     username = Column(String(50), unique=True, nullable=False, index=True)
     email = Column(String(255), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
@@ -22,9 +23,12 @@ class User(Base, TimestampMixin):
         nullable=False,
         default="user",
     )
+    signup_latitude = Column(Float, nullable=False)
+    signup_longitude = Column(Float, nullable=False)
     points_balance = Column(Integer, nullable=False, default=0)
     active = Column(Boolean, nullable=False, default=True)
 
+    market = relationship("Market", back_populates="users")
     submissions = relationship(
         "Submission", foreign_keys="Submission.user_id", back_populates="submitter"
     )

@@ -1,0 +1,160 @@
+deal_id,venue_id,deal_name,description,category,deal_price,original_price,is_food,is_drink,is_active
+D001,SC001,$3 Long Island Iced Tea,Saturday special,Drinks,$3.00,,FALSE,TRUE,TRUE
+D002,SC001,$3 Tokyo Tea,Saturday special,Drinks,$3.00,,FALSE,TRUE,TRUE
+D003,SC001,$3 Vodka & Soda,Saturday special,Drinks,$3.00,,FALSE,TRUE,TRUE
+D004,SC001,$3 Tequila Shot,Saturday special,Drinks,$3.00,,FALSE,TRUE,TRUE
+D005,SC001,$3 Corona,Saturday special,Drinks,$3.00,,FALSE,TRUE,TRUE
+D006,SC001,$3 Dirty Shirley,Friday special,Drinks,$3.00,,FALSE,TRUE,TRUE
+D007,SC001,$3 Tequila & Sours,Friday special,Drinks,$3.00,,FALSE,TRUE,TRUE
+D008,SC001,$3 Lemon Drop Shot,Friday special,Drinks,$3.00,,FALSE,TRUE,TRUE
+D009,SC001,$2 U-Call-Its,Thursday/Tuesday special,Drinks,$2.00,,FALSE,TRUE,TRUE
+D010,SC001,$2 Vodka Shots,Thursday special,Drinks,$2.00,,FALSE,TRUE,TRUE
+D011,SC001,$2 Green Tea Shots,Thursday special,Drinks,$2.00,,FALSE,TRUE,TRUE
+D012,SC001,$2 Tequila Shots,Tuesday special,Drinks,$2.00,,FALSE,TRUE,TRUE
+D013,SC001,$2 White Tea Shots,Tuesday special,Drinks,$2.00,,FALSE,TRUE,TRUE
+D014,SC002,$5 24oz Tallboys,"Feature, all day",Drinks,$5.00,,FALSE,TRUE,TRUE
+D015,SC002,$7 Liquor Pitchers,"Feature, open-midnight",Drinks,$7.00,,FALSE,TRUE,TRUE
+D016,SC002,$3 Jolly Rancher Shots,Wednesday special,Drinks,$3.00,,FALSE,TRUE,TRUE
+D017,SC002,$3 Blue Moon Bottles,Wednesday special,Drinks,$3.00,,FALSE,TRUE,TRUE
+D018,SC002,"Half Off Well Drinks, Beers & Mixed Shots",Thursday - half off,Half,,,FALSE,TRUE,TRUE
+D019,SC002,"$5 Truly, White Claw & High Noon Cans",Friday special,Drinks,$5.00,,FALSE,TRUE,TRUE
+D020,SC002,$4 Bombs,Friday special,Drinks,$4.00,,FALSE,TRUE,TRUE
+D021,SC002,$3 Tequila Shots,Saturday special,Drinks,$3.00,,FALSE,TRUE,TRUE
+D022,SC002,$4 Corona Bottles,Saturday special,Drinks,$4.00,,FALSE,TRUE,TRUE
+D023,SC003,1/2 Off All Drafts,"Happy hour, starting at $2",Half,,,FALSE,TRUE,TRUE
+D024,SC003,1/2 Off 16oz Cafe Teas,"Happy hour, starting at $2.50",Half,,,FALSE,TRUE,TRUE
+D025,SC003,$3 Green Tea Shot,Happy hour shot,Drinks,$3.00,,FALSE,TRUE,TRUE
+D026,SC003,$3 White Tea Shot,Happy hour shot,Drinks,$3.00,,FALSE,TRUE,TRUE
+D027,SC003,$3 Jolly Rancher Shot,Happy hour shot,Drinks,$3.00,,FALSE,TRUE,TRUE
+D028,SC003,$3 Kamikaze Shot,Happy hour shot,Drinks,$3.00,,FALSE,TRUE,TRUE
+D029,SC003,$3 Sweet Tart Shot,Happy hour shot,Drinks,$3.00,,FALSE,TRUE,TRUE
+D030,SC003,$3 Purple Gatorade Shot,Happy hour shot,Drinks,$3.00,,FALSE,TRUE,TRUE
+D031,SC003,$4 Surfsides,Happy hour,Drinks,$4.00,,FALSE,TRUE,TRUE
+D032,SC003,$5 Cafe Tea Pitcher,Monday special,Drinks,$5.00,,FALSE,TRUE,TRUE
+D033,SC003,$7 Smirnoff Pitcher,Tuesday special,Drinks,$7.00,,FALSE,TRUE,TRUE
+D034,SC003,$7 Bacardi Pitcher,Wednesday special,Drinks,$7.00,,FALSE,TRUE,TRUE
+D035,SC003,$5 Cafe Tea Pitcher,Thursday special,Drinks,$5.00,,FALSE,TRUE,TRUE
+D036,SC004,$3 Coors Light Drafts,Monday special,Drinks,$3.00,,FALSE,TRUE,TRUE
+D037,SC004,$3 All Rg. Drafts,Monday happy hour,Drinks,$3.00,,FALSE,TRUE,TRUE
+D038,SC004,$3 Scooby Snack Shots,Monday happy hour,Drinks,$3.00,,FALSE,TRUE,TRUE
+D039,SC004,$3 Wine,Monday happy hour,Drinks,$3.00,,FALSE,TRUE,TRUE
+D040,SC004,$5 32oz OG LIT Pitchers,Monday happy hour,Drinks,$5.00,,FALSE,TRUE,TRUE
+D041,SC004,$3 Cheeseburgers,"Tuesday, 4-10pm, dine-in only",Food,$3.00,,TRUE,FALSE,TRUE
+D042,SC004,$3 Bud Light Drafts,Tuesday special,Drinks,$3.00,,FALSE,TRUE,TRUE
+D043,SC004,$2 Double Well Mixers,Tuesday happy hour,Drinks,$2.00,,FALSE,TRUE,TRUE
+D044,SC004,$2 Rg. Domestic Drafts,Tuesday happy hour,Drinks,$2.00,,FALSE,TRUE,TRUE
+D045,SC004,$2 Green Tea Shots,Tuesday happy hour,Drinks,$2.00,,FALSE,TRUE,TRUE
+D046,SC004,Half Priced 32oz LIT Pitchers,Tuesday happy hour,Half,,,FALSE,TRUE,TRUE
+D047,SC004,50¢ Wings,"Wednesday, 9pm-2am (close), dine-in only",Food,$0.50,,TRUE,FALSE,TRUE
+D048,SC004,$3 12oz Busch Light Cans,Wednesday special,Drinks,$3.00,,FALSE,TRUE,TRUE
+D049,SC004,$3 Vegas Bomb Shots,Wednesday happy hour,Drinks,$3.00,,FALSE,TRUE,TRUE
+D050,SC004,$4 Double Captain & Cokes,Wednesday happy hour,Drinks,$4.00,,FALSE,TRUE,TRUE
+D051,SC004,$5 32oz AMF LIT Pitchers,Wednesday happy hour,Drinks,$5.00,,FALSE,TRUE,TRUE
+D052,SC004,$4 Michelob Ultra Cans,Thursday special,Drinks,$4.00,,FALSE,TRUE,TRUE
+D053,SC004,$1 Mini Cherry Bombs,Thursday happy hour,Drinks,$1.00,,FALSE,TRUE,TRUE
+D054,SC004,$1 Well Mixers,Thursday happy hour,Drinks,$1.00,,FALSE,TRUE,TRUE
+D055,SC004,$5 32oz OG LIT Pitchers,Thursday happy hour,Drinks,$5.00,,FALSE,TRUE,TRUE
+D056,SC004,$4 Quad Wells,Thursday happy hour,Drinks,$4.00,,FALSE,TRUE,TRUE
+D057,SC004,$8 32oz Busch Pitchers,Thursday happy hour,Drinks,$8.00,,FALSE,TRUE,TRUE
+D058,SC004,$5 Corona Bottles,Friday special,Drinks,$5.00,,FALSE,TRUE,TRUE
+D059,SC004,$4 Lemon Drop Shots,Friday happy hour,Drinks,$4.00,,FALSE,TRUE,TRUE
+D060,SC004,$5 32oz Skinny Pitchers,Friday happy hour,Drinks,$5.00,,FALSE,TRUE,TRUE
+D061,SC004,$6 32oz OG LIT Pitchers,Friday happy hour,Drinks,$6.00,,FALSE,TRUE,TRUE
+D062,SC004,$4 16oz Coors Light Cans,Saturday special,Drinks,$4.00,,FALSE,TRUE,TRUE
+D063,SC004,$5 Tito's Mixers,Saturday happy hour,Drinks,$5.00,,FALSE,TRUE,TRUE
+D064,SC004,$6 Vegas Bomb Shots,Saturday happy hour,Drinks,$6.00,,FALSE,TRUE,TRUE
+D065,SC004,$7 Double Vodka Redbulls,Saturday happy hour,Drinks,$7.00,,FALSE,TRUE,TRUE
+D066,SC004,$4 Busch Light Pitchers,Sunday special,Drinks,$4.00,,FALSE,TRUE,TRUE
+D067,SC005,$3 12oz Well Drinks,Daily happy hour,Drinks,$3.00,,FALSE,TRUE,TRUE
+D068,SC005,$4 12oz White Claw (all varieties),Daily happy hour,Drinks,$4.00,,FALSE,TRUE,TRUE
+D069,SC005,$3 24oz Miller Lite/Michelob Ultra/Yuengling Drafts,Daily happy hour,Drinks,$3.00,,FALSE,TRUE,TRUE
+D070,SC005,$1 Off 24oz Draft Beer (excl. domestic),Daily happy hour,Drinks,,,FALSE,TRUE,TRUE
+D071,SC005,$6 12oz Statesides/Surfsides (all varieties),Daily happy hour,Drinks,$6.00,,FALSE,TRUE,TRUE
+D072,SC005,$5 B.M.B (Big Monster Bomb),Daily happy hour,Drinks,$5.00,,FALSE,TRUE,TRUE
+D073,SC005,$3 Green Tea Shot,Daily happy hour,Drinks,$3.00,,FALSE,TRUE,TRUE
+D074,SC005,$4 2 Slices of Pizza,Daily happy hour,Food,$4.00,,TRUE,FALSE,TRUE
+D075,SC005,$4 Garlic Knots,Daily happy hour,Food,$4.00,,TRUE,FALSE,TRUE
+D076,SC005,$1 Pickle,Daily happy hour,Food,$1.00,,TRUE,FALSE,TRUE
+D077,SC005,$4 Pretzels,Daily happy hour,Food,$4.00,,TRUE,FALSE,TRUE
+D078,SC005,$3 Hot Dog,Daily happy hour,Food,$3.00,,TRUE,FALSE,TRUE
+D079,SC005,"$5 Domestic Pitchers (Miller Lite, Yuengling, Michelob Ultra)","Monday, until midnight",Drinks,$5.00,,FALSE,TRUE,TRUE
+D080,SC005,1/2 Off Cheese Pizzas,"Monday, until midnight",Half,,,TRUE,FALSE,TRUE
+D081,SC005,$10 Domestic Pitcher + Cheese Pizza Combo,"Monday, until midnight, pub only",Food,$10.00,,TRUE,TRUE,TRUE
+D082,SC005,$6 24oz Captain Morgan Drinks,"Tuesday, until midnight",Drinks,$6.00,,FALSE,TRUE,TRUE
+D083,SC005,$6 Skinny Margaritas,"Wednesday, until midnight",Drinks,$6.00,,FALSE,TRUE,TRUE
+D084,SC005,$20 Specialty Pies,"Wednesday, until midnight",Food,$20.00,,TRUE,FALSE,TRUE
+D085,SC005,$10 Skinny Margarita + Cheese Pizza w/Cauliflower Crust Combo,"Wednesday, until midnight, pub only",Food,$10.00,,TRUE,TRUE,TRUE
+D086,SC005,$5 24oz Monster Island,"Thursday, until midnight",Drinks,$5.00,,FALSE,TRUE,TRUE
+D087,SC005,$6 24oz Smirnoff Drinks (all varieties),"Friday, until midnight",Drinks,$6.00,,FALSE,TRUE,TRUE
+D088,SC005,"$5 24oz IPAs (Sierra Nevada Hazy Little Thing, Tröegs Graffiti Highway, New Trail Broken Heels)","Saturday, until midnight",Drinks,$5.00,,FALSE,TRUE,TRUE
+D089,SC005,$3 Hot Dogs,"Sunday, until midnight, pub only",Food,$3.00,,TRUE,FALSE,TRUE
+D090,SC005,$5 Pretzels,"Sunday, until midnight, pub only",Food,$5.00,,TRUE,FALSE,TRUE
+D091,SC005,$10 Labatt and Garage Lime Beer Buckets,"Sunday, until midnight",Drinks,$10.00,,FALSE,TRUE,TRUE
+D092,SC005,$5 24oz Hoop Tea,All day every day,Drinks,$5.00,,FALSE,TRUE,TRUE
+D093,SC005,"$6 24oz Hoop Hound (peach, raspberry, citrus, mandarin orange, blueberry)",All day every day,Drinks,$6.00,,FALSE,TRUE,TRUE
+D094,SC005,$6 24oz The Mutt (1/2 Hoop & 1/2 Rasp Lemonade),All day every day,Drinks,$6.00,,FALSE,TRUE,TRUE
+D095,SC005,$6 24oz Raspberry Lemonade,All day every day,Drinks,$6.00,,FALSE,TRUE,TRUE
+D096,SC005,$6 24oz LIT,All day every day,Drinks,$6.00,,FALSE,TRUE,TRUE
+D097,SC005,$6 16oz Monster (your choice) + Well Vodka,All day every day,Drinks,$6.00,,FALSE,TRUE,TRUE
+D098,SC005,"$6 16oz Iced Coffee (caramel, vanilla, whipped, peanut butter)",All day every day,Drinks,$6.00,,FALSE,TRUE,TRUE
+D099,SC005,$12.75 Bucket: 4 16oz Bud Light Cans,All day every day,Drinks,$12.75,,FALSE,TRUE,TRUE
+D100,SC005,$12.75 Bucket: 5 Labatt Bottles,All day every day,Drinks,$12.75,,FALSE,TRUE,TRUE
+D101,SC005,$12.75 Bucket: 5 Garage Lime Cans,All day every day,Drinks,$12.75,,FALSE,TRUE,TRUE
+D102,SC006,$2 Millers,"Monday & Friday daily special, until midnight",Drinks,$2.00,,FALSE,TRUE,TRUE
+D103,SC006,$2 Kona Big Wave,"Tuesday daily special, until midnight",Drinks,$2.00,,FALSE,TRUE,TRUE
+D104,SC006,$2 Purple Gatorade,"Wednesday daily special, until midnight",Drinks,$2.00,,FALSE,TRUE,TRUE
+D105,SC006,$5 Paddy's Irish Mules,"Thursday daily special, all day till midnight",Drinks,$5.00,,FALSE,TRUE,TRUE
+D106,SC006,$5 Guinness,"Saturday daily special, until midnight",Drinks,$5.00,,FALSE,TRUE,TRUE
+D107,SC006,$3 Cherry Limeade,"Sunday daily special, until midnight",Drinks,$3.00,,FALSE,TRUE,TRUE
+D108,SC006,$1 Tequila Sodas,Monday happy hour,Drinks,$1.00,,FALSE,TRUE,TRUE
+D109,SC006,$4 Jose Cuervo Margaritas,Monday happy hour,Drinks,$4.00,,FALSE,TRUE,TRUE
+D110,SC006,$5 Well Pitchers,Tuesday & Friday happy hour,Drinks,$5.00,,FALSE,TRUE,TRUE
+D111,SC006,$4 High Noon,Wednesday happy hour,Drinks,$4.00,,FALSE,TRUE,TRUE
+D112,SC006,$3 Long Island Iced Tea,Wednesday happy hour,Drinks,$3.00,,FALSE,TRUE,TRUE
+D113,SC006,$8 Twisted Lemonade Pitchers,Thursday happy hour,Drinks,$8.00,,FALSE,TRUE,TRUE
+D114,SC006,$8 Purple Gatorade Pitchers,Thursday happy hour,Drinks,$8.00,,FALSE,TRUE,TRUE
+D115,SC006,"$6 Select Bombs (Stars and Stripes, Jager, Car Bombs)",Friday happy hour,Drinks,$6.00,,FALSE,TRUE,TRUE
+D116,SC006,$12 Bear Fights,Friday happy hour,Drinks,$12.00,,FALSE,TRUE,TRUE
+D117,SC006,$2 Well Drinks,Saturday happy hour,Drinks,$2.00,,FALSE,TRUE,TRUE
+D118,SC006,1/2 Off Everything,Sunday happy hour,Half,,,TRUE,TRUE,TRUE
+D119,SC006,$3 Skinny Bitch,All day every day,Drinks,$3.00,,FALSE,TRUE,TRUE
+D120,SC006,$3 Skinny Margs,All day every day,Drinks,$3.00,,FALSE,TRUE,TRUE
+D121,SC006,$4 Mitch-A-Palooza,All day every day,Drinks,$4.00,,FALSE,TRUE,TRUE
+D122,SC006,$4 Purple Gatorade,All day every day,Drinks,$4.00,,FALSE,TRUE,TRUE
+D123,SC006,$5 Irish Trash Cans,All day every day,Drinks,$5.00,,FALSE,TRUE,TRUE
+D124,SC006,$6 Irish Car Bombs,All day every day,Drinks,$6.00,,FALSE,TRUE,TRUE
+D125,SC007,$0.50 Add a Shot of Beam to Frozen Kentucky Coffee,Happy hour add-on,Drinks,$0.50,,FALSE,TRUE,TRUE
+D126,SC007,$2 Off New Trail & Sierra Craft Drafts,Happy hour discount,Drinks,,,FALSE,TRUE,TRUE
+D127,SC007,$5 Wines by the Glass,Happy hour,Drinks,$5.00,,FALSE,TRUE,TRUE
+D128,SC007,$5 Off All Barrel Aged Cocktails,"Happy hour: Tequila or Maker's Old Fashioned, 1792 Manhattan",Drinks,,,FALSE,TRUE,TRUE
+D129,SC007,$3 Well Liquors,"Happier hour: vodka, gin, whiskey, tequila, rum",Drinks,$3.00,,FALSE,TRUE,TRUE
+D130,SC007,$3 Green Tea Shot,Happier hour shot,Drinks,$3.00,,FALSE,TRUE,TRUE
+D131,SC007,$3 Pink Starburst Shot,Happier hour shot,Drinks,$3.00,,FALSE,TRUE,TRUE
+D132,SC007,$3 Cinnamon Toast Crunch Shot,Happier hour shot,Drinks,$3.00,,FALSE,TRUE,TRUE
+D133,SC007,$3 Freedom of Speech Shot,"Happier hour shot — rotating recipe, voted on monthly",Drinks,$3.00,,FALSE,TRUE,TRUE
+D134,SC007,$4 Georgia Peach Bomb,Happier hour bomb,Drinks,$4.00,,FALSE,TRUE,TRUE
+D135,SC007,$4 Vegas Bomb,Happier hour bomb,Drinks,$4.00,,FALSE,TRUE,TRUE
+D136,SC007,$4 Jager Bomb,Happier hour bomb,Drinks,$4.00,,FALSE,TRUE,TRUE
+D137,SC007,$4 Cinnamon Apple Bomb,Happier hour bomb,Drinks,$4.00,,FALSE,TRUE,TRUE
+D138,SC007,$4 Fireball Shots,Happier hour FIRE SALE,Drinks,$4.00,,FALSE,TRUE,TRUE
+D139,SC007,$3 Long Island,All day every day,Drinks,$3.00,,FALSE,TRUE,TRUE
+D140,SC007,$3 Pain Killer,All day every day,Drinks,$3.00,,FALSE,TRUE,TRUE
+D141,SC007,$3 Pickle Back,All day every day,Drinks,$3.00,,FALSE,TRUE,TRUE
+D142,SC007,$4 Pickles Punch,All day every day,Drinks,$4.00,,FALSE,TRUE,TRUE
+D143,SC007,$4 Ricky Bobby,All day every day,Drinks,$4.00,,FALSE,TRUE,TRUE
+D144,SC007,$4 The Buck Bomb,All day every day,Drinks,$4.00,,FALSE,TRUE,TRUE
+D145,SC007,$6 Frozen Kentucky Coffee,All day every day,Drinks,$6.00,,FALSE,TRUE,TRUE
+D146,SC007,$4 20oz Miller Draft,All day every day,Drinks,$4.00,,FALSE,TRUE,TRUE
+D147,SC007,$4 Lager Draft,All day every day,Drinks,$4.00,,FALSE,TRUE,TRUE
+D148,SC007,$5 32oz Busch Light Pitcher,All day every day,Drinks,$5.00,,FALSE,TRUE,TRUE
+D149,SC008,$7 Liquor Pitchers,All day,Drinks,$7.00,,FALSE,TRUE,TRUE
+D150,SC008,$4 Sun Cruiser,All day,Drinks,$4.00,,FALSE,TRUE,TRUE
+D151,SC008,$1 Well Drinks,All day,Drinks,$1.00,,FALSE,TRUE,TRUE
+D152,SC008,$1 Busch Lights,All day,Drinks,$1.00,,FALSE,TRUE,TRUE
+D153,SC008,$4 Surfsides,All day,Drinks,$4.00,,FALSE,TRUE,TRUE
+D154,SC008,Happy Hour Specials,Various Deals TBD,Drinks,,,FALSE,TRUE,TRUE
+D155,SC009,$1 Vodka Sodas,DVSN,Drinks,$1.00,,FALSE,TRUE,TRUE
+D156,SC009,$2 Double Vodka Sodas,DVSN,Drinks,$2.00,,FALSE,TRUE,TRUE
+D157,SC009,$2 Dirty Sprites,DVSN,Drinks,$2.00,,FALSE,TRUE,TRUE
+D158,SC009,$2 Green Tea Shots,DVSN,Drinks,$2.00,,FALSE,TRUE,TRUE
+D159,SC009,$4 Double Dirty Sprites,DVSN,Drinks,$4.00,,FALSE,TRUE,TRUE
