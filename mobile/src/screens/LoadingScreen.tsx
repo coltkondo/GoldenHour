@@ -15,7 +15,9 @@ import { AppIcon } from '../components/icons';
 const { width, height } = Dimensions.get('window');
 
 interface LoadingScreenProps {
-  onFinish: () => void;
+  onGetStarted: () => void;
+  onLogin: () => void;
+  onGuest: () => void;
 }
 
 const FEATURES = [
@@ -25,7 +27,7 @@ const FEATURES = [
   { icon: 'rewards' as const, label: 'REWARDS' },
 ] as const;
 
-export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onFinish }) => {
+export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onGetStarted, onLogin, onGuest }) => {
   const { theme } = useTheme();
   const d = theme.derived;
 
@@ -168,7 +170,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onFinish }) => {
           <TouchableOpacity
             style={[styles.primaryButton, { backgroundColor: d.primary }]}
             activeOpacity={0.85}
-            onPress={onFinish}
+            onPress={onGetStarted}
           >
             <Text style={[styles.primaryButtonText, { color: d.buttonPrimaryText }]}>
               GET STARTED
@@ -178,9 +180,19 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onFinish }) => {
           <TouchableOpacity
             style={[styles.secondaryButton, { borderColor: d.border }]}
             activeOpacity={0.7}
-            onPress={onFinish}
+            onPress={onLogin}
           >
             <Text style={[styles.secondaryButtonText, { color: d.text }]}>I HAVE AN ACCOUNT</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.guestButton}
+            activeOpacity={0.6}
+            onPress={onGuest}
+          >
+            <Text style={[styles.guestButtonText, { color: d.textMuted }]}>
+              Continue as guest
+            </Text>
           </TouchableOpacity>
         </Animated.View>
 
@@ -248,6 +260,8 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
   },
   secondaryButtonText: { fontSize: 14, fontWeight: '700', letterSpacing: 1.5 },
+  guestButton: { alignItems: 'center', paddingVertical: 8 },
+  guestButtonText: { fontSize: 13, fontWeight: '500' },
 
   /* Fine Print */
   finePrint: { alignItems: 'center' },
