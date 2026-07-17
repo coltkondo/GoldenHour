@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
+import * as Location from 'expo-location';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../theme';
 import { useAuth } from '../../context/AuthContext';
@@ -54,10 +55,18 @@ export const SignupScreen = () => {
     }
     setLoading(true);
     try {
+      const { status: permStatus } = await Location.requestForegroundPermissionsAsync();
+      if (permStatus !== 'granted') {
+        setError('Location access is required to find your local market. Please allow it and try again.');
+        return;
+      }
+      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
       const data = await authAPI.register({
         username: username.trim(),
         email: email.trim(),
         password,
+        latitude: loc.coords.latitude,
+        longitude: loc.coords.longitude,
       });
       await login(data.access_token, data.user);
       navigation.navigate('Main');
@@ -80,7 +89,7 @@ export const SignupScreen = () => {
 
         <Text style={[styles.title, { color: d.text }]}>Join Golden Hour</Text>
         <Text style={[styles.subtitle, { color: d.textMuted }]}>
-          Help build the State College happy hour map
+          Help build your city's happy hour map
         </Text>
 
         {error ? (

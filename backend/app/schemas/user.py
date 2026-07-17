@@ -11,6 +11,8 @@ class UserCreate(BaseModel):
     # max_length=128: bcrypt silently truncates at 72 bytes; very long passwords
     # are a DoS vector because hashing them is intentionally slow.
     password: str = Field(..., min_length=8, max_length=128)
+    latitude: float = Field(..., ge=-90, le=90)
+    longitude: float = Field(..., ge=-180, le=180)
 
     @field_validator("email")
     @classmethod

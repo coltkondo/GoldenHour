@@ -73,7 +73,7 @@ export const dealsAPI = {
 };
 
 export const authAPI = {
-  register: async (data: { username: string; email: string; password: string }) => {
+  register: async (data: { username: string; email: string; password: string; latitude: number; longitude: number }) => {
     const response = await apiClient.post<{ access_token: string; user: AuthUser }>(
       '/auth/register',
       data,
