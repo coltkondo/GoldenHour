@@ -2,15 +2,15 @@
 
 _Economy spec: see [ECONOMY_SPEC.md](ECONOMY_SPEC.md)._
 
-**38 open items** across all sections below.
+**37 open items** across all sections below.
 
 ---
 
-## Right Now (5)
+## Right Now (4)
 
 - [ ] **Verify import data** _(founder)_ — walk through Arlington and State College data in the app and confirm venues, deals, and schedules look accurate. Flag anything wrong, fix in the CSVs, and re-import.
 - [ ] **Registration end-to-end test on real device** _(dev)_ — create test accounts from both Arlington and State College coordinates and confirm each lands in the right market. A silent radius-math bug would be invisible until someone lands in the wrong market.
-- [ ] **Spider Kelly's hours** _(founder)_ — ARL011 is using a guessed 4pm start. Verify on a visit to Clarendon.
+- [x] **Spider Kelly's hours** — weekdays 16:00–19:00, weekends 12:00–17:00. Confirmed by founder; CSV corrected.
 - [ ] **Define Arlington rehearsal plan** _(founder)_ — who gets access first, how many people, what you're specifically watching for (submission flow clarity, verification pace, points loop feel). Write it down before opening it up.
 - [ ] **"Continue as guest" button** _(founder)_ — home screen needs a clear guest path so users aren't forced to sign up to browse.
 
@@ -155,3 +155,4 @@ _Not needed for launch. Revisit after the first football weekend shows what actu
 - [x] Rate limiting on submissions endpoint — 10/minute
 - [x] Auto-geocode on new_bar approval — Nominatim integration
 - [x] 401 token refresh interceptor — silently refreshes expired tokens and retries the failed request
+- [x] Spider Kelly's hours — weekdays 16:00–19:00, weekends 12:00–17:00. Confirmed by founder; Arlington CSV corrected.
