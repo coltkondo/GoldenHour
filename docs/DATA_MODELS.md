@@ -2,7 +2,7 @@
 
 Database schema for the Golden Hour application. Generated from the live SQLAlchemy models — treat this as the source of truth for CSV import, direct SQL, and API work.
 
-_Last updated: 2026-07-16_
+_Last updated: 2026-07-15_
 
 ---
 
@@ -13,24 +13,21 @@ Table: `markets`
 | Column | Type | Nullable | Default | Notes |
 |--------|------|----------|---------|-------|
 | id | UUID | No | auto | Primary key |
-| name | VARCHAR(255) | No | | Display name e.g. "State College" |
-| slug | VARCHAR(100) | No | | URL-safe key e.g. `state-college`. Unique, indexed. |
-| region_center_lat | FLOAT | No | | Centroid latitude for geo-matching |
-| region_center_lng | FLOAT | No | | Centroid longitude for geo-matching |
-| region_radius_meters | INTEGER | No | | Radius of the market catchment area |
-| daily_points_cap | INTEGER | No | 200 | Per-user per-day points ceiling for this market |
-| monthly_burn_cap_cents | INTEGER | Yes | null | Optional monthly payout cap in cents |
-| launch_status | VARCHAR(50) | No | "rehearsal" | `"rehearsal"` / `"public"` |
-| active | BOOLEAN | No | true | |
+| name | VARCHAR(255) | No | | e.g. "State College", "Arlington". Unique. |
+| slug | VARCHAR(100) | No | | URL/code-safe identifier, e.g. `"state-college"`, `"arlington"`. Unique. |
+| region_center_lat | FLOAT | No | | Centroid of the market's zone. Used both for admin/map default-zoom AND as the anchor point for the proximity radius check below — NOT a substitute for per-venue PostGIS filtering, which stays on `venues`. |
+| region_center_lng | FLOAT | No | | Same. |
+| region_radius_meters | INTEGER | No | | Radius around the centroid defining the market's zone. Required for signup-time market assignment (see `User.market_id`) — a point alone can't answer "is this user inside the market," a radius can. |
+| daily_points_cap | INTEGER | No | 200 | Per-market override capability. Defaults to match the global economy spec; exists so a market COULD diverge later without a schema change, even though markets are identical by design today. |
+| monthly_burn_cap_cents | INTEGER | Yes | | Nullable — if null, falls back to a global default. Same reasoning as above. |
+| launch_status | VARCHAR(50) | No | "rehearsal" | `"rehearsal"` / `"beta"` / `"public"` — lets the app/admin panel distinguish a market like Arlington (rehearsal) from State College (public launch) without a separate flag per feature. |
+| active | BOOLEAN | No | true | Soft delete / disable a market entirely |
 | created_at | TIMESTAMPTZ | No | now() | |
 | updated_at | TIMESTAMPTZ | No | now() | |
 
-**Seeded markets:**
+**Seed data:** two rows are inserted inline by the Alembic migration — State College (`launch_status = "public"`) and Arlington (`launch_status = "rehearsal"`). Markets are not imported from CSV; they're managed directly in the database.
 
-| slug | launch_status | center_lat | center_lng | radius_m |
-|---|---|---|---|---|
-| `state-college` | public | 40.794732 | -77.860230 | 3000 |
-| `arlington` | rehearsal | 38.881600 | -77.091000 | 8000 |
+**Design note — signup-time assignment, not live recalculation:** `User.market_id` is set ONCE at account creation by checking the user's required signup location against each market's `(region_center_lat, region_center_lng, region_radius_meters)`, and is NOT recomputed on subsequent logins or submissions. If it were recalculated live, a user's market — and therefore their leaderboard position and cap accounting — would silently shift every time they travel between cities, which breaks the exact accounting integrity (ambassador comp scoping, per-market burn caps, fraud analytics) this table exists to protect. A user who signs up in State College and later submits a deal while visiting Arlington still counts as a State College user for all aggregate purposes.
 
 ---
 
@@ -41,7 +38,7 @@ Table: `venues`
 | Column | Type | Nullable | Default | Notes |
 |--------|------|----------|---------|-------|
 | id | UUID | No | auto | Primary key |
-| market_id | UUID (FK→markets) | No | | Indexed |
+| market_id | UUID (FK→markets) | No | | Which market this venue belongs to. Set by the import script from `--market <slug>` — do not include in CSV. Indexed. |
 | name | VARCHAR(255) | No | | Indexed |
 | nickname | VARCHAR(100) | Yes | | Short display name |
 | address | VARCHAR(500) | No | | |
@@ -62,7 +59,7 @@ Table: `venues`
 | created_at | TIMESTAMPTZ | No | now() | |
 | updated_at | TIMESTAMPTZ | No | now() | |
 
-**CSV ref key:** `venue_id` (e.g. `SC001`) — maps to UUID on import, used as a join key in deals/schedules CSVs. `market_id` is set automatically by the import script from `--market <slug>`.
+**CSV ref key:** `venue_id` (e.g. `SC001`, `ARL001`) — maps to UUID on import, used as a join key in deals/schedules CSVs. `market_id` is set automatically by the import script from `--market <slug>`.
 
 ---
 
@@ -86,6 +83,7 @@ Table: `deals`
 | verified | BOOLEAN | No | false | |
 | source | VARCHAR(50) | Yes | "manual" | `"import"` / `"manual"` / `"user"` |
 | valid_through | DATE | Yes | null | Auto-expires deal after this date. Use for Arts Fest one-offs. |
+| ~~event_id~~ | _(planned)_ | | | Will link a deal to a specific dated event once the `events` table is built. A deal will be either recurring (has `happy_hour_schedules` rows) or event-bound (has `event_id`). `ON DELETE SET NULL` — deleting an event must not cascade to deals. **Not yet in the schema.** |
 | created_at | TIMESTAMPTZ | No | now() | |
 | updated_at | TIMESTAMPTZ | No | now() | |
 
@@ -117,6 +115,37 @@ Table: `happy_hour_schedules`
 
 ---
 
+## Event _(planned — not yet implemented)_
+
+Table: `events`
+
+| Column | Type | Nullable | Default | Notes |
+|--------|------|----------|---------|-------|
+| id | UUID | No | auto | Primary key |
+| venue_id | UUID (FK→venues) | No | | The bar hosting the event. Indexed. |
+| name | VARCHAR(255) | No | | e.g. "UFC 300", "Eagles vs Cowboys", "World Cup: USA v England" |
+| description | TEXT | Yes | | Free text: what's happening, who's playing |
+| event_type | VARCHAR(50) | Yes | | `"ufc"` / `"nfl"` / `"cfb"` / `"fifa"` / `"nba"` / `"local"` / `"flex"` / `"other"`. Indexed. |
+| start_datetime | TIMESTAMPTZ | No | | Actual date + time the event starts. Indexed. This is what the calendar sorts/filters on. |
+| end_datetime | TIMESTAMPTZ | Yes | | When it ends. Nullable — some events have no clean end. |
+| image_url | VARCHAR(500) | Yes | | Poster/flyer for the calendar card |
+| is_sponsored | BOOLEAN | No | false | Bar-paid or brand-sponsored promotion flag (e.g. a tournament sponsor like Michelob Ultra/Stella Artois) — future monetization hook |
+| active | BOOLEAN | No | true | Soft delete |
+| verified | BOOLEAN | No | false | Admin-verified, same gate as deals |
+| source | VARCHAR(50) | Yes | "manual" | `"import"` / `"manual"` / `"user"` |
+| created_at | TIMESTAMPTZ | No | now() | |
+| updated_at | TIMESTAMPTZ | No | now() | |
+
+**CSV ref key:** `event_id` (e.g. `E001`) — maps to UUID on import, used as a join key for event-bound deals.
+
+**Relationship to deals:** An event's specials are regular `deals` rows with `event_id` set (see `Deal.event_id` above). An event with no attached deals is still valid — it can exist purely as a "this is happening here" calendar entry (e.g. "showing the fight on every screen, no special") with no specific price special.
+
+**Relationship to venues:** an event attaches to exactly one venue. The same real-world event airing at multiple bars (e.g. a UFC card showing at 8 different bars) is modeled as 8 separate `events` rows sharing the same `name` — each bar's showing has its own deals, its own verification, its own `is_sponsored` flag. A "who's showing this tonight" rollup is a query grouping on `(name, start_datetime)`, not a join table.
+
+**Why this is separate from `happy_hour_schedules`:** schedules model *recurring weekly* patterns (`day_of_week` 0–6, no calendar date) — a standing happy hour with no start/end date. Events are *point-in-time* on a specific calendar date. The two never share a time model; an event on a specific date cannot be expressed as a `day_of_week`, and a recurring Tuesday happy hour has no single `start_datetime`.
+
+---
+
 ## User
 
 Table: `users`
@@ -124,17 +153,19 @@ Table: `users`
 | Column | Type | Nullable | Default | Notes |
 |--------|------|----------|---------|-------|
 | id | UUID | No | auto | Primary key |
-| market_id | UUID (FK→markets) | No | | Set at signup by geo-matching against market centroids. Indexed. Never recomputed. |
 | username | VARCHAR(50) | No | | Unique |
 | email | VARCHAR(255) | No | | Unique; lowercased on write |
 | password_hash | VARCHAR | No | | bcrypt |
-| signup_latitude | FLOAT | No | | Location at time of registration |
-| signup_longitude | FLOAT | No | | Location at time of registration |
 | role | VARCHAR(20) | No | "user" | `"user"` or `"admin"` |
 | points_balance | INTEGER | No | 0 | CHECK >= 0 |
+| market_id | UUID (FK→markets) | No | | The market this user belongs to. Set ONCE at signup by checking the user's required signup location against each market's proximity zone (`markets.region_center_lat/lng` + `region_radius_meters`) — NOT recomputed on later logins or submissions. Anchors leaderboard scoping, daily/monthly point cap accounting, and fraud analytics. See design notes on the Market table above. Indexed. |
+| signup_latitude | FLOAT | No | | Captured at registration to compute `market_id`. Required — signup cannot complete without a resolvable location. |
+| signup_longitude | FLOAT | No | | Same. |
 | active | BOOLEAN | No | true | Soft disable |
 | created_at | TIMESTAMPTZ | No | now() | |
 | updated_at | TIMESTAMPTZ | No | now() | |
+
+**Signup requirement:** location is mandatory at registration (`signup_latitude`/`signup_longitude`), specifically to resolve `market_id`. If a user's signup location doesn't fall within any market's radius, registration should be rejected with a clear "not available in your area yet" message rather than silently defaulting to a market — an unresolved market would corrupt exactly the aggregation integrity this column exists to protect.
 
 ---
 
@@ -218,8 +249,18 @@ docker compose exec backend python -m scripts.import_csv --market state-college
 # Wipe a market's data and re-import:
 docker compose exec backend python -m scripts.import_csv --market state-college --force
 
-# Same for Arlington once CSVs are in data/arlington/:
+# Arlington:
 docker compose exec backend python -m scripts.import_csv --market arlington --force
 ```
 
-`--force` deletes only the venues/deals/schedules belonging to the specified market. Other markets are untouched.
+`--force` deletes only that market's venues/deals/schedules. Other markets are untouched.
+
+### `data/events.csv` _(planned — not yet built)_
+```
+event_id, venue_id, name, description, event_type, start_datetime, end_datetime,
+image_url, is_sponsored, is_active
+```
+- `venue_id` must match a `venue_id` from the venues file
+- `start_datetime` / `end_datetime`: full ISO 8601 datetime, not just a time — this is the key difference from `happy_hour_schedules`, which only stores a day-of-week + time-of-day
+- Same real-world event at multiple venues = multiple rows, one per venue, sharing `name`
+- Deals tied to an event go in the deals CSV as normal, with an `event_id` column added there referencing this file's `event_id`
