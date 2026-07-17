@@ -14,7 +14,9 @@ import { SignupScreen } from '../screens/auth/SignupScreen';
 
 const Stack = createNativeStackNavigator();
 
-function AppNavigator() {
+type InitialRoute = 'Main' | 'Login' | 'Signup';
+
+function AppNavigator({ initialRoute }: { initialRoute: InitialRoute }) {
   const { loading } = useAuth();
 
   if (loading) {
@@ -33,7 +35,7 @@ function AppNavigator() {
   }
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName={initialRoute}>
       <Stack.Screen name="Main" component={TabNavigator} />
       {/* Auth modals — reachable from SubmitScreen/ProfileScreen auth gates */}
       <Stack.Screen
@@ -70,11 +72,11 @@ function AppNavigator() {
   );
 }
 
-export const RootNavigator = () => {
+export const RootNavigator = ({ initialRoute = 'Main' }: { initialRoute?: InitialRoute }) => {
   return (
     <AuthProvider>
       <NavigationContainer>
-        <AppNavigator />
+        <AppNavigator initialRoute={initialRoute} />
       </NavigationContainer>
     </AuthProvider>
   );

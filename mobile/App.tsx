@@ -5,14 +5,20 @@ import { RootNavigator } from './src/navigation/RootNavigator';
 import { LoadingScreen } from './src/screens/LoadingScreen';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 
+type Destination = 'Main' | 'Login' | 'Signup';
+
 function AppContent() {
-  const [isLoading, setIsLoading] = useState(true);
+  const [destination, setDestination] = useState<Destination | null>(null);
   const { theme } = useTheme();
 
-  if (isLoading) {
+  if (destination === null) {
     return (
       <>
-        <LoadingScreen onFinish={() => setIsLoading(false)} />
+        <LoadingScreen
+          onGetStarted={() => setDestination('Signup')}
+          onLogin={() => setDestination('Login')}
+          onGuest={() => setDestination('Main')}
+        />
         <StatusBar style="light" />
       </>
     );
@@ -20,7 +26,7 @@ function AppContent() {
 
   return (
     <>
-      <RootNavigator />
+      <RootNavigator initialRoute={destination} />
       <StatusBar style="dark" />
     </>
   );
