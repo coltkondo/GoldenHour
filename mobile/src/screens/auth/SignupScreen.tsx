@@ -163,6 +163,12 @@ export const SignupScreen = () => {
               <Text style={[styles.switchLink, { color: d.text }]}>Sign In</Text>
             </Text>
           </TouchableOpacity>
+
+          <TouchableOpacity style={styles.guestBtn} onPress={() => navigation.navigate('Main')}>
+            <Text style={[styles.guestText, { color: d.textMuted }]}>
+              Continue as guest
+            </Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -194,4 +200,6 @@ const styles = StyleSheet.create({
   switchBtn: { alignItems: 'center', marginTop: 20 },
   switchText: { fontSize: 14, fontWeight: '500' },
   switchLink: { fontWeight: '600' },
+  guestBtn: { alignItems: 'center', marginTop: 28 },
+  guestText: { fontSize: 13, fontWeight: '500' },
 });

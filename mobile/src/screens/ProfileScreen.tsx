@@ -46,6 +46,12 @@ export const ProfileScreen = () => {
             Already have an account? Log in
           </Text>
         </TouchableOpacity>
+
+        <TouchableOpacity style={{ marginTop: 28 }} onPress={() => navigation.navigate('HomeTab')}>
+          <Text style={[{ fontSize: 13, fontWeight: '500', color: d.textMuted }]}>
+            Just browsing — take me to deals
+          </Text>
+        </TouchableOpacity>
       </View>
     );
   }
