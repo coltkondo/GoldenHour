@@ -81,14 +81,15 @@ export const HomeScreen = () => {
     isMounted.current = true;
     loadData();
     return () => { isMounted.current = false; };
-  }, []);
+  }, [user?.market_slug]);
 
   const loadData = async () => {
     try {
       setLoading(true);
+      const marketSlug = user?.market_slug ?? null;
       const [venueData, dealData] = await Promise.all([
-        venuesAPI.getAll({ limit: 100 }),
-        dealsAPI.getToday(),
+        venuesAPI.getAll({ limit: 100, market_slug: marketSlug }),
+        dealsAPI.getToday(marketSlug),
       ]);
       if (!isMounted.current) return;
       setVenues(venueData);
@@ -210,7 +211,9 @@ export const HomeScreen = () => {
 
         {/* Day title */}
         <Text style={[styles.dayTitle, { color: d.text }]}>{todayName}</Text>
-        <Text style={[styles.daySubtitle, { color: d.textMuted }]}>Happy Valley, PA</Text>
+        <Text style={[styles.daySubtitle, { color: d.textMuted }]}>
+          {user?.market_slug === 'arlington' ? 'Arlington, VA' : user?.market_slug === 'state-college' ? 'Happy Valley, PA' : 'Happy Hour Deals'}
+        </Text>
 
         {/* Filter pills */}
         <ScrollView

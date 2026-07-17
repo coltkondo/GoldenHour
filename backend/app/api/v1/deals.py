@@ -9,6 +9,7 @@ from zoneinfo import ZoneInfo
 from app.core.config import settings
 from app.core.database import get_db
 from app.models.deal import Deal
+from app.models.market import Market
 from app.models.venue import Venue
 from app.models.happy_hour import HappyHourSchedule
 from app.schemas.deal import DealResponse
@@ -60,16 +61,17 @@ async def get_active_deals(
 
 
 @router.get("/today", response_model=List[DealResponse])
-async def get_todays_deals(db: Session = Depends(get_db)):
-    """
-    Get all deals that are active today (based on schedule).
-    """
+async def get_todays_deals(
+    market_slug: Optional[str] = None,
+    db: Session = Depends(get_db),
+):
     today = _now_eastern().weekday()  # 0=Monday
-
     today_date = _now_eastern().date()
-    deals = (
+
+    query = (
         db.query(Deal)
         .options(joinedload(Deal.venue))
+        .join(Venue, Deal.venue_id == Venue.id)
         .filter(
             Deal.active == True,
             or_(Deal.valid_through == None, Deal.valid_through >= today_date),
@@ -80,9 +82,14 @@ async def get_todays_deals(db: Session = Depends(get_db)):
                 )
             ),
         )
-        .all()
     )
-    return deals
+
+    if market_slug:
+        market = db.query(Market).filter(Market.slug == market_slug).first()
+        if market:
+            query = query.filter(Venue.market_id == market.id)
+
+    return query.all()
 
 
 @router.get("/nearby", response_model=List[DealResponse])
