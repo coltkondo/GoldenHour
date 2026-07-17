@@ -12,7 +12,6 @@ from slowapi.middleware import SlowAPIMiddleware
 from app.core.config import settings
 from app.core.limiter import limiter
 from app.core.logging import logger
-from app.core.database import SessionLocal
 from app.api.v1 import venues, deals
 from app.api.v1 import auth, submissions, points, leaderboard
 from app.api.admin import router as admin_router
@@ -25,22 +24,6 @@ async def lifespan(app: FastAPI):
     logger.info(
         "Starting Golden Hour API", version="1.0.0", environment=settings.ENVIRONMENT
     )
-
-    db = SessionLocal()
-    seed_error: Exception | None = None
-    try:
-        from scripts.import_csv import seed_if_empty
-
-        seed_if_empty(db)
-        logger.info("Database seeding completed")
-    except Exception as e:
-        logger.exception("Auto-seed failed", error=str(e))
-        seed_error = e
-    finally:
-        db.close()
-
-    if seed_error is not None:
-        raise RuntimeError(f"Database seeding failed on startup: {seed_error}") from seed_error
 
     logger.info("API startup complete", docs="/docs", health="/health")
     yield
