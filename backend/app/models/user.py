@@ -37,5 +37,9 @@ class User(Base, TimestampMixin):
     )
     point_transactions = relationship("PointTransaction", back_populates="user")
 
+    @property
+    def market_slug(self) -> str | None:
+        return self.market.slug if self.market else None
+
     def __repr__(self):
         return f"<User {self.username} ({self.role})>"

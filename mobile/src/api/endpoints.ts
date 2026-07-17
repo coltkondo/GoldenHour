@@ -137,8 +137,10 @@ export const pointsAPI = {
 };
 
 export const leaderboardAPI = {
-  getTop: async () => {
-    const response = await apiClient.get<LeaderboardEntry[]>('/leaderboard/');
+  getTop: async (marketSlug?: string | null) => {
+    const response = await apiClient.get<LeaderboardEntry[]>('/leaderboard/', {
+      params: marketSlug ? { market_slug: marketSlug } : undefined,
+    });
     return response.data;
   },
 };

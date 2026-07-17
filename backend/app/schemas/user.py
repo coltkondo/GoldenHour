@@ -49,6 +49,7 @@ class UserResponse(BaseModel):
     email: str
     role: str
     points_balance: int
+    market_slug: str | None = None
     created_at: datetime
 
     class Config:
