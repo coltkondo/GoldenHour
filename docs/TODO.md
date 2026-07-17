@@ -4,6 +4,19 @@ _Economy spec: see [ECONOMY_SPEC.md](ECONOMY_SPEC.md)._
 
 ---
 
+## Right Now
+
+_Six items from the founder's 2026-07-14 priority list._
+
+- [ ] **Verify import data** _(founder)_ — walk through the Arlington and State College data in the app and confirm venues, deals, and schedules look accurate. Flag anything wrong to fix in the CSVs and re-import.
+- [x] **Scope leaderboard by market, enforce daily cap** _(done: feature/market-scoping)_ — leaderboard now filters by `?market_slug=`, daily cap reads from `market.daily_points_cap`.
+- [ ] **Registration end-to-end test on real device** _(next session)_ — create test accounts from Arlington and State College coordinates, confirm each lands in the right market.
+- [ ] **Spider Kelly's hours** _(next session)_ — ARL011 has a guessed 4pm start. Verify on a visit to Clarendon.
+- [ ] **Define Arlington rehearsal plan** _(next session)_ — who gets access first, how many people, what you're watching for (submission flow, verification pace, points loop feel). Write it down before opening it up.
+- [ ] **"Continue as guest" button** _(founder)_ — home screen needs a clear guest path so users aren't forced to sign up to browse.
+
+---
+
 ## Priority 1 — Add the "+" Submit tab
 
 _The submit flow is the app's growth engine. Make it prominent and rewarding._
