@@ -30,6 +30,9 @@ Do these today, in this order. Nothing else matters if these aren't done.
 ### `feature/guest-mode-cta`
 - [ ] **"Continue as guest" button** — anonymous browse already works at the nav level (confirmed in APP_STORE_COMPLIANCE.md), this is exposing an existing capability. Without it, testers may not realize they can browse before signing up. Likely small — do it today.
 
+### `feature/guest-market-picker`
+- [ ] **City picker modal for guests** — when an anonymous user opens the home screen with no `market_slug`, show a one-time bottom sheet: "Which city are you in?" (Arlington / State College). Store choice in AsyncStorage under `gh_guest_market` and pass it to the market filter. When the user registers, their signup coordinates overwrite it permanently. Do NOT prompt for location permission — that belongs to the registration flow, not browse.
+
 ### `feature/calendar`
 - [ ] **Rebase `feature/calendar` onto main and work from there** — branch predates the multi-market merge; rebase first, then pick up the calendar work. Sequenced here because it's what we're working on today, right after the guest button.
 
