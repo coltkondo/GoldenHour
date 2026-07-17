@@ -3,7 +3,7 @@ import { Venue, Deal, HappyHourSchedule } from '../types/api';
 import type { AuthUser, Submission, LeaderboardEntry } from '../types/api';
 
 export const venuesAPI = {
-  getAll: async (params?: { skip?: number; limit?: number; neighborhood?: string }) => {
+  getAll: async (params?: { skip?: number; limit?: number; neighborhood?: string; market_slug?: string | null }) => {
     const response = await apiClient.get<Venue[]>('/venues', { params });
     return response.data;
   },
@@ -49,8 +49,10 @@ export const dealsAPI = {
     return response.data;
   },
 
-  getToday: async () => {
-    const response = await apiClient.get<Deal[]>('/deals/today');
+  getToday: async (marketSlug?: string | null) => {
+    const response = await apiClient.get<Deal[]>('/deals/today', {
+      params: marketSlug ? { market_slug: marketSlug } : undefined,
+    });
     return response.data;
   },
 

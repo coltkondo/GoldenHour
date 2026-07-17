@@ -11,6 +11,7 @@ from app.models.happy_hour import HappyHourSchedule
 from app.schemas.venue import VenueResponse
 from app.schemas.happy_hour import HappyHourScheduleResponse
 from app.core.logging import logger
+from app.models.market import Market
 
 
 router = APIRouter(prefix="/venues", tags=["venues"])
@@ -22,11 +23,9 @@ async def list_venues(
     limit: int = Query(100, ge=1, le=100),
     neighborhood: Optional[str] = None,
     active_only: bool = True,
+    market_slug: Optional[str] = None,
     db: Session = Depends(get_db),
 ):
-    """
-    List all venues with optional filtering.
-    """
     query = db.query(Venue)
 
     if active_only:
@@ -34,6 +33,11 @@ async def list_venues(
 
     if neighborhood:
         query = query.filter(Venue.neighborhood == neighborhood)
+
+    if market_slug:
+        market = db.query(Market).filter(Market.slug == market_slug).first()
+        if market:
+            query = query.filter(Venue.market_id == market.id)
 
     venues = query.offset(skip).limit(limit).all()
     return venues
