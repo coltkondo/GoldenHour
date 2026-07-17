@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme';
+import { useAuth } from '../context/AuthContext';
 import { submissionsAPI } from '../api/endpoints';
 import { POINTS_CONFIG } from '../config/constants';
 import { AppIcon } from '../components/icons';
@@ -37,6 +38,7 @@ export const QuickSubmitScreen = () => {
   const { theme } = useTheme();
   const d = theme.derived;
   const navigation = useNavigation<any>();
+  const { user } = useAuth();
   const [selectedType, setSelectedType] = useState<SubmissionType | null>(null);
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -58,10 +60,50 @@ export const QuickSubmitScreen = () => {
       });
       setSubmitted(true);
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Submission failed — please try again');
+      if (err.response?.status === 401) {
+        setError('Your session expired — please log out and log back in.');
+      } else {
+        setError(err.response?.data?.detail || 'Submission failed — please try again');
+      }
     } finally {
       setLoading(false);
     }
+  }
+
+  if (!user) {
+    return (
+      <View style={[styles.container, { backgroundColor: d.background }]}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+            <AppIcon name="back" size={22} role="default" />
+          </TouchableOpacity>
+          <Text style={[styles.headerTitle, { color: d.text }]}>Submit</Text>
+        </View>
+        <View style={[{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 }]}>
+          <AppIcon name="plus" size={48} role="muted" />
+          <Text style={[styles.headerTitle, { color: d.text, textAlign: 'center', marginTop: 20, marginBottom: 8 }]}>
+            Sign In to Contribute
+          </Text>
+          <Text style={[{ color: d.textMuted, textAlign: 'center', fontSize: 13, marginBottom: 32, lineHeight: 20 }]}>
+            Create a free account to submit happy hour deals and earn points.
+          </Text>
+          <TouchableOpacity
+            style={[styles.submitBtn, { backgroundColor: d.primary, width: '100%' }]}
+            onPress={() => navigation.navigate('Signup')}
+            activeOpacity={0.85}
+          >
+            <Text style={[styles.submitBtnText, { color: d.buttonPrimaryText }]}>
+              Sign Up — It's Free
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={{ marginTop: 16 }} onPress={() => navigation.navigate('Login')}>
+            <Text style={[{ fontSize: 14, fontWeight: '600', color: d.primary }]}>
+              Already have an account? Log in
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
   }
 
   if (submitted) {
