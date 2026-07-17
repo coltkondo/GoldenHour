@@ -95,15 +95,17 @@ def review_submission(
             logger.bind(
                 submission_id=str(sub.id), submission_type=sub.submission_type
             ).info("approving_submission")
-            _apply_submission(sub, db)
+
+            submitter = db.query(User).filter(User.id == sub.user_id).first()
+            market = db.query(Market).filter(Market.id == submitter.market_id).first() if submitter else None
+
+            _apply_submission(sub, db, submitter)
             logger.bind(submission_id=str(sub.id)).info("submission_applied")
 
             points = 0
             if settings.REWARDS_ENABLED:
                 points = POINTS_CONFIG.get(sub.submission_type, 0)
                 if points > 0:
-                    submitter = db.query(User).filter(User.id == sub.user_id).first()
-                    market = db.query(Market).filter(Market.id == submitter.market_id).first() if submitter else None
                     daily_cap = market.daily_points_cap if market else 200
                     earned_today = _points_earned_today(sub.user_id, db)
                     if earned_today >= daily_cap:
@@ -155,7 +157,7 @@ def review_submission(
         raise
 
 
-def _apply_submission(sub: Submission, db: Session) -> None:
+def _apply_submission(sub: Submission, db: Session, submitter: User | None = None) -> None:
     """Auto-apply the change described by the approved submission.
 
     Only fields in the whitelists are accepted from submitted_data.
@@ -171,7 +173,6 @@ def _apply_submission(sub: Submission, db: Session) -> None:
             if coords:
                 venue_fields["latitude"], venue_fields["longitude"] = coords
                 logger.bind(name=venue_fields["name"], lat=coords[0], lon=coords[1]).info("venue_geocoded")
-        submitter = db.query(User).filter(User.id == sub.user_id).first()
         if submitter:
             venue_fields["market_id"] = submitter.market_id
         venue = Venue(**venue_fields)
