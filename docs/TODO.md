@@ -2,7 +2,7 @@
 
 _Economy spec: see [ECONOMY_SPEC.md](ECONOMY_SPEC.md)._
 
-**37 open items** across all sections below.
+**36 open items** across all sections below.
 
 ---
 
@@ -54,21 +54,19 @@ _The submit flow is the app's growth engine. Make it prominent and rewarding._
 
 ---
 
-## Ship before any beta user touches the app (1)
+## Ship before any beta user touches the app (0)
 
-- [ ] Implement 25pt/day corroboration cap — max 10 corroborations × 2pts per user per day, enforced server-side in the corroboration endpoint (not yet built).
+_All pre-beta items complete._
 
 ---
 
-## July private beta gate (5)
+## July private beta gate (3)
 
 _The beta can run without these, but each one is a real operational or financial risk._
 
-- [ ] **Corroboration feature** — new `corroborate` submission type, endpoint at `POST /submissions/corroborate/{deal_id}`, enforce: verified+active deals only, 1 per user per deal per day, block original submitter from corroborating their own deal, mobile UI button on deal cards.
-- [ ] **Daily corroboration cap** — server-side check: if user has earned ≥20 corroboration pts today, return 0 pts (not an error — the tap still registers, just earns nothing).
-- [ ] **Duplicate submission handling** — when admin approves a submission for a deal that already exists, award 5pts not 50pts. Currently both get full credit. Admin UI should flag likely duplicates in the review queue.
-- [ ] **Admin user management** — `api/admin/users.py` is an empty stub. Need: list users, view a user's point history, deactivate an account. This is the primary fraud-response tool.
-- [ ] **`TIMESTAMP WITH TIME ZONE` migration** — `users`, `submissions`, and `point_transactions` tables were created with `TIMESTAMP WITHOUT TIME ZONE`. Models declare `DateTime(timezone=True)`. Fix via a new Alembic migration before real transaction data accumulates.
+- [ ] **Corroboration feature** — new `corroborate` submission type, endpoint at `POST /submissions/corroborate/{deal_id}`, enforce: verified+active deals only, 1 per user per deal per day, block original submitter from corroborating their own deal, mobile UI button on deal cards. Per ECONOMY_SPEC.md: 2pts per corroboration, subject to the overall 200pt/day cap.
+- [ ] **Duplicate submission handling** — when admin approves a submission for a deal that already exists, award 2pts (corroboration rate) not 50pts. Admin UI should flag likely duplicates in the review queue.
+- [ ] **Admin UI for user management** — `admin/users.py` endpoint exists and works (list, point history, deactivate/reactivate). Needs admin web panel UI to surface it.
 
 ---
 
@@ -125,8 +123,8 @@ _Not needed for launch. Revisit after the first football weekend shows what actu
 - [x] market_slug on UserResponse/AuthUser — mobile client now knows which market it's in
 - [x] Signup location wiring — registration endpoint geo-matches coordinates to a market; mobile requests location permission before submit
 - [x] import_csv.py rewritten — per-market operation, scoped deletes, past-midnight time clamping
-- [x] State College data imported — 9 venues, 159 deals, 95 schedules
-- [x] Arlington data imported — 13 venues, 76 deals, 51 schedules
+- [x] State College data imported — 9 venues, 159 deals, 95 schedule records (covering 522 deal+time-window CSV rows; grouped by venue/day/start/end per import script design)
+- [x] Arlington data imported — 13 venues, 76 deals, 49 schedule records (covering 253 CSV rows; same grouping)
 - [x] Removed stale auto-seed from app startup (was crashing backend on boot)
 - [x] DATA_MODELS.md synced with live codebase
 - [x] Home page redesign — "Happening Now" and "Coming Up Tonight" sections, driven by real schedule data
@@ -155,4 +153,6 @@ _Not needed for launch. Revisit after the first football weekend shows what actu
 - [x] Rate limiting on submissions endpoint — 10/minute
 - [x] Auto-geocode on new_bar approval — Nominatim integration
 - [x] 401 token refresh interceptor — silently refreshes expired tokens and retries the failed request
+- [x] Admin user management — `admin/users.py` fully implemented: list users, point history, deactivate/reactivate accounts
+- [x] `TIMESTAMP WITH TIME ZONE` migration — all timestamp columns converted via Alembic migration `e6f7a8b9c0d1`
 - [x] Spider Kelly's hours — weekdays 16:00–19:00, weekends 12:00–17:00. Confirmed by founder; Arlington CSV corrected.
