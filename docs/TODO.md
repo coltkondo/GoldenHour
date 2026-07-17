@@ -68,6 +68,9 @@ These aren't blockers for tomorrow's build, but they're the next thing to break 
 ### `chore/admin-panel-user-wiring`
 - [ ] **Wire `admin/users.py` to the admin web panel UI** — backend (list, point history, deactivate/reactivate) is fully implemented and already confirmed done. What's left is exposing it in the UI. Your primary fraud-response tool is half-live right now — backend ready, no way to click it.
 
+### `feature/guest-city-change`
+- [ ] **Tappable city chip on home screen for guests** — once a guest picks a city, there's currently no way to change it short of reinstalling. Add a small tappable "Arlington, VA ›" subtitle on HomeScreen (guests only) that reopens the `GuestMarketPicker`. Logged-in users don't see it — their city is account-bound. Low friction, high value for multi-market demos.
+
 ---
 
 ## P2 — App Store full public submission gate (beyond TestFlight)

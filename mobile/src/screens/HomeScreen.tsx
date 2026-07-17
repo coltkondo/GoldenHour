@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   Pressable,
   Platform,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { useAuth } from '../context/AuthContext';
@@ -20,6 +21,9 @@ import { AppIcon } from '../components/icons';
 import { REWARDS_ENABLED } from '../config/constants';
 import { LiveBadge } from '../components/ui/LiveBadge';
 import { StatusDot } from '../components/ui/StatusDot';
+import { GuestMarketPicker } from '../components/GuestMarketPicker';
+
+const GUEST_MARKET_KEY = 'gh_guest_market';
 
 type FilterCategory = 'All' | 'Cocktails' | 'Beer' | 'Wine' | 'Food';
 
@@ -75,18 +79,40 @@ export const HomeScreen = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activeFilter, setActiveFilter] = useState<FilterCategory>('All');
+  const [guestMarketSlug, setGuestMarketSlug] = useState<string | null>(null);
+  const [showMarketPicker, setShowMarketPicker] = useState(false);
   const isMounted = useRef(true);
 
   useEffect(() => {
     isMounted.current = true;
-    loadData();
+    const init = async () => {
+      if (user) {
+        await loadData(user.market_slug);
+      } else {
+        const stored = await AsyncStorage.getItem(GUEST_MARKET_KEY);
+        if (stored) {
+          setGuestMarketSlug(stored);
+          await loadData(stored);
+        } else {
+          setShowMarketPicker(true);
+          await loadData(null);
+        }
+      }
+    };
+    init();
     return () => { isMounted.current = false; };
   }, [user?.market_slug]);
 
-  const loadData = async () => {
+  const handleCitySelect = useCallback(async (slug: string) => {
+    setShowMarketPicker(false);
+    setGuestMarketSlug(slug);
+    await AsyncStorage.setItem(GUEST_MARKET_KEY, slug);
+    await loadData(slug);
+  }, []);
+
+  const loadData = async (marketSlug: string | null) => {
     try {
       setLoading(true);
-      const marketSlug = user?.market_slug ?? null;
       const [venueData, dealData] = await Promise.all([
         venuesAPI.getAll({ limit: 100, market_slug: marketSlug }),
         dealsAPI.getToday(marketSlug),
@@ -122,7 +148,8 @@ export const HomeScreen = () => {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await loadData();
+    const slug = user?.market_slug ?? guestMarketSlug ?? null;
+    await loadData(slug);
     if (isMounted.current) setRefreshing(false);
   };
 
@@ -212,7 +239,12 @@ export const HomeScreen = () => {
         {/* Day title */}
         <Text style={[styles.dayTitle, { color: d.text }]}>{todayName}</Text>
         <Text style={[styles.daySubtitle, { color: d.textMuted }]}>
-          {user?.market_slug === 'arlington' ? 'Arlington, VA' : user?.market_slug === 'state-college' ? 'Happy Valley, PA' : 'Happy Hour Deals'}
+          {(() => {
+            const slug = user?.market_slug ?? guestMarketSlug;
+            if (slug === 'arlington') return 'Arlington, VA';
+            if (slug === 'state-college') return 'Happy Valley, PA';
+            return 'Happy Hour Deals';
+          })()}
         </Text>
 
         {/* Filter pills */}
@@ -327,6 +359,8 @@ export const HomeScreen = () => {
 
         <View style={{ height: 120 }} />
       </ScrollView>
+
+      <GuestMarketPicker visible={showMarketPicker} onSelect={handleCitySelect} />
     </View>
   );
 };
