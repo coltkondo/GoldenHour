@@ -164,7 +164,7 @@ export const SignupScreen = () => {
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.guestBtn} onPress={() => navigation.navigate('Main')}>
+          <TouchableOpacity style={styles.guestBtn} onPress={() => navigation.navigate('Main', { screen: 'HomeTab' })}>
             <Text style={[styles.guestText, { color: d.textMuted }]}>
               Continue as guest
             </Text>
