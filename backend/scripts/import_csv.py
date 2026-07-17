@@ -72,7 +72,9 @@ def parse_time(val: str, is_end: bool = False) -> time:
     minute = int(parts[1]) if len(parts) > 1 else 0
     if hour >= 24:
         hour, minute = 23, 59
-    if is_end and hour == 0 and minute == 0:
+    # End times before 6 AM mean "past midnight / until close" — clamp to 23:59
+    # so they satisfy the DB constraint (end_time > start_time, same calendar day).
+    if is_end and hour < 6:
         hour, minute = 23, 59
     return time(hour, minute)
 

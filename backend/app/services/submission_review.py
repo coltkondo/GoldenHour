@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.points_config import POINTS_CONFIG
 
-DAILY_POINTS_CAP = 200
+from app.models.market import Market
 from app.models.submission import Submission
 from app.models.user import User
 from app.models.venue import Venue
@@ -95,23 +95,28 @@ def review_submission(
             logger.bind(
                 submission_id=str(sub.id), submission_type=sub.submission_type
             ).info("approving_submission")
-            _apply_submission(sub, db)
+
+            submitter = db.query(User).filter(User.id == sub.user_id).first()
+            market = db.query(Market).filter(Market.id == submitter.market_id).first() if submitter else None
+
+            _apply_submission(sub, db, submitter)
             logger.bind(submission_id=str(sub.id)).info("submission_applied")
 
             points = 0
             if settings.REWARDS_ENABLED:
                 points = POINTS_CONFIG.get(sub.submission_type, 0)
                 if points > 0:
+                    daily_cap = market.daily_points_cap if market else 200
                     earned_today = _points_earned_today(sub.user_id, db)
-                    if earned_today >= DAILY_POINTS_CAP:
+                    if earned_today >= daily_cap:
                         points = 0
                         logger.bind(
                             user_id=str(sub.user_id),
                             earned_today=earned_today,
-                            cap=DAILY_POINTS_CAP,
+                            cap=daily_cap,
                         ).info("daily_cap_reached")
-                    elif earned_today + points > DAILY_POINTS_CAP:
-                        points = DAILY_POINTS_CAP - earned_today
+                    elif earned_today + points > daily_cap:
+                        points = daily_cap - earned_today
                         logger.bind(
                             user_id=str(sub.user_id),
                             reduced_to=points,
@@ -152,7 +157,7 @@ def review_submission(
         raise
 
 
-def _apply_submission(sub: Submission, db: Session) -> None:
+def _apply_submission(sub: Submission, db: Session, submitter: User | None = None) -> None:
     """Auto-apply the change described by the approved submission.
 
     Only fields in the whitelists are accepted from submitted_data.
@@ -168,6 +173,8 @@ def _apply_submission(sub: Submission, db: Session) -> None:
             if coords:
                 venue_fields["latitude"], venue_fields["longitude"] = coords
                 logger.bind(name=venue_fields["name"], lat=coords[0], lon=coords[1]).info("venue_geocoded")
+        if submitter:
+            venue_fields["market_id"] = submitter.market_id
         venue = Venue(**venue_fields)
         db.add(venue)
 

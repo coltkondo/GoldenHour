@@ -26,7 +26,7 @@ export const LeaderboardScreen = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const data = await leaderboardAPI.getTop();
+        const data = await leaderboardAPI.getTop(user?.market_slug);
         setEntries(data);
       } catch {
         setLoadError(true);
