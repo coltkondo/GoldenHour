@@ -64,6 +64,7 @@ export const ClusterBlock: React.FC<ClusterBlockProps> = ({
 
 const styles = StyleSheet.create({
   block: {
+    flex: 1,
     borderRadius: 12,
     borderWidth: 1,
     paddingVertical: 6,

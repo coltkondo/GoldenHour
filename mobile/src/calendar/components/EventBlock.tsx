@@ -98,6 +98,7 @@ export const EventBlock: React.FC<EventBlockProps> = ({ event, onPress, compact,
 
 const styles = StyleSheet.create({
   block: {
+    flex: 1,
     borderRadius: 12,
     borderWidth: 1,
     padding: 8,

@@ -120,7 +120,7 @@ export function layoutDay(events: CalendarEvent[]): CalendarEvent[] {
 // ranked ones collapse into a single "N more" cluster block. Keeps the number
 // of individually rendered blocks per slot at or below Miller's 7±2 and, more
 // importantly, Hick's comfortable 3-5 choice set (1 top pick + up to 3 others).
-export const CLUSTER_THRESHOLD = 4;
+export const CLUSTER_THRESHOLD = 9;
 
 export type TimelineItem =
   | {
@@ -227,26 +227,41 @@ export function layoutDayClustered(
     }
   }
 
-  // 4: greedy column packing of all items across the day.
+  // 4: greedy column packing — two passes so every item in a conflict zone
+  // gets the same `columns` count (the widest the zone ever gets), not a
+  // snapshot of how many columns existed when that item was placed.
   const sorted = items.sort((a, b) => a.start - b.start || a.end - b.end);
   const colsEnd: number[] = [];
-  const out: TimelineItem[] = [];
+  const staged: { start: number; end: number; item: TimelineItem; column: number }[] = [];
+
   for (const it of sorted) {
-    let placed = -1;
+    let col = -1;
     for (let c = 0; c < colsEnd.length; c++) {
       if (it.start >= colsEnd[c]) {
-        placed = c;
+        col = c;
         break;
       }
     }
-    if (placed === -1) {
-      placed = colsEnd.length;
+    if (col === -1) {
+      col = colsEnd.length;
       colsEnd.push(it.end);
     } else {
-      colsEnd[placed] = it.end;
+      colsEnd[col] = it.end;
     }
-    const total = colsEnd.length;
-    out.push({ ...it.item, column: placed, columns: total });
+    staged.push({ start: it.start, end: it.end, item: it.item, column: col });
+  }
+
+  // Pass 2: for each item, find the highest column index among every item
+  // whose time range overlaps it, then set columns = that max + 1.
+  const out: TimelineItem[] = [];
+  for (const p of staged) {
+    let maxCol = p.column;
+    for (const q of staged) {
+      if (p.start < q.end && p.end > q.start) {
+        maxCol = Math.max(maxCol, q.column);
+      }
+    }
+    out.push({ ...p.item, column: p.column, columns: maxCol + 1 });
   }
   return out;
 }
