@@ -1,6 +1,8 @@
 import React from 'react';
 import { BeerSteinIcon } from 'phosphor-react-native/src/icons/BeerStein';
 import { CalendarDotsIcon } from 'phosphor-react-native/src/icons/CalendarDots';
+import { CalendarBlankIcon } from 'phosphor-react-native/src/icons/CalendarBlank';
+import { CaretLeftIcon } from 'phosphor-react-native/src/icons/CaretLeft';
 import { StarIcon } from 'phosphor-react-native/src/icons/Star';
 import { GiftIcon } from 'phosphor-react-native/src/icons/Gift';
 import { BellIcon } from 'phosphor-react-native/src/icons/Bell';
@@ -59,6 +61,8 @@ export type IconName = keyof typeof IconMap;
 export const IconMap = {
   deals: 'BeerStein',
   events: 'CalendarDots',
+  calendarBlank: 'CalendarBlank',
+  caretLeft: 'CaretLeft',
   points: 'Star',
   rewards: 'Gift',
   bell: 'Bell',
@@ -113,6 +117,8 @@ export const IconMap = {
 const PHOSPHOR_ICONS: Record<string, React.FC<any>> = {
   BeerStein: BeerSteinIcon,
   CalendarDots: CalendarDotsIcon,
+  CalendarBlank: CalendarBlankIcon,
+  CaretLeft: CaretLeftIcon,
   Star: StarIcon,
   Gift: GiftIcon,
   Bell: BellIcon,

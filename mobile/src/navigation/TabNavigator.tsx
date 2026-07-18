@@ -5,7 +5,7 @@ import { useTheme } from '../theme';
 import { AppIcon } from '../components/icons';
 import { HomeScreen } from '../screens/HomeScreen';
 import { MapScreen } from '../screens/MapScreen';
-import { ExplorerScreen } from '../screens/ExplorerScreen';
+import { ExploreCalendarScreen } from '../calendar/screens/ExploreCalendarScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
 import { SubmitScreen } from '../screens/SubmitScreen';
 
@@ -93,7 +93,7 @@ export const TabNavigator = () => {
       <Tab.Screen name="SubmitTab" component={SubmitScreen} options={{ tabBarLabel: '' }} />
       <Tab.Screen
         name="ExplorerTab"
-        component={ExplorerScreen}
+        component={ExploreCalendarScreen}
         options={{ tabBarLabel: 'Explore' }}
       />
       <Tab.Screen

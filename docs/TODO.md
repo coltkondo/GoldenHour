@@ -2,7 +2,7 @@
 
 _Economy spec: see [ECONOMY_SPEC.md](ECONOMY_SPEC.md). App Store gate detail: see [APP_STORE_COMPLIANCE.md](APP_STORE_COMPLIANCE.md)._
 
-**36 open items.** Reprioritized against one explicit target: **TestFlight build tomorrow.**
+**27 open items.**
 
 ---
 
@@ -10,33 +10,16 @@ _Economy spec: see [ECONOMY_SPEC.md](ECONOMY_SPEC.md). App Store gate detail: se
 
 TestFlight for internal testers (≤100 people) bypasses full App Store review — per APP_STORE_COMPLIANCE.md, none of the July beta gate or August public launch gate items block it. What blocks TestFlight is: (1) defects that make the app broken or wrong for the people who install it, and (2) the App Store submission gate items, which are Apple's baseline even for internal builds. Corroboration, email verification, Redis rate limiting, payout queues — none of these are required for tomorrow. They matter for safely opening the app to strangers, not for getting a working build onto known testers' phones.
 
-**Tomorrow's actual bar: nothing crashes, nothing shows the wrong city's data, nothing gets the build auto-rejected.**
+**The bar: nothing crashes, nothing shows the wrong city's data, nothing gets the build auto-rejected.**
 
 ---
 
-## P0 — Blocks TestFlight tomorrow, full stop
-
-Do these today, in this order. Nothing else matters if these aren't done.
-
-### `fix/home-market-filtering`
-- [ ] **Market filtering on home page** — both markets' data is live and unfiltered right now. This is the most urgent item on the entire list: it directly undoes the reason `market_id` exists. Filter by `user.market_slug` when logged in, device coordinates when anonymous. A tester in Arlington seeing State College bars on day one is a worse first impression than a missing feature.
-
-### `fix/map-loading`
-- [ ] **Map not loading on phone** — confirmed broken on-device, cause undiagnosed (API key vs. permission race). Diagnose first (check console/network errors), then fix. A crashing core screen will get noticed by every single tester in the first five minutes.
-
-### `fix/auth-error-surfacing`
-- [ ] **401 surfacing as raw error** — Submission and Profile tabs show a raw API error instead of a login prompt when logged out. Cheap fix, but "the app shows an error message" is exactly the kind of thing that makes a beta tester assume the whole thing is broken.
-
-### `feature/guest-mode-cta`
-- [ ] **"Continue as guest" button** — anonymous browse already works at the nav level (confirmed in APP_STORE_COMPLIANCE.md), this is exposing an existing capability. Without it, testers may not realize they can browse before signing up. Likely small — do it today.
-
-### `feature/guest-market-picker`
-- [ ] **City picker modal for guests** — when an anonymous user opens the home screen with no `market_slug`, show a one-time bottom sheet: "Which city are you in?" (Arlington / State College). Store choice in AsyncStorage under `gh_guest_market` and pass it to the market filter. When the user registers, their signup coordinates overwrite it permanently. Do NOT prompt for location permission — that belongs to the registration flow, not browse.
+## P0 — Blocks TestFlight, full stop
 
 ### `feature/calendar`
-- [ ] **Rebase `feature/calendar` onto main and work from there** — branch predates the multi-market merge; rebase first, then pick up the calendar work. Sequenced here because it's what we're working on today, right after the guest button.
+- [ ] **Finish and merge `feature/calendar` into main** — branch is active and in progress; merge when calendar work is complete.
 
-### App Store submission gate — required for ANY TestFlight build to process, not just full release
+### App Store submission gate — required for ANY TestFlight build to process
 - [ ] **User-initiated account deletion** — `DELETE /api/v1/users/me` + Delete Account UI. Most commonly auto-rejected item industry-wide.
 - [ ] **Privacy policy** — write, host publicly, link in-app (ProfileScreen, visible logged-out too), enter URL in App Store Connect.
 - [ ] **In-app contact/support path** — Contact/Support row → `mailto:` link. Same email in App Store Connect Support URL field.
@@ -176,3 +159,10 @@ Required before opening to the student body — a TestFlight group of people you
 - [x] Auto-geocode on new_bar approval — Nominatim integration
 - [x] 401 token refresh interceptor — silently refreshes expired tokens
 - [x] Spider Kelly's hours — weekdays 4-7pm, weekends 12-5pm. Confirmed, Arlington CSV corrected.
+- [x] `fix/auth-error-surfacing` — 401 on Submit and Profile now shows a human-readable message instead of raw API text; splash, Login, and Signup all have "Continue as guest" links; dead `QuickSubmitScreen` auth gate added defensively
+- [x] `feature/guest-mode-cta` — "Continue as guest" on splash screen (third button), Login, Signup, Submit auth wall, and Profile auth wall; all route to HomeTab (not last-active tab); splash correctly routes to Login vs Signup vs Main via `initialRouteName`
+- [x] `feature/guest-market-picker` — `GuestMarketPicker` bottom sheet on HomeScreen for anonymous users; choice stored in AsyncStorage `gh_guest_market`; market passed to `venuesAPI.getAll` and `dealsAPI.getToday`; re-prompts only if no stored choice
+- [x] `feature/calendar` rebased onto main — clean TypeScript, market filtering wired (`market_slug` passed to venue fetch; schedule/deal caches cleared on market change); filter sheet stripped to Venue + Day of Week only; timeline expanded to 00:00–23:59 with 72px/hr row height (Teams-style); both Day and Week views open pre-scrolled to 11am; event block height fixed (`flex: 1` on EventBlock and ClusterBlock so blocks fill their computed height rather than sizing to content)
+- [x] Fixed `app.json` hardcoded Android-emulator API URL (`10.0.2.2`) that blocked all physical-device API calls
+- [x] `fix/home-market-filtering` — home page filters by `user.market_slug` (logged in) or `gh_guest_market` (guest); both `venuesAPI.getAll` and `dealsAPI.getToday` scoped to active market
+- [x] `fix/map-loading` — map confirmed loading on physical device

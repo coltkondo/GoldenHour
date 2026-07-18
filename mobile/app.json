@@ -41,6 +41,7 @@
           "locationAlwaysAndWhenInUsePermission": "Allow Golden Hour to use your location to find nearby happy hours."
         }
       ]
-    ]
+    ],
+    "extra": {}
   }
 }
