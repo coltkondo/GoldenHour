@@ -2,7 +2,7 @@
 
 _Economy spec: see [ECONOMY_SPEC.md](ECONOMY_SPEC.md). App Store gate detail: see [APP_STORE_COMPLIANCE.md](APP_STORE_COMPLIANCE.md)._
 
-**29 open items.**
+**27 open items.**
 
 ---
 
@@ -16,11 +16,8 @@ TestFlight for internal testers (≤100 people) bypasses full App Store review �
 
 ## P0 — Blocks TestFlight, full stop
 
-### `fix/home-market-filtering`
-- [ ] **Market filtering on home page** — both markets' data is live and unfiltered right now. This is the most urgent item on the entire list: it directly undoes the reason `market_id` exists. Filter by `user.market_slug` when logged in, device coordinates when anonymous. A tester in Arlington seeing State College bars on day one is a worse first impression than a missing feature.
-
-### `fix/map-loading`
-- [ ] **Map not loading on phone** — confirmed broken on-device, cause undiagnosed (API key vs. permission race). Diagnose first (check console/network errors), then fix. A crashing core screen will get noticed by every single tester in the first five minutes.
+### `feature/calendar`
+- [ ] **Finish and merge `feature/calendar` into main** — branch is active and in progress; merge when calendar work is complete.
 
 ### App Store submission gate — required for ANY TestFlight build to process
 - [ ] **User-initiated account deletion** — `DELETE /api/v1/users/me` + Delete Account UI. Most commonly auto-rejected item industry-wide.
@@ -167,3 +164,5 @@ Required before opening to the student body — a TestFlight group of people you
 - [x] `feature/guest-market-picker` — `GuestMarketPicker` bottom sheet on HomeScreen for anonymous users; choice stored in AsyncStorage `gh_guest_market`; market passed to `venuesAPI.getAll` and `dealsAPI.getToday`; re-prompts only if no stored choice
 - [x] `feature/calendar` rebased onto main — clean TypeScript, market filtering wired (`market_slug` passed to venue fetch; schedule/deal caches cleared on market change); filter sheet stripped to Venue + Day of Week only; timeline expanded to 00:00–23:59 with 72px/hr row height (Teams-style); both Day and Week views open pre-scrolled to 11am; event block height fixed (`flex: 1` on EventBlock and ClusterBlock so blocks fill their computed height rather than sizing to content)
 - [x] Fixed `app.json` hardcoded Android-emulator API URL (`10.0.2.2`) that blocked all physical-device API calls
+- [x] `fix/home-market-filtering` — home page filters by `user.market_slug` (logged in) or `gh_guest_market` (guest); both `venuesAPI.getAll` and `dealsAPI.getToday` scoped to active market
+- [x] `fix/map-loading` — map confirmed loading on physical device
