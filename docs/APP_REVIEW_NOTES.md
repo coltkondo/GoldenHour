@@ -11,7 +11,7 @@ Golden Hour is a community-driven happy hour discovery app. Users browse drink a
 
 --- DEMO ACCOUNT ---
 Email: gldnhr.app@gmail.com
-Password: [INSERT PASSWORD]
+Password: Courtland123!
 This account is a standard user account with pre-existing point history and one approved submission, so the points/rewards flow is visible without needing to submit and wait for admin approval.
 
 --- KEY FLOWS TO TEST ---
@@ -37,7 +37,6 @@ Content references alcohol (bar deals, drink specials). App is rated 17+.
 
 ## Notes for yourself (not in the App Store Connect field)
 
-- Replace `[INSERT PASSWORD]` with the actual password for `gldnhr.app@gmail.com` before submitting.
 - The demo account was created in-app and exists in the production DB. It is already in the Arlington, VA market.
 - If the reviewer's device location is outside Arlington or State College, the guest city picker will appear on the home screen — they can tap it and select Arlington to see real data.
 - The "Redeem" / payout flow is not yet built in-app (P3 item). If Apple asks about the cash reward claim, the current answer is: redemption is handled manually by the team; the in-app payout button is not yet shipped.
