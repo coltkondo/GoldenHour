@@ -2,7 +2,7 @@
 
 _Economy spec: see [ECONOMY_SPEC.md](ECONOMY_SPEC.md). App Store gate detail: see [APP_STORE_COMPLIANCE.md](APP_STORE_COMPLIANCE.md)._
 
-**27 open items.**
+**24 open items.**
 
 ---
 
@@ -20,10 +20,10 @@ TestFlight for internal testers (≤100 people) bypasses full App Store review �
 - [ ] **Finish and merge `feature/calendar` into main** — branch is active and in progress; merge when calendar work is complete.
 
 ### App Store submission gate — required for ANY TestFlight build to process
-- [ ] **User-initiated account deletion** — `DELETE /api/v1/users/me` + Delete Account UI. Most commonly auto-rejected item industry-wide.
-- [ ] **Privacy policy** — write, host publicly, link in-app (ProfileScreen, visible logged-out too), enter URL in App Store Connect.
-- [ ] **In-app contact/support path** — Contact/Support row → `mailto:` link. Same email in App Store Connect Support URL field.
-- [ ] **App Review Notes draft** — document the admin-review content filter, the points/submission loop, include reviewer demo account credentials.
+- [x] **User-initiated account deletion** — `DELETE /auth/me` anonymizes in place (scrubs email/username/password/location, sets `active=False`, retains submissions for FK integrity). Delete Account button in ProfileScreen with destructive Alert confirmation.
+- [ ] **Privacy policy** — page written (`docs/privacy/index.html`, pushed to main). **One manual step remaining:** go to GitHub repo → Settings → Pages → Source: `main` branch, `/docs` folder → Save. URL becomes `https://coltkondo.github.io/GoldenHour/privacy/` and is already hardcoded in ProfileScreen. Also enter that URL in App Store Connect under App Privacy Policy URL.
+- [x] **In-app contact/support path** — "LEGAL & SUPPORT" section in ProfileScreen: Privacy Policy row (opens GitHub Pages URL) and Contact Support row (`mailto:gldnhr.app@gmail.com`). Enter `gldnhr.app@gmail.com` in App Store Connect Support URL field.
+- [ ] **App Review Notes draft** — document the admin-review content filter, the points/submission loop, include reviewer demo account credentials (`gldnhr.app@gmail.com`, signed up in-app).
 
 **If you can only save time in one place: the four App Store items can be done in parallel by a second person while P0 defects get fixed by whoever's in the code.** They don't depend on each other.
 
@@ -166,3 +166,6 @@ Required before opening to the student body — a TestFlight group of people you
 - [x] Fixed `app.json` hardcoded Android-emulator API URL (`10.0.2.2`) that blocked all physical-device API calls
 - [x] `fix/home-market-filtering` — home page filters by `user.market_slug` (logged in) or `gh_guest_market` (guest); both `venuesAPI.getAll` and `dealsAPI.getToday` scoped to active market
 - [x] `fix/map-loading` — map confirmed loading on physical device
+- [x] **Account deletion** — `DELETE /auth/me` anonymizes account in place; Delete Account button in ProfileScreen with confirmation alert
+- [x] **In-app privacy + support links** — "LEGAL & SUPPORT" section in ProfileScreen: Privacy Policy → `coltkondo.github.io/GoldenHour/privacy/`, Contact Support → `mailto:gldnhr.app@gmail.com`
+- [x] **Privacy policy page** — `docs/privacy/index.html` written and pushed; live once GitHub Pages is enabled in repo settings (see P0 checklist)
