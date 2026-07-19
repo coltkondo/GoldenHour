@@ -95,3 +95,23 @@ def refresh_token(current_user: User = Depends(get_current_user)):
 def me(current_user: User = Depends(get_current_user)):
     """Return the currently authenticated user."""
     return current_user
+
+
+@router.delete("/me", status_code=204)
+def delete_account(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Permanently anonymize the account.
+
+    Personal data (email, username, password, location) is scrubbed.
+    Submissions and point history are retained anonymised — they form part
+    of the community-maintained map and cannot be individually removed
+    without degrading data quality for other users.
+    """
+    uid = str(current_user.id)
+    current_user.email = f"deleted_{uid}@deleted.invalid"
+    current_user.username = f"[deleted_{uid[:8]}]"
+    current_user.password_hash = "deleted"
+    current_user.signup_latitude = 0.0
+    current_user.signup_longitude = 0.0
+    current_user.points_balance = 0
+    current_user.active = False
+    db.commit()

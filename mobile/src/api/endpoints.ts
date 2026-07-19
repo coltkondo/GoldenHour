@@ -102,6 +102,10 @@ export const authAPI = {
     );
     return response.data;
   },
+
+  deleteAccount: async () => {
+    await apiClient.delete('/auth/me');
+  },
 };
 
 export const submissionsAPI = {

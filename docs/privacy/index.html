@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — Golden Hour</title>
+  <style>
+    :root {
+      --bg: #FAFAF8;
+      --surface: #FFFFFF;
+      --text: #1C1C1A;
+      --text-secondary: #4A4A47;
+      --muted: #6B6B68;
+      --border: #E5E2DC;
+      --accent: #FF6B35;
+      --accent-soft: rgba(255, 107, 53, 0.08);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111110;
+        --surface: #1A1A18;
+        --text: #EDEDE9;
+        --text-secondary: #B5B5B0;
+        --muted: #8A8A85;
+        --border: #2A2A28;
+        --accent: #FF6B35;
+        --accent-soft: rgba(255, 107, 53, 0.10);
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #111110;
+      --surface: #1A1A18;
+      --text: #EDEDE9;
+      --text-secondary: #B5B5B0;
+      --muted: #8A8A85;
+      --border: #2A2A28;
+      --accent: #FF6B35;
+      --accent-soft: rgba(255, 107, 53, 0.10);
+    }
+    :root[data-theme="light"] {
+      --bg: #FAFAF8;
+      --surface: #FFFFFF;
+      --text: #1C1C1A;
+      --text-secondary: #4A4A47;
+      --muted: #6B6B68;
+      --border: #E5E2DC;
+      --accent: #FF6B35;
+      --accent-soft: rgba(255, 107, 53, 0.08);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Header */
+    .site-header {
+      background: var(--accent);
+      padding: 18px 24px;
+    }
+    .site-header-inner {
+      max-width: 720px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-mark {
+      width: 28px;
+      height: 28px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+    .logo-text {
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+    }
+
+    /* Main */
+    main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    .doc-title {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.6px;
+      line-height: 1.15;
+      color: var(--text);
+      text-wrap: balance;
+      margin-bottom: 8px;
+    }
+    .doc-meta {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 500;
+      margin-bottom: 40px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Contact callout */
+    .contact-callout {
+      background: var(--accent-soft);
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 40px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    .contact-callout a { font-weight: 600; }
+
+    /* Sections */
+    h2 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      color: var(--text);
+      margin-top: 40px;
+      margin-bottom: 14px;
+      padding-top: 40px;
+      border-top: 1px solid var(--border);
+    }
+    h2:first-of-type { margin-top: 0; padding-top: 0; border-top: none; }
+
+    h3 {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--accent);
+      margin-top: 24px;
+      margin-bottom: 8px;
+    }
+
+    p {
+      color: var(--text-secondary);
+      margin-bottom: 14px;
+      font-size: 15px;
+    }
+    p:last-child { margin-bottom: 0; }
+
+    ul {
+      color: var(--text-secondary);
+      font-size: 15px;
+      padding-left: 22px;
+      margin-bottom: 14px;
+    }
+    li { margin-bottom: 6px; }
+    li strong { color: var(--text); font-weight: 600; }
+
+    /* Footer */
+    footer {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 24px 48px;
+      border-top: 1px solid var(--border);
+      padding-top: 32px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    footer a { color: var(--accent); font-weight: 600; }
+
+    @media (max-width: 480px) {
+      .doc-title { font-size: 26px; }
+      h2 { font-size: 17px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <div class="logo-mark">🍺</div>
+    <span class="logo-text">Golden Hour</span>
+  </div>
+</header>
+
+<main>
+  <h1 class="doc-title">Privacy Policy</h1>
+  <p class="doc-meta">Last updated: July 18, 2026</p>
+
+  <div class="contact-callout">
+    Questions about this policy or your data? Email us at <a href="mailto:gldnhr.app@gmail.com">gldnhr.app@gmail.com</a>
+  </div>
+
+  <p>Golden Hour ("we," "us," "the app") is a community-driven happy hour and bar deal discovery app. This policy explains what information we collect, how we use it, and the choices you have.</p>
+
+  <h2>1. Information We Collect</h2>
+
+  <h3>Account information</h3>
+  <p>When you create an account, we collect:</p>
+  <ul>
+    <li><strong>Email address</strong></li>
+    <li><strong>Username</strong></li>
+    <li><strong>Password</strong> — stored as a bcrypt hash. We never store or have access to your plain-text password.</li>
+  </ul>
+
+  <h3>Location</h3>
+  <ul>
+    <li><strong>Signup location</strong> (latitude/longitude) — collected once at registration to determine which local market (e.g. State College, PA or Arlington, VA) your account belongs to. This is required to create an account; Golden Hour is a hyper-local app and cannot function without knowing your general area.</li>
+    <li><strong>Ongoing location</strong>, if you grant permission — used to show you nearby venues and deals on the map. You can browse the app without granting ongoing location access; some map and proximity features will be limited.</li>
+  </ul>
+
+  <h3>Content you submit</h3>
+  <ul>
+    <li><strong>Deal and venue submissions</strong> — new deals, corrections, expiration reports, new bar suggestions, and any notes you attach as proof.</li>
+    <li><strong>Corroborations</strong> — confirmations that an existing deal is still accurate.</li>
+  </ul>
+
+  <h3>Usage and account activity</h3>
+  <ul>
+    <li><strong>Points balance and transaction history</strong> — records of points earned from approved submissions and any redemptions.</li>
+    <li><strong>Submission history</strong> — a record of what you've submitted and its review status (pending, approved, rejected).</li>
+  </ul>
+
+  <h3>What we do NOT currently collect</h3>
+  <p>As of this policy's last update, Golden Hour does not use any third-party analytics, crash reporting, or advertising SDKs (e.g. Firebase, Sentry, Mixpanel). If this changes in the future, we will update this policy before any such tool is enabled.</p>
+
+  <h2>2. How We Use Your Information</h2>
+  <p>We use the information above to:</p>
+  <ul>
+    <li>Create and manage your account</li>
+    <li>Determine which local market you belong to and show you relevant venues, deals, and leaderboard standing for that market</li>
+    <li>Display venues and deals near you on the map</li>
+    <li>Review, verify, and approve or reject submissions</li>
+    <li>Track and award points for approved contributions, and process point redemptions</li>
+    <li>Detect and prevent abuse of the points system</li>
+    <li>Communicate with you about your account or submissions, if needed</li>
+  </ul>
+  <p>We do not sell your personal information. We do not share your personal information with third parties for their own marketing or advertising purposes.</p>
+
+  <h2>3. Cash Rewards and Payouts</h2>
+  <p>Points earned in the app can be redeemed for cash once you reach the reward threshold. Redemption is currently handled manually: you request a payout, and it is sent to you via Venmo by the Golden Hour team. Processing a payout may require you to share your Venmo username with us directly at the time of redemption — this is not collected automatically by the app.</p>
+
+  <h2>4. Data Retention and Account Deletion</h2>
+  <p>You can delete your account at any time from within the app (Profile → Delete Account).</p>
+  <p>When you delete your account:</p>
+  <ul>
+    <li>Your personal information — email, username, and hashed password — is permanently removed or anonymized and cannot be recovered.</li>
+    <li>Your past submissions and point history are <strong>retained in anonymized form</strong>. Your contributions (a verified deal, a corroboration, a venue correction) become part of the shared, community-maintained map that other users rely on. Once anonymized, this data can no longer be linked back to you.</li>
+  </ul>
+  <p>If you have a pending points balance or an in-progress payout at the time of deletion, contact us at the support email above before deleting your account.</p>
+
+  <h2>5. Your Choices</h2>
+  <ul>
+    <li><strong>Browsing without an account:</strong> You can browse the map and view public deals without creating an account or signing in.</li>
+    <li><strong>Location permissions:</strong> You can deny or later revoke location access in your device settings. This limits map features but does not prevent you from using the rest of the app.</li>
+    <li><strong>Account deletion:</strong> See Section 4.</li>
+    <li><strong>Corrections:</strong> If any account information we hold is inaccurate, contact us and we will correct it.</li>
+  </ul>
+
+  <h2>6. Children's Privacy</h2>
+  <p>Golden Hour is not directed at children, and we do not knowingly collect information from anyone under 13. The app involves references to alcohol and is not intended for users under the legal drinking age in their jurisdiction.</p>
+
+  <h2>7. Security</h2>
+  <p>We take reasonable measures to protect your information, including password hashing (bcrypt), encrypted connections, and access controls on our systems. No method of storage or transmission is perfectly secure, and we cannot guarantee absolute security.</p>
+
+  <h2>8. Changes to This Policy</h2>
+  <p>We may update this policy as the app evolves. We will update the "Last updated" date at the top of this page when changes are made. Material changes will be reflected here before they take effect.</p>
+
+  <h2>9. Contact</h2>
+  <p>Questions, concerns, or requests related to your data:</p>
+  <p><a href="mailto:gldnhr.app@gmail.com"><strong>gldnhr.app@gmail.com</strong></a></p>
+</main>
+
+<footer>
+  &copy; 2026 Golden Hour &nbsp;·&nbsp; <a href="mailto:gldnhr.app@gmail.com">gldnhr.app@gmail.com</a>
+</footer>
+
+</body>
+</html>

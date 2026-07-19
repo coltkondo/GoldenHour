@@ -1,11 +1,14 @@
 import React, { useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Linking, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { useAuth } from '../context/AuthContext';
 import { AppIcon } from '../components/icons';
 import { authAPI } from '../api/endpoints';
+
+const SUPPORT_EMAIL = 'gldnhr.app@gmail.com';
+const PRIVACY_URL = 'https://coltkondo.github.io/GoldenHour/privacy/';
 
 export const ProfileScreen = () => {
   const { user, isAdmin, logout, refreshUser } = useAuth();
@@ -55,6 +58,29 @@ export const ProfileScreen = () => {
       </View>
     );
   }
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'This permanently removes your email, username, and password. Your submissions stay anonymised so the map stays accurate for everyone. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete My Account',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await authAPI.deleteAccount();
+              await logout();
+              navigation.navigate('HomeTab');
+            } catch {
+              Alert.alert('Error', 'Could not delete your account. Please try again or contact support.');
+            }
+          },
+        },
+      ],
+    );
+  };
 
   const getInitials = () => {
     const username = user?.username ?? 'Guest';
@@ -199,6 +225,56 @@ export const ProfileScreen = () => {
                   <AppIcon name="logout" size={18} role="urgent" />
                 </View>
                 <Text style={[styles.logoutLabel, { color: d.error }]}>Sign Out</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Legal & Support */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionLabel, { color: d.text }]}>LEGAL & SUPPORT</Text>
+          <View style={[styles.card, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+            <TouchableOpacity
+              style={styles.row}
+              activeOpacity={0.7}
+              onPress={() => Linking.openURL(PRIVACY_URL)}
+            >
+              <View style={styles.rowLeft}>
+                <View style={[styles.rowIcon, { backgroundColor: d.filterInactive }]}>
+                  <AppIcon name="globe" size={18} role="brand" />
+                </View>
+                <Text style={[styles.rowLabel, { color: d.text }]}>Privacy Policy</Text>
+              </View>
+              <AppIcon name="chevronRight" size={16} role="muted" />
+            </TouchableOpacity>
+
+            <View style={[styles.separator, { backgroundColor: d.divider }]} />
+
+            <TouchableOpacity
+              style={styles.row}
+              activeOpacity={0.7}
+              onPress={() => Linking.openURL(`mailto:${SUPPORT_EMAIL}`)}
+            >
+              <View style={styles.rowLeft}>
+                <View style={[styles.rowIcon, { backgroundColor: d.filterInactive }]}>
+                  <AppIcon name="phone" size={18} role="brand" />
+                </View>
+                <Text style={[styles.rowLabel, { color: d.text }]}>Contact Support</Text>
+              </View>
+              <AppIcon name="chevronRight" size={16} role="muted" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Danger Zone */}
+        <View style={styles.section}>
+          <View style={[styles.card, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+            <TouchableOpacity style={styles.row} activeOpacity={0.7} onPress={handleDeleteAccount}>
+              <View style={styles.rowLeft}>
+                <View style={[styles.rowIcon, { backgroundColor: 'rgba(255,59,48,0.10)' }]}>
+                  <AppIcon name="remove" size={18} role="urgent" />
+                </View>
+                <Text style={[styles.rowLabel, { color: d.error }]}>Delete Account</Text>
               </View>
             </TouchableOpacity>
           </View>
