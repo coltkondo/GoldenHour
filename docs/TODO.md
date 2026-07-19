@@ -2,7 +2,7 @@
 
 _Economy spec: see [ECONOMY_SPEC.md](ECONOMY_SPEC.md). App Store gate detail: see [APP_STORE_COMPLIANCE.md](APP_STORE_COMPLIANCE.md)._
 
-**24 open items.**
+**23 open items.**
 
 ---
 
@@ -21,9 +21,9 @@ TestFlight for internal testers (≤100 people) bypasses full App Store review �
 
 ### App Store submission gate — required for ANY TestFlight build to process
 - [x] **User-initiated account deletion** — `DELETE /auth/me` anonymizes in place (scrubs email/username/password/location, sets `active=False`, retains submissions for FK integrity). Delete Account button in ProfileScreen with destructive Alert confirmation.
-- [ ] **Privacy policy** — page written (`docs/privacy/index.html`, pushed to main). **One manual step remaining:** go to GitHub repo → Settings → Pages → Source: `main` branch, `/docs` folder → Save. URL becomes `https://coltkondo.github.io/GoldenHour/privacy/` and is already hardcoded in ProfileScreen. Also enter that URL in App Store Connect under App Privacy Policy URL.
+- [ ] **Privacy policy** — page written (`docs/privacy/index.html`, pushed to main). **Blocked: need cofounder to enable GitHub Pages** (Settings → Pages → Source: main, /docs → Save) or grant repo admin access. URL `https://coltkondo.github.io/GoldenHour/privacy/` is already hardcoded in the app. Once live, also enter that URL in App Store Connect under App Privacy Policy URL.
 - [x] **In-app contact/support path** — "LEGAL & SUPPORT" section in ProfileScreen: Privacy Policy row (opens GitHub Pages URL) and Contact Support row (`mailto:gldnhr.app@gmail.com`). Enter `gldnhr.app@gmail.com` in App Store Connect Support URL field.
-- [ ] **App Review Notes draft** — document the admin-review content filter, the points/submission loop, include reviewer demo account credentials (`gldnhr.app@gmail.com`, signed up in-app).
+- [x] **App Review Notes draft** — see `docs/APP_REVIEW_NOTES.md`. Fill in `[INSERT PASSWORD]` for `gldnhr.app@gmail.com` before submitting to App Store Connect.
 
 **If you can only save time in one place: the four App Store items can be done in parallel by a second person while P0 defects get fixed by whoever's in the code.** They don't depend on each other.
 
