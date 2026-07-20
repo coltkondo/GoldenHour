@@ -2,7 +2,7 @@
 
 _Economy spec: see [ECONOMY_SPEC.md](ECONOMY_SPEC.md). App Store gate detail: see [APP_STORE_COMPLIANCE.md](APP_STORE_COMPLIANCE.md)._
 
-**30 open items.**
+**29 open items.**
 
 ---
 
@@ -48,7 +48,7 @@ _Cofounder returns ~July 28. Do Railway + Vercel then. GitHub Pages also unblock
 These aren't blockers for tomorrow's build, but they're the next thing to break if skipped, and several are already-known risks with a live, unmonitored population using the app.
 
 ### `product/arlington-rehearsal-plan`
-- [ ] **Define Arlington rehearsal plan** _(founder)_ — who gets access first, how many people, what you're watching for (submission flow clarity, verification pace, points loop feel — same four things the runbook named for July). Do this the moment market filtering (P0) ships, so the rehearsal group's first experience is the *correct*, filtered app — not before, not long after.
+- [x] **Define Arlington rehearsal plan** — 10 friends: 8 Arlington, 2 State College. Watching: submission flow, rewards accumulation, DB health, general UX feel. Fixes inform Go-Live scope.
 
 ### `feature/corroboration` (spec-accurate, single branch — do not split across releases)
 - [ ] Corroboration endpoint (`POST /submissions/corroborate/{deal_id}`)
