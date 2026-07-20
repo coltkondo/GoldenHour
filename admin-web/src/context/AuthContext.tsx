@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { API_URL } from '../config';
 
 const TOKEN_KEY = 'gh_admin_token';
 const USER_KEY = 'gh_admin_user';
@@ -43,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    fetch('/api/v1/auth/me', {
+    fetch(`${API_URL}/auth/me`, {
       headers: { Authorization: `Bearer ${storedToken}` },
     })
       .then(async (res) => {
@@ -65,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function login(email: string, password: string) {
-    const res = await fetch('/api/v1/auth/login', {
+    const res = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),

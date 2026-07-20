@@ -1,6 +1,7 @@
 import { Venue, VenueWithDeals, Deal, DealWithVenue, Submission } from '../types';
+import { API_URL } from '../config';
 
-const API_BASE = '/api/v1/admin';
+const API_BASE = `${API_URL}/admin`;
 
 function getAuthHeader(): Record<string, string> {
   const token = localStorage.getItem('gh_admin_token');

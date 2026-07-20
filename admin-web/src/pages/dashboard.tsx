@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { venuesApi, dealsApi } from '../services/adminApi';
 import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../config';
 
 export default function Dashboard() {
   const { token } = useAuth();
@@ -82,13 +83,13 @@ export default function Dashboard() {
           </Link>
           <button
             className="btn btn-secondary"
-            onClick={() => downloadCSV('/api/v1/admin/export/venues.csv', 'venues.csv')}
+            onClick={() => downloadCSV(`${API_URL}/admin/export/venues.csv`, 'venues.csv')}
           >
             Export Bars CSV
           </button>
           <button
             className="btn btn-secondary"
-            onClick={() => downloadCSV('/api/v1/admin/export/deals.csv', 'deals.csv')}
+            onClick={() => downloadCSV(`${API_URL}/admin/export/deals.csv`, 'deals.csv')}
           >
             Export Deals CSV
           </button>

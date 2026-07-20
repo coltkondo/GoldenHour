@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../config';
 
 const navItems = [
   { to: '/', label: 'Dashboard' },
@@ -32,10 +33,10 @@ export default function Layout() {
           ))}
         </ul>
         <div className="sidebar-footer">
-          <a href="/api/v1/admin/export/venues.csv" className="export-link">
+          <a href={`${API_URL}/admin/export/venues.csv`} className="export-link">
             Export Bars CSV
           </a>
-          <a href="/api/v1/admin/export/deals.csv" className="export-link">
+          <a href={`${API_URL}/admin/export/deals.csv`} className="export-link">
             Export Deals CSV
           </a>
           {user && (
