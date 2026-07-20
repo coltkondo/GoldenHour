@@ -2,7 +2,7 @@
 
 _Economy spec: see [ECONOMY_SPEC.md](ECONOMY_SPEC.md). App Store gate detail: see [APP_STORE_COMPLIANCE.md](APP_STORE_COMPLIANCE.md)._
 
-**22 open items.**
+**30 open items.**
 
 ---
 
@@ -15,6 +15,23 @@ TestFlight for internal testers (≤100 people) bypasses full App Store review �
 ---
 
 ## P0 — Blocks TestFlight, full stop
+
+### Infra — required before the mobile app can talk to a live backend
+_Cofounder returns ~July 28. Do Railway + Vercel then. GitHub Pages also unblocks on return._
+
+- [ ] **Railway — spin up project** — log into railway.app, create new project, add a PostgreSQL service. Railway auto-provides `DATABASE_URL`.
+- [ ] **Railway — set environment variables:**
+  - `SECRET_KEY` — generate with `python -c "import secrets; print(secrets.token_hex(32))"`
+  - `DEBUG=False`
+  - `ALLOWED_ORIGINS=https://<admin-vercel-url>.vercel.app` (add after Vercel deploy)
+  - `DATABASE_URL` — auto-injected by Railway, no manual entry needed
+- [ ] **Railway — connect GitHub repo** — Settings → Source: `coltkondo/GoldenHour`, root directory: `backend/`, branch: `main`. Auto-deploys on push.
+- [ ] **Railway — run DB migrations** — after first deploy, open Railway shell and run `alembic upgrade head`
+- [ ] **Railway — import production data** — run `python scripts/import_csv.py` scoped to both markets (Arlington + State College) against the production DB
+- [ ] **Vercel — deploy admin portal** — connect `coltkondo/GoldenHour` repo, root directory: `admin-web/`, set env var `VITE_API_URL=https://<railway-url>/api/v1`
+- [ ] **Railway — update ALLOWED_ORIGINS** — add the Vercel admin URL once you have it
+- [ ] **Mobile — set production API URL** — add `EXPO_PUBLIC_API_URL=https://<railway-url>/api/v1` to EAS build secrets (or `app.json extra.apiUrl` for a non-EAS build)
+- [ ] **GitHub Pages — enable** _(needs cofounder: Settings → Pages → Source: main, /docs)_ — unblocks privacy policy URL going live; also enter URL in App Store Connect
 
 ### App Store submission gate — required for ANY TestFlight build to process
 - [x] **User-initiated account deletion** — `DELETE /auth/me` anonymizes in place (scrubs email/username/password/location, sets `active=False`, retains submissions for FK integrity). Delete Account button in ProfileScreen with destructive Alert confirmation.
