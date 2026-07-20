@@ -6,5 +6,6 @@ from .happy_hour import HappyHourSchedule
 from .user import User
 from .submission import Submission
 from .point_transaction import PointTransaction
+from .corroboration import Corroboration
 
-__all__ = ["Base", "Market", "Venue", "Deal", "HappyHourSchedule", "User", "Submission", "PointTransaction"]
+__all__ = ["Base", "Market", "Venue", "Deal", "HappyHourSchedule", "User", "Submission", "PointTransaction", "Corroboration"]

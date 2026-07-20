@@ -11,11 +11,12 @@ import {
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { useTheme } from '../theme';
-import { dealsAPI, venuesAPI } from '../api/endpoints';
+import { dealsAPI, venuesAPI, submissionsAPI } from '../api/endpoints';
 import { Venue, Deal, HappyHourSchedule, DAY_NAMES } from '../types/api';
 import { FlagReportModal } from '../components/FlagReportModal';
 import { AppIcon } from '../components/icons';
 import { LiveBadge } from '../components/ui/LiveBadge';
+import { useAuth } from '../context/AuthContext';
 
 const { width } = Dimensions.get('window');
 
@@ -39,11 +40,14 @@ export const HappyHourScreen = () => {
   const d = theme.derived;
   const venue = route.params?.venue;
 
+  const { user } = useAuth();
   const [deals, setDeals] = useState<Deal[]>([]);
   const [schedules, setSchedules] = useState<HappyHourSchedule[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [reportModalVisible, setReportModalVisible] = useState(false);
+  // dealId → 'idle' | 'loading' | 'done' | 'already'
+  const [corrState, setCorrState] = useState<Record<string, 'idle' | 'loading' | 'done' | 'already'>>({});
   const today = new Date().getDay();
   const todayDb = today === 0 ? 6 : today - 1;
 
@@ -89,6 +93,18 @@ export const HappyHourScreen = () => {
 
   const getDealIconName = (category: string): 'martini' | 'food' => {
     return category === 'food' ? 'food' : 'martini';
+  };
+
+  const handleCorroborate = async (dealId: string) => {
+    if (!user) return;
+    setCorrState((s) => ({ ...s, [dealId]: 'loading' }));
+    try {
+      await submissionsAPI.corroborate(dealId);
+      setCorrState((s) => ({ ...s, [dealId]: 'done' }));
+    } catch (err: any) {
+      const status = err?.response?.status;
+      setCorrState((s) => ({ ...s, [dealId]: status === 409 ? 'already' : 'idle' }));
+    }
   };
 
   return (
@@ -284,6 +300,39 @@ export const HappyHourScreen = () => {
                         </Text>
                       ) : null}
                     </View>
+                    {user && (() => {
+                      const cs = corrState[deal.id] ?? 'idle';
+                      const confirmed = cs === 'done' || cs === 'already';
+                      return (
+                        <TouchableOpacity
+                          style={[
+                            styles.corrButton,
+                            confirmed
+                              ? { backgroundColor: 'rgba(45,212,160,0.10)', borderColor: d.live }
+                              : { backgroundColor: d.filterInactive, borderColor: 'transparent' },
+                          ]}
+                          onPress={() => handleCorroborate(deal.id)}
+                          disabled={cs !== 'idle'}
+                          activeOpacity={0.7}
+                        >
+                          <AppIcon
+                            name="upvote"
+                            size={12}
+                            role={confirmed ? 'positive' : 'muted'}
+                            weight="fill"
+                          />
+                          <Text style={[
+                            styles.corrButtonText,
+                            { color: confirmed ? d.live : d.textMuted },
+                          ]}>
+                            {cs === 'done' ? '+2 pts · Still accurate' :
+                             cs === 'already' ? 'Confirmed today' :
+                             cs === 'loading' ? 'Confirming…' :
+                             'Still accurate? +2 pts'}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })()}
                   </View>
                 </View>
               ))
@@ -523,6 +572,18 @@ const styles = StyleSheet.create({
   dealPricing: { flexDirection: 'row', alignItems: 'baseline', gap: 6, marginTop: 6 },
   dealPrice: { fontSize: 16, fontWeight: '800', letterSpacing: -0.3 },
   dealOriginal: { fontSize: 12, fontWeight: '500', textDecorationLine: 'line-through' },
+  corrButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    alignSelf: 'flex-start',
+    marginTop: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  corrButtonText: { fontSize: 11, fontWeight: '600' },
 
   infoCard: { borderRadius: 16, borderWidth: 1, padding: 16 },
   infoRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 4 },

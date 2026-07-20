@@ -109,6 +109,11 @@ export const authAPI = {
 };
 
 export const submissionsAPI = {
+  corroborate: async (dealId: string): Promise<{ points_awarded: number }> => {
+    const response = await apiClient.post(`/submissions/corroborate/${dealId}`);
+    return response.data;
+  },
+
   submit: async (data: {
     submission_type: string;
     submitted_data: Record<string, any>;

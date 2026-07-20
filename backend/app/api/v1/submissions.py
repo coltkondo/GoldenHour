@@ -1,11 +1,18 @@
-from fastapi import APIRouter, Depends, Query, Request
+from datetime import date, datetime, timezone
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from sqlalchemy import func as sa_func, update as sa_update
 from sqlalchemy.orm import Session, joinedload
 from typing import List
 from uuid import UUID
 
 from app.core.database import get_db
 from app.core.limiter import limiter
+from app.core.points_config import POINTS_CONFIG
 from app.core.security import get_current_user
+from app.models.corroboration import Corroboration
+from app.models.deal import Deal
+from app.models.point_transaction import PointTransaction
 from app.models.submission import Submission
 from app.models.user import User
 from app.schemas.submission import SubmissionCreate, SubmissionResponse
@@ -33,6 +40,80 @@ def create_submission(
     db.commit()
     db.refresh(sub)
     return SubmissionResponse.from_orm_with_username(sub)
+
+
+@router.post("/corroborate/{deal_id}", status_code=200)
+@limiter.limit("30/minute")
+def corroborate_deal(
+    request: Request,
+    deal_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Confirm a deal is still accurate. Awards 2 pts instantly, once per deal per day."""
+    deal = db.query(Deal).filter(Deal.id == deal_id, Deal.active == True).first()
+    if not deal:
+        raise HTTPException(status_code=404, detail="Deal not found or inactive")
+
+    # Self-corroboration guard — block if user has an approved submission linked to this deal
+    self_sub = db.query(Submission).filter(
+        Submission.user_id == current_user.id,
+        Submission.related_deal_id == deal_id,
+        Submission.status == "approved",
+    ).first()
+    if self_sub:
+        raise HTTPException(status_code=403, detail="You cannot corroborate a deal you submitted")
+
+    today = date.today()
+    existing = db.query(Corroboration).filter(
+        Corroboration.user_id == current_user.id,
+        Corroboration.deal_id == deal_id,
+        Corroboration.corroborated_date == today,
+    ).first()
+    if existing:
+        raise HTTPException(status_code=409, detail="Already corroborated today")
+
+    # Award points subject to daily cap
+    points = POINTS_CONFIG.get("corroborate", 2)
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    earned_today = db.query(sa_func.coalesce(sa_func.sum(PointTransaction.points), 0)).filter(
+        PointTransaction.user_id == current_user.id,
+        PointTransaction.created_at >= today_start,
+        PointTransaction.points > 0,
+    ).scalar()
+
+    market = current_user.market
+    daily_cap = market.daily_points_cap if market else 200
+    if earned_today >= daily_cap:
+        points = 0
+    elif earned_today + points > daily_cap:
+        points = daily_cap - earned_today
+
+    corr = Corroboration(
+        user_id=current_user.id,
+        deal_id=deal_id,
+        points_awarded=points,
+        corroborated_date=today,
+    )
+    db.add(corr)
+
+    if points > 0:
+        db.execute(
+            sa_update(User)
+            .where(User.id == current_user.id)
+            .values(points_balance=User.points_balance + points)
+            .execution_options(synchronize_session="fetch")
+        )
+        db.add(PointTransaction(
+            user_id=current_user.id,
+            submission_id=None,
+            points=points,
+            transaction_type="submission_approved",
+            description="Corroborated deal",
+        ))
+
+    db.commit()
+    return {"points_awarded": points}
 
 
 @router.get("/mine", response_model=List[SubmissionResponse])
