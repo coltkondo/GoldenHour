@@ -2,7 +2,7 @@
 
 _Economy spec: see [ECONOMY_SPEC.md](ECONOMY_SPEC.md). App Store gate detail: see [APP_STORE_COMPLIANCE.md](APP_STORE_COMPLIANCE.md)._
 
-**29 open items.**
+**25 open items.**
 
 ---
 
@@ -50,11 +50,13 @@ These aren't blockers for tomorrow's build, but they're the next thing to break 
 ### `product/arlington-rehearsal-plan`
 - [x] **Define Arlington rehearsal plan** — 10 friends: 8 Arlington, 2 State College. Watching: submission flow, rewards accumulation, DB health, general UX feel. Fixes inform Go-Live scope.
 
-### `feature/corroboration` (spec-accurate, single branch — do not split across releases)
-- [ ] Corroboration endpoint (`POST /submissions/corroborate/{deal_id}`)
-- [ ] No self-corroboration guard
-- [ ] One-per-deal-per-user-per-day guard
-- [ ] Subject to the existing 200pt/day overall cap — **no separate corroboration sub-cap exists in ECONOMY_SPEC.md.** (Prior "25pt" and "20pt sub-cap" items were invented numbers with no spec basis — removed, not fixed.)
+### `feature/corroboration` ✓
+- [x] Corroboration endpoint (`POST /submissions/corroborate/{deal_id}`) — instant 2pt award, no admin review
+- [x] Self-corroboration guard — blocks if user has an approved submission linked to the deal
+- [x] One-per-deal-per-user-per-day guard — unique constraint on `(user_id, deal_id, corroborated_date)`
+- [x] Subject to 200pt/day cap — same daily cap logic as submission approvals
+- [x] Mobile UI — "Still accurate? +2 pts" button on each deal card in HappyHourScreen; guests don't see it; button shows "+2 pts · Still accurate" or "Confirmed today" after tap
+- [x] DB migration — `h1i2j3k4l5m6_add_corroborations_table`; run `alembic upgrade head` on Railway after deploy
 
 ### `feature/duplicate-handling`
 - [ ] Duplicate submission handling — flag likely duplicates in admin review queue; only first-submit earns full points, later ones route to corroboration rate.
