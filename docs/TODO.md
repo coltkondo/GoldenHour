@@ -2,7 +2,7 @@
 
 _Economy spec: see [ECONOMY_SPEC.md](ECONOMY_SPEC.md). App Store gate detail: see [APP_STORE_COMPLIANCE.md](APP_STORE_COMPLIANCE.md)._
 
-**25 open items.**
+**24 open items.**
 
 ---
 
@@ -58,8 +58,12 @@ These aren't blockers for tomorrow's build, but they're the next thing to break 
 - [x] Mobile UI — "Still accurate? +2 pts" button on each deal card in HappyHourScreen; guests don't see it; button shows "+2 pts · Still accurate" or "Confirmed today" after tap
 - [x] DB migration — `h1i2j3k4l5m6_add_corroborations_table`; run `alembic upgrade head` on Railway after deploy
 
-### `feature/duplicate-handling`
-- [ ] Duplicate submission handling — flag likely duplicates in admin review queue; only first-submit earns full points, later ones route to corroboration rate.
+### `feature/duplicate-handling` ✓
+- [x] Duplicate submission detection at submission time — fuzzy-matches submitted `bar_name` against active venues (≥0.75 similarity), then `title` against active deals at that venue (≥0.80); also catches duplicate pending submissions from any user
+- [x] `is_flagged_duplicate` column on submissions — migration `i1j2k3l4m5n6`; run `alembic upgrade head`
+- [x] Flagged dupes earn corroboration rate (2pts) on approval instead of full new_deal rate (50pts)
+- [x] Admin queue: amber "⚠ Dupe?" badge on flagged rows
+- [x] Admin review detail: warning banner explaining reduced points, advises rejection if true dupe
 
 ### `feature/admin-analytics`
 - [ ] Admin analytics (`api/admin/analytics.py` is a stub) — submission volume, signups, top submitters by day. **Moved up from August:** if corroboration ships in P1, you have a new farming surface live with zero visibility into whether it's being abused. Ship the dashboard alongside the feature, not months later.
