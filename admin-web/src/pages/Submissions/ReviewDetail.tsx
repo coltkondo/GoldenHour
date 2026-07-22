@@ -91,6 +91,16 @@ export default function ReviewDetail() {
         )}
       </div>
 
+      {sub.is_flagged_duplicate && (
+        <div className="dupe-warning">
+          <strong>⚠ Possible duplicate</strong> — this deal closely matches an existing active deal
+          or another pending submission for the same bar. If approved, the submitter earns 2 pts
+          (corroboration rate) instead of the standard {'{'}
+          {sub.submission_type === 'new_deal' ? '50' : '—'}
+          {'}'} pts. Reject if it's a true duplicate.
+        </div>
+      )}
+
       {isPending && (
         <div className="auto-apply-notice">
           <strong>On approval:</strong> {AUTO_APPLY_DESCRIPTION[sub.submission_type]}

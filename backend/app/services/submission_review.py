@@ -105,6 +105,8 @@ def review_submission(
             points = 0
             if settings.REWARDS_ENABLED:
                 points = POINTS_CONFIG.get(sub.submission_type, 0)
+                if sub.is_flagged_duplicate:
+                    points = POINTS_CONFIG.get("corroborate", 2)
                 if points > 0:
                     daily_cap = market.daily_points_cap if market else 200
                     earned_today = _points_earned_today(sub.user_id, db)

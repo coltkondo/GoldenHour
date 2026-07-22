@@ -1,4 +1,5 @@
 from datetime import date, datetime, timezone
+from difflib import SequenceMatcher
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import func as sa_func, update as sa_update
@@ -15,7 +16,58 @@ from app.models.deal import Deal
 from app.models.point_transaction import PointTransaction
 from app.models.submission import Submission
 from app.models.user import User
+from app.models.venue import Venue
 from app.schemas.submission import SubmissionCreate, SubmissionResponse
+
+
+def _similarity(a: str, b: str) -> float:
+    return SequenceMatcher(None, a.lower().strip(), b.lower().strip()).ratio()
+
+
+def _is_duplicate(data: SubmissionCreate, db: Session) -> bool:
+    """Return True if this new_deal submission likely duplicates an existing deal or pending submission."""
+    if data.submission_type != "new_deal":
+        return False
+
+    bar_name = (data.submitted_data.get("bar_name") or "").strip()
+    title = (data.submitted_data.get("title") or "").strip()
+    if not bar_name or not title:
+        return False
+
+    # Find the best-matching venue by name or nickname
+    venues = db.query(Venue).filter(Venue.active == True).all()
+    matched_venue = None
+    best_score = 0.0
+    for v in venues:
+        score = max(
+            _similarity(bar_name, v.name),
+            _similarity(bar_name, v.nickname) if v.nickname else 0,
+        )
+        if score > best_score:
+            best_score = score
+            matched_venue = v
+
+    if best_score < 0.75 or matched_venue is None:
+        return False
+
+    # Check active deals at that venue for a similar title
+    active_deals = db.query(Deal).filter(Deal.venue_id == matched_venue.id, Deal.active == True).all()
+    for deal in active_deals:
+        if _similarity(title, deal.title) >= 0.80:
+            return True
+
+    # Check other pending new_deal submissions for the same bar + title
+    pending = db.query(Submission).filter(
+        Submission.submission_type == "new_deal",
+        Submission.status == "pending",
+    ).all()
+    for sub in pending:
+        sub_bar = (sub.submitted_data.get("bar_name") or "").strip()
+        sub_title = (sub.submitted_data.get("title") or "").strip()
+        if _similarity(bar_name, sub_bar) >= 0.75 and _similarity(title, sub_title) >= 0.80:
+            return True
+
+    return False
 
 router = APIRouter(prefix="/submissions", tags=["submissions"])
 
@@ -35,6 +87,7 @@ def create_submission(
         submitted_data=data.submitted_data,
         related_bar_id=data.related_bar_id,
         related_deal_id=data.related_deal_id,
+        is_flagged_duplicate=_is_duplicate(data, db),
     )
     db.add(sub)
     db.commit()

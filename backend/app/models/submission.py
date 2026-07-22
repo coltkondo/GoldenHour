@@ -1,4 +1,5 @@
 from sqlalchemy import (
+    Boolean,
     Column,
     String,
     Text,
@@ -50,6 +51,7 @@ class Submission(Base, TimestampMixin):
     )
     admin_notes = Column(Text, nullable=True)
     points_awarded = Column(Integer, nullable=False, default=0)
+    is_flagged_duplicate = Column(Boolean, nullable=False, default=False)
     reviewed_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     reviewed_at = Column(DateTime(timezone=True), nullable=True)
 

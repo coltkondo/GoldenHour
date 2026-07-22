@@ -25,6 +25,7 @@ class SubmissionResponse(BaseModel):
     status: str
     admin_notes: Optional[str] = None
     points_awarded: int
+    is_flagged_duplicate: bool = False
     reviewed_by: Optional[UUID] = None
     reviewed_at: Optional[datetime] = None
     created_at: datetime

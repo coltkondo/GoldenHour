@@ -59,6 +59,7 @@ export interface Submission {
   status: string;
   admin_notes: string | null;
   points_awarded: number;
+  is_flagged_duplicate: boolean;
   reviewed_by: string | null;
   reviewed_at: string | null;
   created_at: string;

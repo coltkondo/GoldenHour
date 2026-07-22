@@ -106,6 +106,9 @@ export default function PendingReview() {
                   <span className="type-badge">
                     {TYPE_LABELS[sub.submission_type] ?? sub.submission_type}
                   </span>
+                  {sub.is_flagged_duplicate && (
+                    <span className="dupe-badge" title="Possible duplicate deal">⚠ Dupe?</span>
+                  )}
                 </td>
                 <td>{sub.submitter_username}</td>
                 <td>
