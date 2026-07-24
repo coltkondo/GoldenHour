@@ -129,6 +129,35 @@ export const dealsApi = {
   dealTypes: () => request<string[]>('/deals/deal-types'),
 };
 
+// ---------- Analytics ----------
+
+interface DailyCount {
+  date: string;
+  count: number;
+}
+
+export interface AnalyticsSummary {
+  period_days: number;
+  submissions: {
+    total: number;
+    by_status: Record<string, number>;
+    by_type: Record<string, number>;
+    approval_rate: number | null;
+    duplicate_rate: number;
+    daily: DailyCount[];
+  };
+  signups: { total: number; daily: DailyCount[] };
+  corroborations: { total: number; daily: DailyCount[] };
+  top_submitters: { username: string; approved: number; pending: number; points_earned: number }[];
+  top_corroborators: { username: string; count: number; points: number }[];
+  markets: { market_slug: string; submissions: number; signups: number }[];
+}
+
+export const analyticsApi = {
+  summary: (period_days = 7) =>
+    request<AnalyticsSummary>(`/analytics/summary?period_days=${period_days}`),
+};
+
 // ---------- Export ----------
 
 export const exportApi = {

@@ -162,3 +162,4 @@ User picks a start time and number of stops. App builds a route where happy hour
 * Host events at bars directly (GLDNHR-sponsored nights)
 * "Squad mode": share a shortlist of bars with friends, vote on where to go
 * Corroboration geofencing: require GPS proximity to the venue before allowing a corroboration tap — makes the accuracy signal meaningful (someone physically there confirmed it) and prevents farming from home. Venues already have lat/lng, app already has location permission. Simple check, high data quality payoff.
+* Photo evidence on submissions: optional photo attach (camera roll or camera) on New Bar and New Deal submissions. Lets users submit Instagram posts as proof of a deal without being physically present. Cloudinary free tier for storage, URL saved in submitted_data, rendered inline in admin review queue. 2–3 hour lift when the time is right.

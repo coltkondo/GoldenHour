@@ -9,6 +9,7 @@ import DealForm from './pages/Deals/DealForm';
 import PendingReview from './pages/Submissions/PendingReview';
 import ReviewDetail from './pages/Submissions/ReviewDetail';
 import LoginPage from './pages/auth/LoginPage';
+import AnalyticsPage from './pages/Analytics/Usage';
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { token, isAdmin, validating } = useAuth();
@@ -37,6 +38,7 @@ function AppRoutes() {
         <Route path="/deals/:id/edit" element={<DealForm />} />
         <Route path="/submissions" element={<PendingReview />} />
         <Route path="/submissions/:id" element={<ReviewDetail />} />
+        <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

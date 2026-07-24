@@ -7,6 +7,7 @@ const navItems = [
   { to: '/venues', label: 'Bars' },
   { to: '/deals', label: 'Deals' },
   { to: '/submissions', label: 'Submissions' },
+  { to: '/analytics', label: 'Analytics' },
 ];
 
 export default function Layout() {
