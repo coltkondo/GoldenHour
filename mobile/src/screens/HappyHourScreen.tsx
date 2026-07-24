@@ -22,7 +22,7 @@ import { useAuth } from '../context/AuthContext';
 
 const { width } = Dimensions.get('window');
 
-const CORROBORATE_RADIUS_M = 200;
+const CORROBORATE_RADIUS_M = 50;
 
 function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6_371_000;
