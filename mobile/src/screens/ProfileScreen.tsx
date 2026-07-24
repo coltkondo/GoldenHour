@@ -127,7 +127,7 @@ export const ProfileScreen = () => {
           </View>
           <View style={[styles.statDivider, { backgroundColor: d.divider }]} />
           <View style={styles.statItem}>
-            <Text style={[styles.statNum, { color: d.live }]}>—</Text>
+            <Text style={[styles.statNum, { color: d.live }]}>{user.approved_count ?? 0}</Text>
             <Text style={[styles.statLabel, { color: d.textMuted }]}>Approved</Text>
           </View>
         </View>

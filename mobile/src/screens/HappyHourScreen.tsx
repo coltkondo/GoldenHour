@@ -8,7 +8,9 @@ import {
   Dimensions,
   Linking,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
+import * as Location from 'expo-location';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { dealsAPI, venuesAPI, submissionsAPI } from '../api/endpoints';
@@ -19,6 +21,19 @@ import { LiveBadge } from '../components/ui/LiveBadge';
 import { useAuth } from '../context/AuthContext';
 
 const { width } = Dimensions.get('window');
+
+const CORROBORATE_RADIUS_M = 200;
+
+function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6_371_000;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
 type HappyHourRouteParams = {
   HappyHour: { venue: Venue };
@@ -99,6 +114,22 @@ export const HappyHourScreen = () => {
     if (!user) return;
     setCorrState((s) => ({ ...s, [dealId]: 'loading' }));
     try {
+      const { status: permStatus } = await Location.requestForegroundPermissionsAsync();
+      if (permStatus !== 'granted') {
+        Alert.alert('Location required', 'Enable location access to confirm you\'re at this bar.');
+        setCorrState((s) => ({ ...s, [dealId]: 'idle' }));
+        return;
+      }
+      const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      const dist = haversineMeters(
+        pos.coords.latitude, pos.coords.longitude,
+        venue.latitude, venue.longitude,
+      );
+      if (dist > CORROBORATE_RADIUS_M) {
+        Alert.alert('You\'re not at the bar', 'You need to be at the bar to confirm a deal is still accurate.');
+        setCorrState((s) => ({ ...s, [dealId]: 'idle' }));
+        return;
+      }
       await submissionsAPI.corroborate(dealId);
       setCorrState((s) => ({ ...s, [dealId]: 'done' }));
     } catch (err: any) {

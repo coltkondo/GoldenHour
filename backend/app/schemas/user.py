@@ -50,6 +50,7 @@ class UserResponse(BaseModel):
     role: str
     points_balance: int
     market_slug: str | None = None
+    approved_count: int = 0
     created_at: datetime
 
     class Config:

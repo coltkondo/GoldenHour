@@ -67,6 +67,7 @@ export interface AuthUser {
   email: string;
   role: string;
   points_balance: number;
+  approved_count: number;
   market_slug: string | null;
   created_at: string;
 }

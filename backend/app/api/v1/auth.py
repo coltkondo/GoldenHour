@@ -14,6 +14,7 @@ from app.core.security import (
 )
 from app.models.market import Market
 from app.models.user import User
+from app.models.submission import Submission
 from app.schemas.user import UserCreate, UserLogin, UserResponse, Token
 
 
@@ -92,9 +93,15 @@ def refresh_token(current_user: User = Depends(get_current_user)):
 
 
 @router.get("/me", response_model=UserResponse)
-def me(current_user: User = Depends(get_current_user)):
+def me(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Return the currently authenticated user."""
-    return current_user
+    approved_count = db.query(func.count(Submission.id)).filter(
+        Submission.user_id == current_user.id,
+        Submission.status == "approved",
+    ).scalar() or 0
+    data = UserResponse.model_validate(current_user).model_dump()
+    data["approved_count"] = approved_count
+    return data
 
 
 @router.delete("/me", status_code=204)
