@@ -7,5 +7,6 @@ POINTS_CONFIG: dict[str, int] = {
     "bar_closed": 100,
     "deal_update": 50,
     "bar_update": 50,
+    "new_event": 75,
     "corroborate": 2,
 }

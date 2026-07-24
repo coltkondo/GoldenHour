@@ -28,6 +28,7 @@ class Submission(Base, TimestampMixin):
             "new_bar",
             "bar_closed",
             "bar_update",
+            "new_event",
             name="submission_type_enum",
             create_type=False,
         ),

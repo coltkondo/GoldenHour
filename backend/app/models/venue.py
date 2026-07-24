@@ -69,6 +69,7 @@ class Venue(Base, TimestampMixin):
     market = relationship("Market", back_populates="venues")
     deals = relationship("Deal", back_populates="venue")
     schedules = relationship("HappyHourSchedule", back_populates="venue")
+    events = relationship("Event", back_populates="venue", order_by="Event.start_datetime")
 
     def __repr__(self):
         return f"<Venue {self.name} ({self.neighborhood})>"

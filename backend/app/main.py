@@ -12,7 +12,7 @@ from slowapi.middleware import SlowAPIMiddleware
 from app.core.config import settings
 from app.core.limiter import limiter
 from app.core.logging import logger
-from app.api.v1 import venues, deals
+from app.api.v1 import venues, deals, events
 from app.api.v1 import auth, submissions, points, leaderboard
 from app.api.admin import router as admin_router
 from app.api.health import router as health_router
@@ -143,6 +143,7 @@ async def log_requests(request: Request, call_next):
 # Public v1 routers
 app.include_router(venues.router, prefix=settings.API_V1_PREFIX)
 app.include_router(deals.router, prefix=settings.API_V1_PREFIX)
+app.include_router(events.router, prefix=settings.API_V1_PREFIX)
 
 # Auth + user-facing feature routers
 app.include_router(auth.router, prefix=settings.API_V1_PREFIX)

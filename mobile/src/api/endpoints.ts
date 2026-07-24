@@ -1,5 +1,5 @@
 import apiClient from './client';
-import { Venue, Deal, HappyHourSchedule } from '../types/api';
+import { Venue, Deal, HappyHourSchedule, Event } from '../types/api';
 import type { AuthUser, Submission, LeaderboardEntry } from '../types/api';
 
 export const venuesAPI = {
@@ -70,6 +70,20 @@ export const dealsAPI = {
 
   getById: async (dealId: string) => {
     const response = await apiClient.get<Deal>(`/deals/${dealId}`);
+    return response.data;
+  },
+};
+
+export const eventsAPI = {
+  getUpcoming: async (params?: { market_slug?: string | null; venue_id?: string; from_dt?: string; to_dt?: string }) => {
+    const response = await apiClient.get<Event[]>('/events/', {
+      params: { upcoming_only: true, limit: 50, ...params },
+    });
+    return response.data;
+  },
+
+  getByVenue: async (venueId: string) => {
+    const response = await apiClient.get<Event[]>(`/events/by-venue/${venueId}`);
     return response.data;
   },
 };

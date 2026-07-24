@@ -66,6 +66,28 @@ export interface Submission {
   updated_at: string;
 }
 
+export interface Event {
+  id: string;
+  venue_id: string;
+  venue_name: string | null;
+  venue_neighborhood: string | null;
+  series_id: string | null;
+  name: string;
+  description: string | null;
+  event_type: string | null;
+  start_datetime: string;
+  end_datetime: string | null;
+  deal_ids: string[];
+  image_url: string | null;
+  is_sponsored: boolean;
+  is_recurring: boolean;
+  active: boolean;
+  verified: boolean;
+  source: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface AdminUser {
   id: string;
   username: string;

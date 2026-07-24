@@ -1,4 +1,4 @@
-import { Venue, VenueWithDeals, Deal, DealWithVenue, Submission } from '../types';
+import { Venue, VenueWithDeals, Deal, DealWithVenue, Submission, Event } from '../types';
 import { API_URL } from '../config';
 
 const API_BASE = `${API_URL}/admin`;
@@ -127,6 +127,62 @@ export const dealsApi = {
   },
   categories: () => request<string[]>('/deals/categories'),
   dealTypes: () => request<string[]>('/deals/deal-types'),
+};
+
+// ---------- Events ----------
+
+export interface EventCreateParams {
+  venue_id: string;
+  series_id?: string | null;
+  name: string;
+  description?: string | null;
+  event_type?: string | null;
+  start_datetime: string;
+  end_datetime?: string | null;
+  deal_ids?: string[];
+  image_url?: string | null;
+  is_sponsored?: boolean;
+  is_recurring?: boolean;
+  active?: boolean;
+  verified?: boolean;
+  source?: string;
+}
+
+export interface EventUpdateParams extends Partial<Omit<EventCreateParams, 'venue_id' | 'series_id'>> {}
+
+export interface SeriesCreateParams {
+  venue_id: string;
+  name: string;
+  description?: string | null;
+  event_type?: string | null;
+  start_datetimes: string[];
+  end_time_offset_minutes?: number | null;
+  deal_ids?: string[];
+  image_url?: string | null;
+  is_sponsored?: boolean;
+  source?: string;
+}
+
+export const eventsApi = {
+  list: (params: { venue_id?: string; series_id?: string; event_type?: string; active_only?: boolean; upcoming_only?: boolean } = {}) => {
+    const qs = new URLSearchParams();
+    Object.entries(params).forEach(([k, v]) => { if (v !== undefined && v !== null) qs.set(k, String(v)); });
+    return request<Event[]>(`/events/?${qs}`);
+  },
+  get: (id: string) => request<Event>(`/events/${id}`),
+  create: (data: EventCreateParams) =>
+    request<Event>('/events/', { method: 'POST', body: JSON.stringify(data) }),
+  createSeries: (data: SeriesCreateParams) =>
+    request<{ series_id: string; created: number }>('/events/series', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id: string, data: EventUpdateParams) =>
+    request<Event>(`/events/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  updateSeries: (seriesId: string, data: EventUpdateParams) =>
+    request<{ updated: number }>(`/events/series/${seriesId}`, { method: 'PUT', body: JSON.stringify(data) }),
+  toggleActive: (id: string) =>
+    request<{ id: string; active: boolean }>(`/events/${id}/toggle-active`, { method: 'PATCH' }),
+  delete: (id: string) =>
+    fetch(`${API_BASE}/events/${id}`, { method: 'DELETE', headers: getAuthHeader() }),
+  eventTypes: () => request<string[]>('/events/event-types'),
 };
 
 // ---------- Analytics ----------

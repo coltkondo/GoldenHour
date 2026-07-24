@@ -8,6 +8,7 @@ class SubmissionCreate(BaseModel):
     submission_type: Literal[
         "new_deal", "deal_update", "deal_expired",
         "new_bar", "bar_closed", "bar_update",
+        "new_event",
     ]
     submitted_data: dict[str, Any] = Field(default_factory=dict)
     related_bar_id: Optional[UUID] = None

@@ -41,6 +41,7 @@ export const POINTS_CONFIG: Record<string, number> = {
   bar_closed: 100,
   deal_update: 50,
   bar_update: 50,
+  new_event: 75,
   corroborate: 2,
 };
 

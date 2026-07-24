@@ -24,7 +24,7 @@ import type { Venue, Deal, HappyHourSchedule } from '../types/api';
 
 /* ── Types ── */
 
-type FormType = 'new_deal' | 'deal_issue' | 'bar_issue' | 'new_bar';
+type FormType = 'new_deal' | 'deal_issue' | 'bar_issue' | 'new_bar' | 'new_event';
 
 const UI_DAYS = ['Su', 'M', 'Tu', 'W', 'Th', 'F', 'Sa'];
 
@@ -34,6 +34,7 @@ function uiDayToDb(uiDay: number): number {
 
 const FORM_OPTIONS: { type: FormType; label: string; desc: string; pts: number }[] = [
   { type: 'new_deal',   label: 'New HH Deal',      desc: "Found a happy hour deal that's not listed?",       pts: POINTS_CONFIG.new_deal },
+  { type: 'new_event',  label: 'Add Event',         desc: 'Know about an upcoming event at a bar?',          pts: POINTS_CONFIG.new_event },
   { type: 'deal_issue', label: 'Deal Info Wrong',   desc: 'Deal details are incorrect or no longer active?', pts: POINTS_CONFIG.deal_update },
   { type: 'bar_issue',  label: 'Bar Info Wrong',    desc: 'Bar details need updating or bar has closed?',    pts: POINTS_CONFIG.bar_update },
   { type: 'new_bar',    label: 'New Bar',           desc: 'Spotted a bar with happy hour not in the app?',   pts: POINTS_CONFIG.new_bar },
@@ -279,6 +280,12 @@ export const SubmitScreen = () => {
           {formType === 'new_bar' && (
             <NewBarForm
               d={d} venues={[]} venuesLoading={false}
+              onSubmit={handleSubmit} submitting={submitting} submitError={submitError}
+            />
+          )}
+          {formType === 'new_event' && (
+            <NewEventForm
+              d={d} venues={venues} venuesLoading={venuesLoading}
               onSubmit={handleSubmit} submitting={submitting} submitError={submitError}
             />
           )}
@@ -918,6 +925,121 @@ const NewBarForm: React.FC<VenueFormProps> = ({ d, onSubmit, submitting, submitE
         {submitting ? <ActivityIndicator color={d.buttonPrimaryText} /> :
           <Text style={[styles.btnText, { color: d.buttonPrimaryText }]}>
             {REWARDS_ENABLED ? `Submit — Earn ${POINTS_CONFIG.new_bar} pts` : 'Submit'}
+          </Text>}
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+/* ── New Event ── */
+
+const EVENT_TYPES = ['Trivia', 'Live Music', 'Karaoke', 'Theme Night', 'Watch Party', 'Comedy', 'Other'];
+
+const NewEventForm: React.FC<VenueFormProps> = ({ d, venues, venuesLoading, onSubmit, submitting, submitError }) => {
+  const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
+  const [name, setName] = useState('');
+  const [eventType, setEventType] = useState('');
+  const [date, setDate] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
+  const [description, setDescription] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = async () => {
+    setError('');
+    if (!selectedVenue) { setError('Please select a bar.'); return; }
+    if (!name.trim()) { setError('Please enter the event name.'); return; }
+    if (!date.trim()) { setError('Please enter the event date (MM/DD/YYYY).'); return; }
+    if (!startTime.trim()) { setError('Please enter a start time (e.g. 7:00 PM).'); return; }
+    await onSubmit('new_event', {
+      bar_id: selectedVenue.id,
+      bar_name: selectedVenue.name,
+      event_name: name.trim(),
+      event_type: eventType || null,
+      event_date: date.trim(),
+      start_time: startTime.trim(),
+      end_time: endTime.trim() || null,
+      description: description.trim() || null,
+    }, POINTS_CONFIG.new_event);
+  };
+
+  return (
+    <View style={styles.formGap}>
+      <FieldLabel d={d} text="Which bar? *" />
+      <VenueSelector venues={venues} loading={venuesLoading} selected={selectedVenue} onSelect={setSelectedVenue} d={d} />
+
+      <FieldLabel d={d} text="Event name *" />
+      <TextInput
+        style={[styles.textInput, { color: d.text, backgroundColor: d.cardBackground, borderColor: d.border }]}
+        value={name} onChangeText={setName}
+        placeholder="e.g. Monday Night Trivia"
+        placeholderTextColor={d.textHint}
+      />
+
+      <FieldLabel d={d} text="Event type" />
+      <View style={styles.dayRow}>
+        {EVENT_TYPES.map((t) => {
+          const active = eventType === t;
+          return (
+            <TouchableOpacity
+              key={t}
+              style={[styles.dayPill, {
+                backgroundColor: active ? 'rgba(167,139,250,0.12)' : d.filterInactive,
+                borderColor: active ? '#a78bfa' : 'transparent',
+                borderWidth: 1,
+              }]}
+              onPress={() => setEventType(active ? '' : t)}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.dayPillText, { color: active ? '#a78bfa' : d.textMuted }]}>{t}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+      <FieldLabel d={d} text="Date *" />
+      <TextInput
+        style={[styles.textInput, { color: d.text, backgroundColor: d.cardBackground, borderColor: d.border }]}
+        value={date} onChangeText={setDate}
+        placeholder="MM/DD/YYYY"
+        placeholderTextColor={d.textHint}
+        keyboardType="numbers-and-punctuation"
+      />
+
+      <FieldLabel d={d} text="Start time *" />
+      <TextInput
+        style={[styles.textInput, { color: d.text, backgroundColor: d.cardBackground, borderColor: d.border }]}
+        value={startTime} onChangeText={setStartTime}
+        placeholder="e.g. 7:00 PM"
+        placeholderTextColor={d.textHint}
+      />
+
+      <FieldLabel d={d} text="End time" />
+      <TextInput
+        style={[styles.textInput, { color: d.text, backgroundColor: d.cardBackground, borderColor: d.border }]}
+        value={endTime} onChangeText={setEndTime}
+        placeholder="e.g. 9:00 PM (optional)"
+        placeholderTextColor={d.textHint}
+      />
+
+      <FieldLabel d={d} text="Details" />
+      <TextInput
+        style={[styles.textArea, { color: d.text, backgroundColor: d.cardBackground, borderColor: d.border }]}
+        value={description} onChangeText={setDescription}
+        placeholder="Any extra info — cover charge, theme, etc."
+        placeholderTextColor={d.textHint}
+        multiline numberOfLines={3} textAlignVertical="top"
+      />
+
+      {(error || submitError) ? <Text style={[styles.errorText, { color: d.error }]}>{error || submitError}</Text> : null}
+
+      <TouchableOpacity
+        style={[styles.btn, { backgroundColor: '#a78bfa' }, submitting && { opacity: 0.7 }]}
+        onPress={handleSubmit} disabled={submitting} activeOpacity={0.85}
+      >
+        {submitting ? <ActivityIndicator color="#fff" /> :
+          <Text style={[styles.btnText, { color: '#fff' }]}>
+            {REWARDS_ENABLED ? `Submit — Earn ${POINTS_CONFIG.new_event} pts` : 'Submit Event'}
           </Text>}
       </TouchableOpacity>
     </View>

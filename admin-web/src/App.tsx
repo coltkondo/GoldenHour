@@ -10,6 +10,8 @@ import PendingReview from './pages/Submissions/PendingReview';
 import ReviewDetail from './pages/Submissions/ReviewDetail';
 import LoginPage from './pages/auth/LoginPage';
 import AnalyticsPage from './pages/Analytics/Usage';
+import EventList from './pages/Events/EventList';
+import EventForm from './pages/Events/EventForm';
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { token, isAdmin, validating } = useAuth();
@@ -39,6 +41,9 @@ function AppRoutes() {
         <Route path="/submissions" element={<PendingReview />} />
         <Route path="/submissions/:id" element={<ReviewDetail />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
+        <Route path="/events" element={<EventList />} />
+        <Route path="/events/new" element={<EventForm />} />
+        <Route path="/events/:id/edit" element={<EventForm />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

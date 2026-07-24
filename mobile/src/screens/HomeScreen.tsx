@@ -14,8 +14,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { useAuth } from '../context/AuthContext';
-import { venuesAPI, dealsAPI } from '../api/endpoints';
-import { Venue, Deal, HappyHourSchedule, DAY_NAMES } from '../types/api';
+import { venuesAPI, dealsAPI, eventsAPI } from '../api/endpoints';
+import { Venue, Deal, HappyHourSchedule, Event, DAY_NAMES } from '../types/api';
 import { formatScheduleRange, parseTimeString } from '../utils/scheduleUtils';
 import { AppIcon } from '../components/icons';
 import { REWARDS_ENABLED } from '../config/constants';
@@ -51,6 +51,7 @@ interface VenueGroup {
   venueId: string;
   venueName: string;
   timeGroups: TimeGroup[];
+  events: Event[];
 }
 
 function isCurrentlyLive(schedule: HappyHourSchedule | undefined): boolean {
@@ -78,11 +79,16 @@ function matchesFilter(deal: Deal, filter: FilterCategory): boolean {
   return keywords.some((kw) => searchText.includes(kw));
 }
 
-function groupDealsByVenue(deals: DealWithSchedule[]): VenueGroup[] {
+function groupDealsByVenue(deals: DealWithSchedule[], venueEvents: Map<string, Event[]>): VenueGroup[] {
   const venueMap = new Map<string, VenueGroup>();
   for (const deal of deals) {
     if (!venueMap.has(deal.venue_id)) {
-      venueMap.set(deal.venue_id, { venueId: deal.venue_id, venueName: deal.venueName, timeGroups: [] });
+      venueMap.set(deal.venue_id, {
+        venueId: deal.venue_id,
+        venueName: deal.venueName,
+        timeGroups: [],
+        events: venueEvents.get(deal.venue_id) ?? [],
+      });
     }
     const group = venueMap.get(deal.venue_id)!;
     const timeKey = deal.schedule ? `${deal.schedule.start_time}-${deal.schedule.end_time}` : 'all-day';
@@ -108,6 +114,7 @@ export const HomeScreen = () => {
   const [venues, setVenues] = useState<Venue[]>([]);
   const [todayDeals, setTodayDeals] = useState<Deal[]>([]);
   const [schedules, setSchedules] = useState<Map<string, HappyHourSchedule>>(new Map());
+  const [venueEvents, setVenueEvents] = useState<Map<string, Event[]>>(new Map());
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activeFilter, setActiveFilter] = useState<FilterCategory>('All');
@@ -145,13 +152,24 @@ export const HomeScreen = () => {
   const loadData = async (marketSlug: string | null) => {
     try {
       setLoading(true);
-      const [venueData, dealData] = await Promise.all([
+      const now = new Date();
+      const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+      const [venueData, dealData, eventData] = await Promise.all([
         venuesAPI.getAll({ limit: 100, market_slug: marketSlug }),
         dealsAPI.getToday(marketSlug),
+        eventsAPI.getUpcoming({ market_slug: marketSlug, from_dt: now.toISOString(), to_dt: endOfToday.toISOString() }).catch(() => [] as Event[]),
       ]);
       if (!isMounted.current) return;
       setVenues(venueData);
       setTodayDeals(dealData);
+
+      const evMap = new Map<string, Event[]>();
+      for (const ev of eventData) {
+        const list = evMap.get(ev.venue_id) ?? [];
+        list.push(ev);
+        evMap.set(ev.venue_id, list);
+      }
+      setVenueEvents(evMap);
 
       const venueIds = [...new Set(dealData.map((d) => d.venue_id))];
       const scheduleSets = await Promise.all(
@@ -159,7 +177,7 @@ export const HomeScreen = () => {
       );
       if (!isMounted.current) return;
 
-      const today = new Date().getDay();
+      const today = now.getDay();
       const todayDb = today === 0 ? 6 : today - 1;
       const newMap = new Map<string, HappyHourSchedule>();
       for (const scheds of scheduleSets) {
@@ -219,8 +237,8 @@ export const HomeScreen = () => {
     });
   }, [filteredDeals]);
 
-  const happeningNowGroups = useMemo(() => groupDealsByVenue(happeningNow), [happeningNow]);
-  const comingUpGroups = useMemo(() => groupDealsByVenue(comingUp), [comingUp]);
+  const happeningNowGroups = useMemo(() => groupDealsByVenue(happeningNow, venueEvents), [happeningNow, venueEvents]);
+  const comingUpGroups = useMemo(() => groupDealsByVenue(comingUp, venueEvents), [comingUp, venueEvents]);
 
   const navigateToVenue = (venueId: string) => {
     const venue = venueMap.get(venueId);
@@ -419,6 +437,8 @@ interface VenueGroupCardProps {
   labelColor: string;
 }
 
+const EVENT_COLOR = '#a78bfa';
+
 const VenueGroupCard: React.FC<VenueGroupCardProps> = ({ group, d, onPress, labelColor }) => (
   <Pressable
     style={({ pressed }) => [styles.venueGroupRow, pressed && { backgroundColor: d.filterInactive }]}
@@ -433,6 +453,13 @@ const VenueGroupCard: React.FC<VenueGroupCardProps> = ({ group, d, onPress, labe
     <View style={[styles.verticalDivider, { backgroundColor: d.divider }]} />
 
     <View style={styles.timeGroupsCol}>
+      {group.events.map((ev) => (
+        <View key={ev.id} style={styles.eventBanner}>
+          <Text style={styles.eventBannerText} numberOfLines={2}>
+            {ev.name}
+          </Text>
+        </View>
+      ))}
       {group.timeGroups.map((tg) => (
         <View key={tg.key} style={styles.timeGroup}>
           <Text style={[styles.timeGroupLabel, { color: labelColor }]}>{tg.label}</Text>
@@ -523,4 +550,19 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   browseBtnText: { fontSize: 14, fontWeight: '700' },
+
+  eventBanner: {
+    backgroundColor: 'rgba(167, 139, 250, 0.12)',
+    borderLeftWidth: 2,
+    borderLeftColor: EVENT_COLOR,
+    borderRadius: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  eventBannerText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: EVENT_COLOR,
+    letterSpacing: 0.1,
+  },
 });
