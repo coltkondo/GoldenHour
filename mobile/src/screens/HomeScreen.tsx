@@ -20,7 +20,6 @@ import { formatScheduleRange, parseTimeString } from '../utils/scheduleUtils';
 import { AppIcon } from '../components/icons';
 import { REWARDS_ENABLED } from '../config/constants';
 import { LiveBadge } from '../components/ui/LiveBadge';
-import { StatusDot } from '../components/ui/StatusDot';
 import { GuestMarketPicker } from '../components/GuestMarketPicker';
 
 const GUEST_MARKET_KEY = 'gh_guest_market';
@@ -40,6 +39,18 @@ interface DealWithSchedule extends Deal {
   schedule?: HappyHourSchedule;
   venueName: string;
   isLiveNow: boolean;
+}
+
+interface TimeGroup {
+  key: string;
+  label: string;
+  deals: DealWithSchedule[];
+}
+
+interface VenueGroup {
+  venueId: string;
+  venueName: string;
+  timeGroups: TimeGroup[];
 }
 
 function isCurrentlyLive(schedule: HappyHourSchedule | undefined): boolean {
@@ -65,6 +76,27 @@ function matchesFilter(deal: Deal, filter: FilterCategory): boolean {
   const keywords = FILTER_KEYWORDS[filter] ?? [];
   const searchText = `${deal.title} ${deal.category} ${deal.description ?? ''} ${(deal.items ?? []).join(' ')}`.toLowerCase();
   return keywords.some((kw) => searchText.includes(kw));
+}
+
+function groupDealsByVenue(deals: DealWithSchedule[]): VenueGroup[] {
+  const venueMap = new Map<string, VenueGroup>();
+  for (const deal of deals) {
+    if (!venueMap.has(deal.venue_id)) {
+      venueMap.set(deal.venue_id, { venueId: deal.venue_id, venueName: deal.venueName, timeGroups: [] });
+    }
+    const group = venueMap.get(deal.venue_id)!;
+    const timeKey = deal.schedule ? `${deal.schedule.start_time}-${deal.schedule.end_time}` : 'all-day';
+    let tg = group.timeGroups.find((t) => t.key === timeKey);
+    if (!tg) {
+      const label = deal.schedule
+        ? `HH (${formatScheduleRange(deal.schedule.start_time, deal.schedule.end_time, '')})`
+        : 'All Day';
+      tg = { key: timeKey, label, deals: [] };
+      group.timeGroups.push(tg);
+    }
+    tg.deals.push(deal);
+  }
+  return Array.from(venueMap.values());
 }
 
 export const HomeScreen = () => {
@@ -187,6 +219,9 @@ export const HomeScreen = () => {
     });
   }, [filteredDeals]);
 
+  const happeningNowGroups = useMemo(() => groupDealsByVenue(happeningNow), [happeningNow]);
+  const comingUpGroups = useMemo(() => groupDealsByVenue(comingUp), [comingUp]);
+
   const navigateToVenue = (venueId: string) => {
     const venue = venueMap.get(venueId);
     if (venue) navigation.navigate('HappyHour', { venue });
@@ -294,12 +329,17 @@ export const HomeScreen = () => {
             )}
           </View>
 
-          {happeningNow.length > 0 ? (
+          {happeningNowGroups.length > 0 ? (
             <View style={[styles.dealList, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
-              {happeningNow.map((deal, index) => (
-                <React.Fragment key={deal.id}>
-                  <DealRow deal={deal} d={d} onPress={() => navigateToVenue(deal.venue_id)} isLive />
-                  {index < happeningNow.length - 1 && (
+              {happeningNowGroups.map((group, index) => (
+                <React.Fragment key={group.venueId}>
+                  <VenueGroupCard
+                    group={group}
+                    d={d}
+                    onPress={() => navigateToVenue(group.venueId)}
+                    labelColor={d.live}
+                  />
+                  {index < happeningNowGroups.length - 1 && (
                     <View style={[styles.separator, { backgroundColor: d.divider }]} />
                   )}
                 </React.Fragment>
@@ -317,7 +357,7 @@ export const HomeScreen = () => {
         </View>
 
         {/* ── Coming Up Tonight ── */}
-        {comingUp.length > 0 && (
+        {comingUpGroups.length > 0 && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={[styles.sectionTitle, { color: d.text }]}>Coming Up Tonight</Text>
@@ -327,10 +367,15 @@ export const HomeScreen = () => {
             </View>
 
             <View style={[styles.dealList, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
-              {comingUp.map((deal, index) => (
-                <React.Fragment key={deal.id}>
-                  <DealRow deal={deal} d={d} onPress={() => navigateToVenue(deal.venue_id)} />
-                  {index < comingUp.length - 1 && (
+              {comingUpGroups.map((group, index) => (
+                <React.Fragment key={group.venueId}>
+                  <VenueGroupCard
+                    group={group}
+                    d={d}
+                    onPress={() => navigateToVenue(group.venueId)}
+                    labelColor={d.primary}
+                  />
+                  {index < comingUpGroups.length - 1 && (
                     <View style={[styles.separator, { backgroundColor: d.divider }]} />
                   )}
                 </React.Fragment>
@@ -365,80 +410,42 @@ export const HomeScreen = () => {
   );
 };
 
-/* ── Helpers ── */
+/* ── Venue Group Card ── */
 
-const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-function formatValidThrough(dateStr: string): string {
-  const [, m, d] = dateStr.split('-').map(Number);
-  return `Thru ${MONTH_SHORT[m - 1]} ${d}`;
-}
-
-/* ── Deal Row Component ── */
-
-interface DealRowProps {
-  deal: DealWithSchedule;
+interface VenueGroupCardProps {
+  group: VenueGroup;
   d: any;
   onPress: () => void;
-  isLive?: boolean;
+  labelColor: string;
 }
 
-const DealRow: React.FC<DealRowProps> = ({ deal, d, onPress, isLive }) => {
-  const timeLabel = formatScheduleRange(deal.schedule?.start_time, deal.schedule?.end_time, '');
-  const priceDisplay = deal.deal_price
-    ? `$${deal.deal_price}`
-    : deal.discount_percentage
-      ? `${deal.discount_percentage}% off`
-      : null;
+const VenueGroupCard: React.FC<VenueGroupCardProps> = ({ group, d, onPress, labelColor }) => (
+  <Pressable
+    style={({ pressed }) => [styles.venueGroupRow, pressed && { backgroundColor: d.filterInactive }]}
+    onPress={onPress}
+  >
+    <View style={styles.venueNameCol}>
+      <Text style={[styles.venueGroupName, { color: d.text }]} numberOfLines={3}>
+        {group.venueName}
+      </Text>
+    </View>
 
-  return (
-    <Pressable
-      style={({ pressed }) => [styles.dealRow, pressed && { backgroundColor: d.filterInactive }]}
-      onPress={onPress}
-    >
-      <View style={styles.dealRowMain}>
-        <View style={styles.dealRowTop}>
-          <Text style={[styles.dealTitle, { color: d.text }]} numberOfLines={1}>
-            {deal.title}
+    <View style={[styles.verticalDivider, { backgroundColor: d.divider }]} />
+
+    <View style={styles.timeGroupsCol}>
+      {group.timeGroups.map((tg) => (
+        <View key={tg.key} style={styles.timeGroup}>
+          <Text style={[styles.timeGroupLabel, { color: labelColor }]}>{tg.label}</Text>
+          <Text style={[styles.timeGroupDeals, { color: d.text }]} numberOfLines={3}>
+            {tg.deals.map((deal) => deal.title).join(', ')}
           </Text>
-          {priceDisplay && (
-            <Text style={[styles.dealPrice, { color: d.primary }]}>{priceDisplay}</Text>
-          )}
         </View>
-        <View style={styles.dealRowMeta}>
-          <Text style={[styles.dealVenue, { color: d.textMuted }]} numberOfLines={1}>
-            {deal.venueName}
-          </Text>
-          <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
-            {deal.valid_through && (
-              <View style={[styles.timeBadge, { backgroundColor: 'rgba(245,166,35,0.10)', borderColor: d.primary, borderWidth: 1 }]}>
-                <Text style={[styles.timeText, { color: d.primary }]}>
-                  {formatValidThrough(deal.valid_through)}
-                </Text>
-              </View>
-            )}
-            {timeLabel ? (
-              <View style={[
-                styles.timeBadge,
-                {
-                  backgroundColor: isLive ? 'rgba(45,212,160,0.12)' : d.filterInactive,
-                  borderColor: isLive ? d.live : 'transparent',
-                  borderWidth: isLive ? 1 : 0,
-                },
-              ]}>
-                {isLive && <StatusDot status="live" size={5} pulse={false} />}
-                <Text style={[styles.timeText, { color: isLive ? d.live : d.textMuted }]}>
-                  {timeLabel}
-                </Text>
-              </View>
-            ) : null}
-          </View>
-        </View>
-      </View>
-      <AppIcon name="chevronRight" size={14} role="muted" />
-    </Pressable>
-  );
-};
+      ))}
+    </View>
+
+    <AppIcon name="chevronRight" size={14} role="muted" />
+  </Pressable>
+);
 
 /* ── Styles ── */
 
@@ -485,28 +492,20 @@ const styles = StyleSheet.create({
   dealList: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
   separator: { height: 0.5, marginLeft: 16 },
 
-  dealRow: {
+  venueGroupRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
+    paddingVertical: 16,
     paddingHorizontal: 16,
-    gap: 8,
+    gap: 12,
   },
-  dealRowMain: { flex: 1, minWidth: 0 },
-  dealRowTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
-  dealTitle: { fontSize: 15, fontWeight: '600', flex: 1 },
-  dealPrice: { fontSize: 16, fontWeight: '800' },
-  dealRowMeta: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 },
-  dealVenue: { fontSize: 13, fontWeight: '500' },
-  timeBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-  },
-  timeText: { fontSize: 11, fontWeight: '600' },
+  venueNameCol: { width: 88, flexShrink: 0 },
+  venueGroupName: { fontSize: 13, fontWeight: '800', letterSpacing: -0.1, lineHeight: 18 },
+  verticalDivider: { width: 1, alignSelf: 'stretch', marginVertical: 2 },
+  timeGroupsCol: { flex: 1, gap: 10 },
+  timeGroup: { gap: 2 },
+  timeGroupLabel: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.6 },
+  timeGroupDeals: { fontSize: 14, fontWeight: '500', lineHeight: 20 },
 
   emptyCard: {
     borderRadius: 16,
