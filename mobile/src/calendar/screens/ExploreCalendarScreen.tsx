@@ -152,34 +152,22 @@ const EventsListView: React.FC = () => {
     );
   }
 
-  if (error) {
-    return (
-      <View style={styles.center}>
-        <AppIcon name="warning" size={32} role="urgent" />
-        <Text style={[styles.errorText, { color: d.text }]}>{error}</Text>
-        <TouchableOpacity style={[styles.retry, { borderColor: d.border }]} onPress={load}>
-          <Text style={[styles.retryText, { color: EVENT_COLOR }]}>Retry</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
   const sections = groupEventsByDate(events);
 
   return (
     <ScrollView
-      contentContainerStyle={[styles.eventsScroll, sections.length === 0 && styles.eventsScrollEmpty]}
+      contentContainerStyle={[styles.eventsScroll, (error || sections.length === 0) && styles.eventsScrollEmpty]}
       showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={EVENT_COLOR} />
       }
     >
-      {sections.length === 0 ? (
+      {(error || sections.length === 0) ? (
         <View style={styles.center}>
           <AppIcon name="clock" size={32} role="muted" />
-          <Text style={[styles.emptyTitle, { color: d.text }]}>No upcoming events</Text>
+          <Text style={[styles.emptyTitle, { color: d.text }]}>Events coming soon</Text>
           <Text style={[styles.emptySubtext, { color: d.textMuted }]}>
-            Check back soon or submit an event you know about
+            We're just getting started — check back soon
           </Text>
         </View>
       ) : (

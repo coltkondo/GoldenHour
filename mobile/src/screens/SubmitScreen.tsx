@@ -933,32 +933,47 @@ const NewBarForm: React.FC<VenueFormProps> = ({ d, onSubmit, submitting, submitE
 
 /* ── New Event ── */
 
-const EVENT_TYPES = ['Trivia', 'Live Music', 'Karaoke', 'Theme Night', 'Watch Party', 'Comedy', 'Other'];
+const EVENT_TYPES = ['Trivia', 'Karaoke', 'Watch Party', 'Comedy', 'Other'];
 
 const NewEventForm: React.FC<VenueFormProps> = ({ d, venues, venuesLoading, onSubmit, submitting, submitError }) => {
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [name, setName] = useState('');
   const [eventType, setEventType] = useState('');
+  const [customEventType, setCustomEventType] = useState('');
   const [date, setDate] = useState('');
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
+  const [startHour, setStartHour] = useState('');
+  const [startMin, setStartMin] = useState('');
+  const [startAm, setStartAm] = useState(true);
+  const [endHour, setEndHour] = useState('');
+  const [endMin, setEndMin] = useState('');
+  const [endAm, setEndAm] = useState(true);
   const [description, setDescription] = useState('');
   const [error, setError] = useState('');
+
+  const resolvedEventType = eventType === 'Other' ? customEventType.trim() : eventType;
+
+  const toTime24 = (h: string, m: string, am: boolean) => {
+    const hour = parseInt(h || '0', 10);
+    const min = parseInt(m || '0', 10);
+    const h24 = am ? (hour === 12 ? 0 : hour) : (hour === 12 ? 12 : hour + 12);
+    return `${String(h24).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
+  };
 
   const handleSubmit = async () => {
     setError('');
     if (!selectedVenue) { setError('Please select a bar.'); return; }
     if (!name.trim()) { setError('Please enter the event name.'); return; }
+    if (eventType === 'Other' && !customEventType.trim()) { setError('Please describe the event type.'); return; }
     if (!date.trim()) { setError('Please enter the event date (MM/DD/YYYY).'); return; }
-    if (!startTime.trim()) { setError('Please enter a start time (e.g. 7:00 PM).'); return; }
+    if (!startHour.trim()) { setError('Please enter a start time.'); return; }
     await onSubmit('new_event', {
       bar_id: selectedVenue.id,
       bar_name: selectedVenue.name,
       event_name: name.trim(),
-      event_type: eventType || null,
+      event_type: resolvedEventType || null,
       event_date: date.trim(),
-      start_time: startTime.trim(),
-      end_time: endTime.trim() || null,
+      start_time: toTime24(startHour, startMin, startAm),
+      end_time: endHour.trim() ? toTime24(endHour, endMin, endAm) : null,
       description: description.trim() || null,
     }, POINTS_CONFIG.new_event);
   };
@@ -988,7 +1003,7 @@ const NewEventForm: React.FC<VenueFormProps> = ({ d, venues, venuesLoading, onSu
                 borderColor: active ? '#a78bfa' : 'transparent',
                 borderWidth: 1,
               }]}
-              onPress={() => setEventType(active ? '' : t)}
+              onPress={() => { setEventType(active ? '' : t); setCustomEventType(''); }}
               activeOpacity={0.7}
             >
               <Text style={[styles.dayPillText, { color: active ? '#a78bfa' : d.textMuted }]}>{t}</Text>
@@ -996,6 +1011,16 @@ const NewEventForm: React.FC<VenueFormProps> = ({ d, venues, venuesLoading, onSu
           );
         })}
       </View>
+      {eventType === 'Other' && (
+        <TextInput
+          style={[styles.textInput, { color: d.text, backgroundColor: d.cardBackground, borderColor: d.border }]}
+          value={customEventType}
+          onChangeText={setCustomEventType}
+          placeholder="e.g. Poker Night, Paint & Sip..."
+          placeholderTextColor={d.textHint}
+          autoFocus
+        />
+      )}
 
       <FieldLabel d={d} text="Date *" />
       <TextInput
@@ -1006,21 +1031,18 @@ const NewEventForm: React.FC<VenueFormProps> = ({ d, venues, venuesLoading, onSu
         keyboardType="numbers-and-punctuation"
       />
 
-      <FieldLabel d={d} text="Start time *" />
-      <TextInput
-        style={[styles.textInput, { color: d.text, backgroundColor: d.cardBackground, borderColor: d.border }]}
-        value={startTime} onChangeText={setStartTime}
-        placeholder="e.g. 7:00 PM"
-        placeholderTextColor={d.textHint}
-      />
-
-      <FieldLabel d={d} text="End time" />
-      <TextInput
-        style={[styles.textInput, { color: d.text, backgroundColor: d.cardBackground, borderColor: d.border }]}
-        value={endTime} onChangeText={setEndTime}
-        placeholder="e.g. 9:00 PM (optional)"
-        placeholderTextColor={d.textHint}
-      />
+      <FieldLabel d={d} text="Time range *" />
+      <View style={styles.timeRangeRow}>
+        <TimePicker
+          label="Start" hour={startHour} minute={startMin} isAm={startAm}
+          onHour={setStartHour} onMin={setStartMin} onToggleAmPm={() => setStartAm((a) => !a)} d={d}
+        />
+        <Text style={[styles.timeRangeDash, { color: d.textMuted }]}>—</Text>
+        <TimePicker
+          label="End (opt.)" hour={endHour} minute={endMin} isAm={endAm}
+          onHour={setEndHour} onMin={setEndMin} onToggleAmPm={() => setEndAm((a) => !a)} d={d}
+        />
+      </View>
 
       <FieldLabel d={d} text="Details" />
       <TextInput
