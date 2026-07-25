@@ -20,7 +20,7 @@ const getLocalApiUrl = (): string => {
 };
 
 const LOCAL_API = getLocalApiUrl();
-const PRODUCTION_API = 'https://goldenhour-production.up.railway.app/api/v1';
+const PRODUCTION_API = 'https://goldenhour-production-45a5.up.railway.app/api/v1';
 
 // Use local backend in dev, production in release builds
 export const API_URL = __DEV__ ? LOCAL_API : PRODUCTION_API;
