@@ -23,9 +23,20 @@ from slowapi.util import get_remote_address
 from app.core.config import settings
 from app.core.logging import logger
 
-try:
+
+def _redis_reachable(url: str) -> bool:
+    try:
+        import redis as redis_lib
+        r = redis_lib.from_url(url, socket_connect_timeout=2)
+        r.ping()
+        return True
+    except Exception:
+        return False
+
+
+if _redis_reachable(settings.REDIS_URL):
     limiter = Limiter(key_func=get_remote_address, storage_uri=settings.REDIS_URL)
     logger.info("rate_limiter_using_redis")
-except Exception:
+else:
     limiter = Limiter(key_func=get_remote_address)
     logger.warning("rate_limiter_fallback_to_memory")
