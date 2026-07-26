@@ -4,6 +4,7 @@ import { venuesApi } from '../../services/adminApi';
 
 interface FormData {
   name: string;
+  nickname: string;
   address: string;
   latitude: string;
   longitude: string;
@@ -19,6 +20,7 @@ interface FormData {
 
 const emptyForm: FormData = {
   name: '',
+  nickname: '',
   address: '',
   latitude: '',
   longitude: '',
@@ -48,6 +50,7 @@ export default function VenueForm() {
         .then((venue) => {
           setForm({
             name: venue.name || '',
+            nickname: venue.nickname || '',
             address: venue.address || '',
             latitude: venue.latitude?.toString() || '',
             longitude: venue.longitude?.toString() || '',
@@ -78,9 +81,10 @@ export default function VenueForm() {
 
     const payload = {
       name: form.name,
+      nickname: form.nickname || null,
       address: form.address,
-      latitude: parseFloat(form.latitude) || 0,
-      longitude: parseFloat(form.longitude) || 0,
+      latitude: form.latitude ? parseFloat(form.latitude) : null,
+      longitude: form.longitude ? parseFloat(form.longitude) : null,
       phone: form.phone || null,
       website: form.website || null,
       neighborhood: form.neighborhood || null,
@@ -116,29 +120,31 @@ export default function VenueForm() {
             <input name="name" value={form.name} onChange={handleChange} required />
           </div>
           <div className="form-group">
+            <label>Nickname <span style={{ color: '#aaa', fontWeight: 400 }}>(shown in app)</span></label>
+            <input name="nickname" value={form.nickname} onChange={handleChange} placeholder="e.g. Champs, Pickles, The Phyrst" />
+          </div>
+          <div className="form-group">
             <label>Address *</label>
             <input name="address" value={form.address} onChange={handleChange} required />
           </div>
           <div className="form-group">
-            <label>Latitude *</label>
+            <label>Latitude</label>
             <input
               name="latitude"
               type="number"
               step="any"
               value={form.latitude}
               onChange={handleChange}
-              required
             />
           </div>
           <div className="form-group">
-            <label>Longitude *</label>
+            <label>Longitude</label>
             <input
               name="longitude"
               type="number"
               step="any"
               value={form.longitude}
               onChange={handleChange}
-              required
             />
           </div>
           <div className="form-group">
