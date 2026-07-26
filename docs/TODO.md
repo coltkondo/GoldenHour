@@ -68,8 +68,8 @@ These aren't blockers for tomorrow's build, but they're the next thing to break 
 ### `feature/admin-analytics`
 - [x] Admin analytics (`api/admin/analytics.py` is a stub) — submission volume, signups, top submitters by day. **Moved up from August:** if corroboration ships in P1, you have a new farming surface live with zero visibility into whether it's being abused. Ship the dashboard alongside the feature, not months later.
 
-### `chore/admin-panel-user-wiring`
-- [ ] **Wire `admin/users.py` to the admin web panel UI** — backend (list, point history, deactivate/reactivate) is fully implemented and already confirmed done. What's left is exposing it in the UI. Your primary fraud-response tool is half-live right now — backend ready, no way to click it.
+### `chore/admin-panel-user-wiring` ✓
+- [x] **Wire `admin/users.py` to the admin web panel UI** — UserList (table with deactivate/reactivate), UserDetail (stats card + point history), GET /users/{id} endpoint added. Users nav item in sidebar, routes /users and /users/:id wired.
 
 ### `feature/guest-city-change`
 - [ ] **Tappable city chip on home screen for guests** — once a guest picks a city, there's currently no way to change it short of reinstalling. Add a small tappable "Arlington, VA ›" subtitle on HomeScreen (guests only) that reopens the `GuestMarketPicker`. Logged-in users don't see it — their city is account-bound. Low friction, high value for multi-market demos.
@@ -111,17 +111,17 @@ Required before opening to the student body — a TestFlight group of people you
 ## P4 — Structural product work (post-TestFlight, pre-scale)
 
 ### `feature/submit-tab` (one cohesive UI branch, don't split)
-- [ ] New "+" bottom tab (Instagram-style, replaces Submit sub-tab in Explore)
-- [ ] Rewards progress bar (points balance toward 1,000pt/$20 threshold)
-- [ ] Submission forms relocated below progress bar
+- [x] New "+" bottom tab (Instagram-style, replaces Submit sub-tab in Explore)
+- [ ] Rewards progress bar (points balance toward 1,000pt/$20 threshold) (reconsidered)
+- [x] Submission forms relocated below progress bar
 - [ ] My Submissions history (accessible from "+" or Profile)
 
 ### `feature/happy-hour-crud`
-- [ ] `api/v1/happy_hours.py` CRUD — needed before venue schedules can be viewed/edited via API. Sequence against your actual State College launch date (first home football weekend), not generic backlog — this is more urgent the closer that date gets.
+- [ ] `api/v1/happy_hours.py` CRUD — needed before venue schedules can be viewed/edited via API. Sequence against your actual State College launch date (first home football weekend), not generic backlog — this is more urgent the closer that date gets.S
 
 
 ### `feature/home-redesign`
-- [ ] Home page visual redesign — **sequence after market filtering (P0) ships.** No point redesigning a feed that's currently showing the wrong city's deals.
+- [x] Home page visual redesign — **sequence after market filtering (P0) ships.** No point redesigning a feed that's currently showing the wrong city's deals.
 
 ---
 

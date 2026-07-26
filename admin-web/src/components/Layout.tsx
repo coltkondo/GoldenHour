@@ -9,6 +9,7 @@ const navItems = [
   { to: '/submissions', label: 'Submissions' },
   { to: '/events', label: 'Events' },
   { to: '/analytics', label: 'Analytics' },
+  { to: '/users', label: 'Users' },
 ];
 
 export default function Layout() {

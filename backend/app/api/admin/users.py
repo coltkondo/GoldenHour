@@ -88,6 +88,40 @@ def list_users(
     ]
 
 
+@router.get("/{user_id}", response_model=AdminUserResponse)
+def get_user(
+    user_id: UUID,
+    _admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """Get a single user with submission counts."""
+    result = (
+        db.query(
+            User,
+            func.count(Submission.id).label("submission_count"),
+            func.count(Submission.id).filter(Submission.status == "approved").label("approved_count"),
+        )
+        .outerjoin(Submission, Submission.user_id == User.id)
+        .group_by(User.id)
+        .filter(User.id == user_id)
+        .first()
+    )
+    if not result:
+        raise HTTPException(status_code=404, detail="User not found")
+    user, sub_count, approved = result
+    return AdminUserResponse(
+        id=user.id,
+        username=user.username,
+        email=user.email,
+        role=user.role,
+        points_balance=user.points_balance,
+        active=user.active,
+        created_at=user.created_at,
+        submission_count=sub_count,
+        approved_count=approved,
+    )
+
+
 @router.get("/{user_id}/points", response_model=List[PointTransactionResponse])
 def get_user_point_history(
     user_id: UUID,

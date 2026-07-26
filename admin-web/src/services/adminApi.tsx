@@ -255,3 +255,43 @@ export const submissionsApi = {
       body: JSON.stringify(action),
     }),
 };
+
+// ---------- Users ----------
+
+export interface AdminUser {
+  id: string;
+  username: string;
+  email: string;
+  role: string;
+  points_balance: number;
+  active: boolean;
+  created_at: string;
+  submission_count: number;
+  approved_count: number;
+}
+
+export interface PointTransaction {
+  id: string;
+  submission_id: string | null;
+  points: number;
+  transaction_type: string;
+  description: string;
+  created_at: string;
+}
+
+export const usersApi = {
+  list: (params: { skip?: number; limit?: number; active_only?: boolean } = {}) => {
+    const qs = new URLSearchParams();
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null) qs.set(k, String(v));
+    });
+    return request<AdminUser[]>(`/users/?${qs}`);
+  },
+  get: (userId: string) => request<AdminUser>(`/users/${userId}`),
+  pointHistory: (userId: string) =>
+    request<PointTransaction[]>(`/users/${userId}/points`),
+  deactivate: (userId: string) =>
+    request<{ detail: string }>(`/users/${userId}/deactivate`, { method: 'PATCH' }),
+  reactivate: (userId: string) =>
+    request<{ detail: string }>(`/users/${userId}/reactivate`, { method: 'PATCH' }),
+};

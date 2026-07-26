@@ -7,7 +7,7 @@ from sqlalchemy.dialects.postgresql import DATE
 from sqlalchemy.orm import Session
 
 from app.core.security import require_admin
-from app.db import get_db
+from app.core.database import get_db
 from app.models.corroboration import Corroboration
 from app.models.market import Market
 from app.models.submission import Submission

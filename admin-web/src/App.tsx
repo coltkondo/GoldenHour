@@ -12,6 +12,8 @@ import LoginPage from './pages/auth/LoginPage';
 import AnalyticsPage from './pages/Analytics/Usage';
 import EventList from './pages/Events/EventList';
 import EventForm from './pages/Events/EventForm';
+import UserList from './pages/Users/UserList';
+import UserDetail from './pages/Users/UserDetail';
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { token, isAdmin, validating } = useAuth();
@@ -44,6 +46,8 @@ function AppRoutes() {
         <Route path="/events" element={<EventList />} />
         <Route path="/events/new" element={<EventForm />} />
         <Route path="/events/:id/edit" element={<EventForm />} />
+        <Route path="/users" element={<UserList />} />
+        <Route path="/users/:id" element={<UserDetail />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
