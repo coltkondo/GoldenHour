@@ -177,7 +177,7 @@ export const HappyHourScreen = () => {
               )}
             </View>
 
-            <Text style={[styles.heroName, { color: d.text }]}>{venue.name}</Text>
+            <Text style={[styles.heroName, { color: d.text }]}>{venue.nickname ?? venue.name}</Text>
 
             {venue.neighborhood && (
               <View style={styles.neighborhoodRow}>
