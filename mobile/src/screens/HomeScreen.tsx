@@ -23,6 +23,7 @@ import { LiveBadge } from '../components/ui/LiveBadge';
 import { GuestMarketPicker } from '../components/GuestMarketPicker';
 
 const GUEST_MARKET_KEY = 'gh_guest_market';
+const MARKET_OVERRIDE_KEY = 'gh_market_override';
 
 type FilterCategory = 'All' | 'Cocktails' | 'Beer' | 'Wine' | 'Food';
 
@@ -119,6 +120,7 @@ export const HomeScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [activeFilter, setActiveFilter] = useState<FilterCategory>('All');
   const [guestMarketSlug, setGuestMarketSlug] = useState<string | null>(null);
+  const [marketOverride, setMarketOverride] = useState<string | null>(null);
   const [showMarketPicker, setShowMarketPicker] = useState(false);
   const isMounted = useRef(true);
 
@@ -126,7 +128,9 @@ export const HomeScreen = () => {
     isMounted.current = true;
     const init = async () => {
       if (user) {
-        await loadData(user.market_slug);
+        const override = await AsyncStorage.getItem(MARKET_OVERRIDE_KEY);
+        setMarketOverride(override);
+        await loadData(override ?? user.market_slug);
       } else {
         const stored = await AsyncStorage.getItem(GUEST_MARKET_KEY);
         if (stored) {
@@ -144,10 +148,15 @@ export const HomeScreen = () => {
 
   const handleCitySelect = useCallback(async (slug: string) => {
     setShowMarketPicker(false);
-    setGuestMarketSlug(slug);
-    await AsyncStorage.setItem(GUEST_MARKET_KEY, slug);
+    if (user) {
+      setMarketOverride(slug);
+      await AsyncStorage.setItem(MARKET_OVERRIDE_KEY, slug);
+    } else {
+      setGuestMarketSlug(slug);
+      await AsyncStorage.setItem(GUEST_MARKET_KEY, slug);
+    }
     await loadData(slug);
-  }, []);
+  }, [user?.id]);
 
   const loadData = async (marketSlug: string | null) => {
     try {
@@ -249,6 +258,13 @@ export const HomeScreen = () => {
   const todayDb = today === 0 ? 6 : today - 1;
   const todayName = DAY_NAMES[todayDb];
 
+  const activeMarketSlug = marketOverride ?? user?.market_slug ?? guestMarketSlug;
+  const activeMarketLabel = (() => {
+    if (activeMarketSlug === 'arlington') return 'Arlington, VA';
+    if (activeMarketSlug === 'state-college') return 'Happy Valley, PA';
+    return 'Choose a city';
+  })();
+
   if (loading) {
     return (
       <View style={[styles.loadingContainer, { backgroundColor: d.background }]}>
@@ -291,14 +307,14 @@ export const HomeScreen = () => {
 
         {/* Day title */}
         <Text style={[styles.dayTitle, { color: d.text }]}>{todayName}</Text>
-        <Text style={[styles.daySubtitle, { color: d.textMuted }]}>
-          {(() => {
-            const slug = user?.market_slug ?? guestMarketSlug;
-            if (slug === 'arlington') return 'Arlington, VA';
-            if (slug === 'state-college') return 'Happy Valley, PA';
-            return 'Happy Hour Deals';
-          })()}
-        </Text>
+        <TouchableOpacity
+          style={styles.cityChip}
+          onPress={() => setShowMarketPicker(true)}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.cityChipText, { color: d.textMuted }]}>{activeMarketLabel}</Text>
+          <AppIcon name="dropdown" size={12} role="muted" />
+        </TouchableOpacity>
 
         {/* Filter pills */}
         <ScrollView
@@ -423,7 +439,12 @@ export const HomeScreen = () => {
         <View style={{ height: 120 }} />
       </ScrollView>
 
-      <GuestMarketPicker visible={showMarketPicker} onSelect={handleCitySelect} />
+      <GuestMarketPicker
+        visible={showMarketPicker}
+        onSelect={handleCitySelect}
+        onDismiss={activeMarketSlug ? () => setShowMarketPicker(false) : undefined}
+        currentSlug={activeMarketSlug}
+      />
     </View>
   );
 };
@@ -503,7 +524,16 @@ const styles = StyleSheet.create({
   pointsText: { fontSize: 13, fontWeight: '700' },
 
   dayTitle: { fontSize: 28, fontWeight: '800', letterSpacing: -0.5 },
-  daySubtitle: { fontSize: 14, fontWeight: '500', marginTop: 2, marginBottom: 20 },
+  cityChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    alignSelf: 'flex-start',
+    marginTop: 4,
+    marginBottom: 20,
+    paddingVertical: 2,
+  },
+  cityChipText: { fontSize: 14, fontWeight: '500' },
 
   filterScroll: { marginBottom: 28, marginLeft: -16, marginRight: -16 },
   filterContainer: { paddingHorizontal: 16, gap: 8 },
