@@ -19,18 +19,18 @@ TestFlight for internal testers (≤100 people) bypasses full App Store review �
 ### Infra — required before the mobile app can talk to a live backend
 _Cofounder returns ~July 28. Do Railway + Vercel then. GitHub Pages also unblocks on return._
 
-- [ ] **Railway — spin up project** — log into railway.app, create new project, add a PostgreSQL service. Railway auto-provides `DATABASE_URL`.
-- [ ] **Railway — set environment variables:**
+- [x] **Railway — spin up project** — log into railway.app, create new project, add a PostgreSQL service. Railway auto-provides `DATABASE_URL`.
+- [x] **Railway — set environment variables:**
   - `SECRET_KEY` — generate with `python -c "import secrets; print(secrets.token_hex(32))"`
   - `DEBUG=False`
   - `ALLOWED_ORIGINS=https://<admin-vercel-url>.vercel.app` (add after Vercel deploy)
   - `DATABASE_URL` — auto-injected by Railway, no manual entry needed
-- [ ] **Railway — connect GitHub repo** — Settings → Source: `coltkondo/GoldenHour`, root directory: `backend/`, branch: `main`. Auto-deploys on push.
-- [ ] **Railway — run DB migrations** — after first deploy, open Railway shell and run `alembic upgrade head`
-- [ ] **Railway — import production data** — run `python scripts/import_csv.py` scoped to both markets (Arlington + State College) against the production DB
-- [ ] **Vercel — deploy admin portal** — connect `coltkondo/GoldenHour` repo, root directory: `admin-web/`, set env var `VITE_API_URL=https://<railway-url>/api/v1`
-- [ ] **Railway — update ALLOWED_ORIGINS** — add the Vercel admin URL once you have it
-- [ ] **Mobile — set production API URL** — add `EXPO_PUBLIC_API_URL=https://<railway-url>/api/v1` to EAS build secrets (or `app.json extra.apiUrl` for a non-EAS build)
+- [x] **Railway — connect GitHub repo** — Settings → Source: `coltkondo/GoldenHour`, root directory: `backend/`, branch: `main`. Auto-deploys on push.
+- [x] **Railway — run DB migrations** — runs automatically via docker-entrypoint.sh on deploy
+- [x] **Railway — import production data** — Arlington + State College imported via `import_csv.py` against Railway DB
+- [x] **Vercel — deploy admin portal** — `goldenhour-smoky.vercel.app`, root directory `admin-web/`, `VITE_API_URL` set to Railway backend
+- [x] **Railway — update ALLOWED_ORIGINS** — set to `https://goldenhour-smoky.vercel.app`
+- [x] **Mobile — set production API URL** — `PRODUCTION_API` in `constants.ts` points to Railway; `app.json extra.apiUrl` override added for Expo Go dev testing
 - [ ] **GitHub Pages — enable** _(needs cofounder: Settings → Pages → Source: main, /docs)_ — unblocks privacy policy URL going live; also enter URL in App Store Connect
 
 ### App Store submission gate — required for ANY TestFlight build to process
@@ -66,7 +66,7 @@ These aren't blockers for tomorrow's build, but they're the next thing to break 
 - [x] Admin review detail: warning banner explaining reduced points, advises rejection if true dupe
 
 ### `feature/admin-analytics`
-- [ ] Admin analytics (`api/admin/analytics.py` is a stub) — submission volume, signups, top submitters by day. **Moved up from August:** if corroboration ships in P1, you have a new farming surface live with zero visibility into whether it's being abused. Ship the dashboard alongside the feature, not months later.
+- [x] Admin analytics (`api/admin/analytics.py` is a stub) — submission volume, signups, top submitters by day. **Moved up from August:** if corroboration ships in P1, you have a new farming surface live with zero visibility into whether it's being abused. Ship the dashboard alongside the feature, not months later.
 
 ### `chore/admin-panel-user-wiring`
 - [ ] **Wire `admin/users.py` to the admin web panel UI** — backend (list, point history, deactivate/reactivate) is fully implemented and already confirmed done. What's left is exposing it in the UI. Your primary fraud-response tool is half-live right now — backend ready, no way to click it.
