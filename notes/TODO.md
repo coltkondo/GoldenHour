@@ -2,6 +2,7 @@
 
 _Economy spec: see [ECONOMY_SPEC.md](ECONOMY_SPEC.md). App Store gate detail: see [APP_STORE_COMPLIANCE.md](APP_STORE_COMPLIANCE.md)._
 
+
 **24 open items.**
 
 ---
@@ -72,7 +73,7 @@ These aren't blockers for tomorrow's build, but they're the next thing to break 
 - [x] **Wire `admin/users.py` to the admin web panel UI** — UserList (table with deactivate/reactivate), UserDetail (stats card + point history), GET /users/{id} endpoint added. Users nav item in sidebar, routes /users and /users/:id wired.
 
 ### `feature/guest-city-change`
-- [ ] **Tappable city chip on home screen for guests** — once a guest picks a city, there's currently no way to change it short of reinstalling. Add a small tappable "Arlington, VA ›" subtitle on HomeScreen (guests only) that reopens the `GuestMarketPicker`. Logged-in users don't see it — their city is account-bound. Low friction, high value for multi-market demos.
+- [x] **Tappable city chip on home screen for guests** — once a guest picks a city, there's currently no way to change it short of reinstalling. Add a small tappable "Arlington, VA ›" subtitle on HomeScreen (guests only) that reopens the `GuestMarketPicker`. Logged-in users don't see it — their city is account-bound. Low friction, high value for multi-market demos.
 
 ---
 
@@ -117,7 +118,7 @@ Required before opening to the student body — a TestFlight group of people you
 - [ ] My Submissions history (accessible from "+" or Profile)
 
 ### `feature/happy-hour-crud`
-- [ ] `api/v1/happy_hours.py` CRUD — needed before venue schedules can be viewed/edited via API. Sequence against your actual State College launch date (first home football weekend), not generic backlog — this is more urgent the closer that date gets.S
+- [ ] `api/v1/happy_hours.py` CRUD — needed before venue schedules can be viewed/edited via API. Sequence against your actual State College launch date (first home football weekend), not generic backlog — this is more urgent the closer that date gets.
 
 
 ### `feature/home-redesign`
