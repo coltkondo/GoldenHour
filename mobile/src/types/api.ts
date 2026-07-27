@@ -14,6 +14,7 @@ export interface Venue {
   google_place_id: string | null;
   price_level: number | null;
   rating: number | null;
+  logo_url: string | null;
   verified: boolean;
   active: boolean;
   created_at: string;

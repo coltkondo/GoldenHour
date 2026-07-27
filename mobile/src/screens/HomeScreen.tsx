@@ -20,6 +20,7 @@ import { formatScheduleRange, parseTimeString } from '../utils/scheduleUtils';
 import { AppIcon } from '../components/icons';
 import { REWARDS_ENABLED } from '../config/constants';
 import { LiveBadge } from '../components/ui/LiveBadge';
+import { VenueLogo } from '../components/ui/VenueLogo';
 import { GuestMarketPicker } from '../components/GuestMarketPicker';
 
 const GUEST_MARKET_KEY = 'gh_guest_market';
@@ -39,6 +40,7 @@ const FILTER_KEYWORDS: Record<string, string[]> = {
 interface DealWithSchedule extends Deal {
   schedule?: HappyHourSchedule;
   venueName: string;
+  logoUrl: string | null;
   isLiveNow: boolean;
 }
 
@@ -51,6 +53,7 @@ interface TimeGroup {
 interface VenueGroup {
   venueId: string;
   venueName: string;
+  logoUrl: string | null;
   timeGroups: TimeGroup[];
   events: Event[];
 }
@@ -87,6 +90,7 @@ function groupDealsByVenue(deals: DealWithSchedule[], venueEvents: Map<string, E
       venueMap.set(deal.venue_id, {
         venueId: deal.venue_id,
         venueName: deal.venueName,
+        logoUrl: deal.logoUrl ?? null,
         timeGroups: [],
         events: venueEvents.get(deal.venue_id) ?? [],
       });
@@ -222,6 +226,7 @@ export const HomeScreen = () => {
         ...deal,
         schedule,
         venueName: venue?.nickname || venue?.name || 'Unknown',
+        logoUrl: venue?.logo_url ?? null,
         isLiveNow: isCurrentlyLive(schedule),
       };
     });
@@ -466,9 +471,7 @@ const VenueGroupCard: React.FC<VenueGroupCardProps> = ({ group, d, onPress, labe
     onPress={onPress}
   >
     <View style={styles.venueNameCol}>
-      <Text style={[styles.venueGroupName, { color: d.text }]} numberOfLines={3}>
-        {group.venueName}
-      </Text>
+      <VenueLogo logoUrl={group.logoUrl} name={group.venueName} size={52} />
     </View>
 
     <View style={[styles.verticalDivider, { backgroundColor: d.divider }]} />

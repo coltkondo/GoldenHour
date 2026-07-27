@@ -21,6 +21,7 @@ class VenueBase(BaseModel):
     google_place_id: Optional[str] = None
     price_level: Optional[int] = Field(None, ge=1, le=4)
     rating: Optional[float] = Field(None, ge=0, le=5)
+    logo_url: Optional[str] = None
 
 
 class VenueCreate(VenueBase):
@@ -43,6 +44,7 @@ class VenueUpdate(BaseModel):
     google_place_id: Optional[str] = None
     price_level: Optional[int] = Field(None, ge=1, le=4)
     rating: Optional[float] = Field(None, ge=0, le=5)
+    logo_url: Optional[str] = None
     active: Optional[bool] = None
     verified: Optional[bool] = None
 

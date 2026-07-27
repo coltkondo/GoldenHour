@@ -64,6 +64,7 @@ class Venue(Base, TimestampMixin):
     verified = Column(Boolean, default=False)
     active = Column(Boolean, default=True)
     description = Column(Text)
+    logo_url = Column(Text, nullable=True)
 
     # Relationships
     market = relationship("Market", back_populates="venues")

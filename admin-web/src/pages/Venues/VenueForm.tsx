@@ -5,6 +5,7 @@ import { venuesApi } from '../../services/adminApi';
 interface FormData {
   name: string;
   nickname: string;
+  logo_url: string;
   address: string;
   latitude: string;
   longitude: string;
@@ -21,6 +22,7 @@ interface FormData {
 const emptyForm: FormData = {
   name: '',
   nickname: '',
+  logo_url: '',
   address: '',
   latitude: '',
   longitude: '',
@@ -51,6 +53,7 @@ export default function VenueForm() {
           setForm({
             name: venue.name || '',
             nickname: venue.nickname || '',
+            logo_url: venue.logo_url || '',
             address: venue.address || '',
             latitude: venue.latitude?.toString() || '',
             longitude: venue.longitude?.toString() || '',
@@ -82,6 +85,7 @@ export default function VenueForm() {
     const payload = {
       name: form.name,
       nickname: form.nickname || null,
+      logo_url: form.logo_url.trim() || null,
       address: form.address,
       latitude: form.latitude ? parseFloat(form.latitude) : null,
       longitude: form.longitude ? parseFloat(form.longitude) : null,
@@ -122,6 +126,10 @@ export default function VenueForm() {
           <div className="form-group">
             <label>Nickname <span style={{ color: '#aaa', fontWeight: 400 }}>(shown in app)</span></label>
             <input name="nickname" value={form.nickname} onChange={handleChange} placeholder="e.g. Champs, Pickles, The Phyrst" />
+          </div>
+          <div className="form-group">
+            <label>Logo URL <span style={{ color: '#aaa', fontWeight: 400 }}>(direct image link)</span></label>
+            <input name="logo_url" value={form.logo_url} onChange={handleChange} placeholder="https://..." />
           </div>
           <div className="form-group">
             <label>Address *</label>
