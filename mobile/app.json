@@ -13,9 +13,12 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.goldenhour.app",
+      "bundleIdentifier": "com.gldnhr.app",
       "config": {
         "googleMapsApiKey": "YOUR_GOOGLE_MAPS_API_KEY"
+      },
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -31,7 +34,9 @@
       },
       "permissions": [
         "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION"
+        "ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
       ]
     },
     "plugins": [
@@ -43,7 +48,10 @@
       ]
     ],
     "extra": {
-      "apiUrl": "https://goldenhour-production-45a5.up.railway.app/api/v1"
+      "apiUrl": "https://goldenhour-production-45a5.up.railway.app/api/v1",
+      "eas": {
+        "projectId": "60d5156d-7d7f-423a-9768-ff5791ba500c"
+      }
     }
   }
 }
