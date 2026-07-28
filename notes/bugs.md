@@ -90,4 +90,12 @@ Fix a bug → check the box and add the commit: `- [x] Description — fixed in 
 <!-- performance, deep links, push notifications, onboarding -->
 
 - [Accidental-Tabs] - **P1** - Swiping on Map and Calendar pages creates a series of ghost tabs the user can swipe between. Must swipe down on all tabs to return to root. Root cause shared with [Map-Swipe-Logout] and [Calendar-Swipe-Logout] — likely a navigation gesture conflict.
-- [Backend-Database] - **P1** - Consider splitting submission types into dedicated endpoints (submission_deal, submission_venue, submission_event, etc.) for cleaner routing.
+- [Event-Submission-No-Apply] - **P1** - Approving a `new_event` submission awards 75 pts but never creates the event in the DB. `_apply_submission()` in `submission_review.py` has no `new_event` case. Admin portal also shows no "On approval:" description for event submissions. Fix: add `new_event` branch to `_apply_submission`, add `EventData` schema, add description to `ReviewDetail.tsx`.
+
+---
+
+## Post-Launch Refactors
+
+_Not bugs. Defer until after public launch._
+
+- [Submission-Endpoint-Split] - Split `POST /submissions/` into type-specific endpoints (`/submissions/deal`, `/submissions/venue`, etc.) for cleaner Swagger docs and more explicit API contracts. Low value vs. effort during TestFlight — current `submission_type` field handles discrimination cleanly.
