@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { submissionsApi } from '../../services/adminApi';
-import type { Submission } from '../../types';
+import { submissionsApi, dealsApi } from '../../services/adminApi';
+import type { Submission, DealWithVenue } from '../../types';
 
 const TYPE_LABELS: Record<string, string> = {
   new_deal: 'New Deal',
@@ -32,11 +32,17 @@ export default function ReviewDetail() {
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<'approved' | 'rejected' | null>(null);
+  const [venueDeals, setVenueDeals] = useState<DealWithVenue[]>([]);
 
   useEffect(() => {
     submissionsApi.get(id!).then((data) => {
       setSub(data);
       setLoading(false);
+      // For new_deal submissions, fetch existing deals at the same venue for comparison
+      const venueId = data.submitted_data?.bar_id ?? data.related_bar_id;
+      if (data.submission_type === 'new_deal' && venueId) {
+        dealsApi.list({ venue_id: venueId, active_only: true, limit: 50 }).then(setVenueDeals).catch(() => {});
+      }
     });
   }, [id]);
 
@@ -113,6 +119,37 @@ export default function ReviewDetail() {
         <h3>Submitted Data</h3>
         <pre className="json-block">{JSON.stringify(sub.submitted_data, null, 2)}</pre>
       </div>
+
+      {/* Existing deals at this venue — shown for new_deal submissions */}
+      {sub.submission_type === 'new_deal' && venueDeals.length > 0 && (
+        <div className="detail-section">
+          <h3>Existing Active Deals at This Bar ({venueDeals.length})</h3>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              {venueDeals.map((deal) => (
+                <tr key={deal.id}>
+                  <td>{deal.title}</td>
+                  <td>{deal.category ?? '—'}</td>
+                  <td>
+                    {deal.deal_price != null
+                      ? `$${deal.deal_price}`
+                      : deal.discount_percentage != null
+                      ? `${deal.discount_percentage}% off`
+                      : '—'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {sub.related_bar_id && (
         <div className="detail-section">

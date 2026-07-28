@@ -191,7 +191,15 @@ def _apply_submission(sub: Submission, db: Session, submitter: User | None = Non
             setattr(venue, k, v)
 
     elif sub.submission_type == "new_deal":
-        deal = Deal(**_validated_deal(data))
+        deal_fields = _validated_deal(data)
+        # Mobile sends bar_id; DealData allowlists venue_id — resolve whichever is present
+        if not deal_fields.get("venue_id"):
+            raw_venue_id = data.get("bar_id") or sub.related_bar_id
+            if raw_venue_id:
+                deal_fields["venue_id"] = str(raw_venue_id)
+        if not deal_fields.get("venue_id"):
+            raise HTTPException(status_code=422, detail="venue_id or bar_id required for new_deal submission")
+        deal = Deal(**deal_fields)
         db.add(deal)
 
     elif sub.submission_type == "deal_expired":
