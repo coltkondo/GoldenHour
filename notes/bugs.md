@@ -15,6 +15,7 @@ Fix a bug → check the box and add the commit: `- [x] Description — fixed in 
 
 <!-- deals feed, city chip, "Happening Now" / "Coming Up" sections, filter bubbles -->
 
+- [Coming-Soon-Ended-Deals] - **P1** - Deals that have already ended for the day still show as "Coming Soon" instead of ended/inactive. Same root cause likely as [Currently-Serving-Happy-Hour] — schedule time logic needs a pass.
 
 ---
 
@@ -29,17 +30,23 @@ Fix a bug → check the box and add the commit: `- [x] Description — fixed in 
 
 <!-- venue pins, map loading, filter sheet -->
 
-- [Map-Page-Scroll] - **P1** - If you are on the map page and try to full screen the pop-up which includes the local areas, it does not fully come up and it kind of awkwardly in the middle of the screen. On top of that, if you hold down and swipe down, you will be taken to a login screen. Kind of a strange bug.
-- [Map-Filtering] - **P1** - Shows Happy Hours in State College when I am in Arlington sometimes randomly.
-- [Currently-Serving-Happy-Hour] - **P1** - Says all locations are "Currently Serving Happy Hour" when that is not true at all. Right now it is 1:30pm on a Tuesday in Arlington. Only 1 deal location is currently serving HH. Every single bar is showing that it is serving HH.
-- [Courthaus-Social] - **P1** - Random fake phone number in the data. Needs to be corrected. Website button is a dead link
-- [Bar-Bao] - **P1** - Website button active but no website associated. Needs correcting as well.
+- [Map-Page-Scroll] - **P1** - Bottom sheet popup does not fully expand — gets stuck awkwardly mid-screen. _(see also [Accidental-Tabs] and [Map-Swipe-Logout] — likely same root cause)_
+- [Map-Swipe-Logout] - **P1** - Swiping down on the map or bottom venue panel redirects to Login screen unexpectedly. _(duplicate of [Map-Page-Scroll] swipe behavior and [Accidental-Tabs])_
+- [Map-Filtering] - **P1** - Shows Happy Hours in State College when in Arlington sometimes randomly.
+- [Currently-Serving-Happy-Hour] - **P1** - All locations show "Currently Serving Happy Hour" regardless of actual schedule. Same root cause likely as [Coming-Soon-Ended-Deals].
+- [Map-Icon-Alignment] - **P2** - Selected venue icons are not centered/aligned correctly when a venue is selected on the map.
+- [Map-Venue-Detail-Link] - **P2** - No way to open a venue's full details page from the map selection panel. Should add a "View Details" tap target.
+- [Map-Bottom-Panel-UX] - **P2** - Bottom venue panel layout needs refactor. Selected venues should have a clearer, more prominent highlight/outline. _(related to [Map-Page-Scroll])_
+- [Courthaus-Social] - **P1** - Incorrect phone number in the data. Website button is a dead link. Fix in admin portal.
+- [Bar-Bao] - **P1** - Website button active but no website on record. Fix in admin portal.
+
 ---
 
 ## Calendar / Events Tab
 
 <!-- week view, event blocks, day/venue filters -->
 
+- [Calendar-Swipe-Logout] - **P1** - Swiping down on the Calendar page redirects to Login screen unexpectedly. Same root cause as [Map-Swipe-Logout] and [Accidental-Tabs].
 
 ---
 
@@ -48,6 +55,7 @@ Fix a bug → check the box and add the commit: `- [x] Description — fixed in 
 <!-- submission forms, photo upload, auth wall -->
 
 - [Submitted-Screen] - **P2** - "Submit Another" box looks stupid as hell  
+
 ---
 
 ## Profile Screen
@@ -55,7 +63,7 @@ Fix a bug → check the box and add the commit: `- [x] Description — fixed in 
 <!-- points balance, submission history, delete account, privacy/support links -->
 
 - [My-Submissions] - **P2** - Does not specify what the submission is. Simply says "New Deal". Should be a bit more specific in my opinion.
-- [Contact-Support] - **P1** - Only works if you have mail setup. I dont have mail setup so I see that as an issue. Might want to route to gmail too.
+- [Contact-Support] - **P1** - Only works if native Mail app is set up. Should also route to Gmail or a web fallback.
 
 ---
 
@@ -63,6 +71,8 @@ Fix a bug → check the box and add the commit: `- [x] Description — fixed in 
 
 <!-- login errors, registration validation, guest mode, token refresh -->
 
+- [Guest-No-Dark-Mode] - **P2** - Logged-out users have no option to switch between light and dark mode. Theme toggle is only accessible from Profile, which requires login.
+- [Guest-No-Support] - **P2** - Logged-out users have no access to a Support/Help option. _(related to [Contact-Support])_
 
 ---
 
@@ -70,13 +80,14 @@ Fix a bug → check the box and add the commit: `- [x] Description — fixed in 
 
 <!-- submission queue, venue/deal CRUD, user management -->
 
-- [Approving-Submissions] - **P0** - When in Admin Portal, could not approve a submission for a New Deal. "Failed to Fetch" Error. Rejection worked easily. But approval failed.
-- [Approving-Submissions-Screen] - **P2** - When looking at a submission, might be helpful to see the deals at that same bar and day are to compare side by side.
+- [Approving-Submissions] - **P0** - Cannot approve a New Deal submission — "Failed to Fetch" error. Rejection works fine. Approval fails.
+- [Approving-Submissions-Screen] - **P2** - When reviewing a submission, would be helpful to see existing deals at the same bar side by side for comparison.
+
 ---
 
 ## Cross-Cutting / General
 
 <!-- performance, deep links, push notifications, onboarding -->
 
-- [Backend-Database] - **P1** - Considering the addition of submissions_deal, submission_venue, submission_event, submission_correction, submission_bar to make the endpoint more direct and favorable.
-- [Accidental-Tabs] - **P1** - In relation to the first Map Page bug, the thing creates a series of tabs which you can swipe in and out of. It is very strange. Need to swipe down on all tabs to get back to the root full page version of the app.
+- [Accidental-Tabs] - **P1** - Swiping on Map and Calendar pages creates a series of ghost tabs the user can swipe between. Must swipe down on all tabs to return to root. Root cause shared with [Map-Swipe-Logout] and [Calendar-Swipe-Logout] — likely a navigation gesture conflict.
+- [Backend-Database] - **P1** - Consider splitting submission types into dedicated endpoints (submission_deal, submission_venue, submission_event, etc.) for cleaner routing.
