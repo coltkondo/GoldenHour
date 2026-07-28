@@ -2,10 +2,7 @@
 
 Format: `- [ ] Description` — **Priority** — _reported by / date_
 
-Priority levels: 
-**P0** crash / data wrong 
-**P1** broken feature 
-**P2** visual / minor
+Priority levels: **P0** crash / data wrong · **P1** broken feature · **P2** visual / minor
 
 Fix a bug → check the box and add the commit: `- [x] Description — fixed in abc1234`
 
@@ -15,7 +12,7 @@ Fix a bug → check the box and add the commit: `- [x] Description — fixed in 
 
 <!-- deals feed, city chip, "Happening Now" / "Coming Up" sections, filter bubbles -->
 
-- [Coming-Soon-Ended-Deals] - **P1** - Deals that have already ended for the day still show as "Coming Soon" instead of ended/inactive. Same root cause likely as [Currently-Serving-Happy-Hour] — schedule time logic needs a pass.
+- [ ] [Coming-Soon-Ended-Deals] — **P1** — Deals that have already ended for the day still show as "Coming Soon" instead of ended/inactive. Same root cause likely as [Currently-Serving-Happy-Hour] — schedule time logic needs a pass.
 
 ---
 
@@ -23,22 +20,21 @@ Fix a bug → check the box and add the commit: `- [x] Description — fixed in 
 
 <!-- logo, nickname, day selector, deals per day, directions/call/website, corroborate button -->
 
-
 ---
 
 ## Map / Browse Tab
 
 <!-- venue pins, map loading, filter sheet -->
 
-- [Map-Page-Scroll] - **P1** - Bottom sheet popup does not fully expand — gets stuck awkwardly mid-screen. _(see also [Accidental-Tabs] and [Map-Swipe-Logout] — likely same root cause)_
-- [Map-Swipe-Logout] - **P1** - Swiping down on the map or bottom venue panel redirects to Login screen unexpectedly. _(duplicate of [Map-Page-Scroll] swipe behavior and [Accidental-Tabs])_
-- [Map-Filtering] - **P1** - Shows Happy Hours in State College when in Arlington sometimes randomly.
-- [Currently-Serving-Happy-Hour] - **P1** - All locations show "Currently Serving Happy Hour" regardless of actual schedule. Same root cause likely as [Coming-Soon-Ended-Deals].
-- [Map-Icon-Alignment] - **P2** - Selected venue icons are not centered/aligned correctly when a venue is selected on the map.
-- [Map-Venue-Detail-Link] - **P2** - No way to open a venue's full details page from the map selection panel. Should add a "View Details" tap target.
-- [Map-Bottom-Panel-UX] - **P2** - Bottom venue panel layout needs refactor. Selected venues should have a clearer, more prominent highlight/outline. _(related to [Map-Page-Scroll])_
-- [Courthaus-Social] - **P1** - Incorrect phone number in the data. Website button is a dead link. Fix in admin portal.
-- [Bar-Bao] - **P1** - Website button active but no website on record. Fix in admin portal.
+- [ ] [Map-Page-Scroll] — **P1** — Bottom sheet popup does not fully expand — gets stuck awkwardly mid-screen. _(see also [Accidental-Tabs] and [Map-Swipe-Logout] — likely same root cause)_
+- [ ] [Map-Swipe-Logout] — **P1** — Swiping down on the map or bottom venue panel redirects to Login screen unexpectedly. _(duplicate of [Map-Page-Scroll] swipe behavior and [Accidental-Tabs])_
+- [ ] [Map-Filtering] — **P1** — Shows Happy Hours in State College when in Arlington sometimes randomly.
+- [ ] [Currently-Serving-Happy-Hour] — **P1** — All locations show "Currently Serving Happy Hour" regardless of actual schedule. Same root cause likely as [Coming-Soon-Ended-Deals].
+- [ ] [Map-Icon-Alignment] — **P2** — Selected venue icons are not centered/aligned correctly when a venue is selected on the map.
+- [ ] [Map-Venue-Detail-Link] — **P2** — No way to open a venue's full details page from the map selection panel. Should add a "View Details" tap target.
+- [ ] [Map-Bottom-Panel-UX] — **P2** — Bottom venue panel layout needs refactor. Selected venues should have a clearer, more prominent highlight/outline. _(related to [Map-Page-Scroll])_
+- [x] [Courthaus-Social] — **P1** — Incorrect phone number and dead website link. Fixed in admin portal.
+- [x] [Bar-Bao] — **P1** — Website button active but no website on record. Fixed in admin portal.
 
 ---
 
@@ -46,7 +42,7 @@ Fix a bug → check the box and add the commit: `- [x] Description — fixed in 
 
 <!-- week view, event blocks, day/venue filters -->
 
-- [Calendar-Swipe-Logout] - **P1** - Swiping down on the Calendar page redirects to Login screen unexpectedly. Same root cause as [Map-Swipe-Logout] and [Accidental-Tabs].
+- [ ] [Calendar-Swipe-Logout] — **P1** — Swiping down on the Calendar page redirects to Login screen unexpectedly. Same root cause as [Map-Swipe-Logout] and [Accidental-Tabs].
 
 ---
 
@@ -54,7 +50,7 @@ Fix a bug → check the box and add the commit: `- [x] Description — fixed in 
 
 <!-- submission forms, photo upload, auth wall -->
 
-- [Submitted-Screen] - **P2** - "Submit Another" box looks stupid as hell  
+- [ ] [Submitted-Screen] — **P2** — "Submit Another" box looks bad. Needs a redesign.
 
 ---
 
@@ -62,8 +58,8 @@ Fix a bug → check the box and add the commit: `- [x] Description — fixed in 
 
 <!-- points balance, submission history, delete account, privacy/support links -->
 
-- [My-Submissions] - **P2** - Does not specify what the submission is. Simply says "New Deal". Should be a bit more specific in my opinion.
-- [Contact-Support] - **P1** - Only works if native Mail app is set up. Should also route to Gmail or a web fallback.
+- [ ] [My-Submissions] — **P2** — Does not specify what the submission is. Simply says "New Deal". Should be more descriptive.
+- [ ] [Contact-Support] — **P1** — Only works if native Mail app is set up. Should also route to Gmail or a web fallback.
 
 ---
 
@@ -71,8 +67,9 @@ Fix a bug → check the box and add the commit: `- [x] Description — fixed in 
 
 <!-- login errors, registration validation, guest mode, token refresh -->
 
-- [Guest-No-Dark-Mode] - **P2** - Logged-out users have no option to switch between light and dark mode. Theme toggle is only accessible from Profile, which requires login.
-- [Guest-No-Support] - **P2** - Logged-out users have no access to a Support/Help option. _(related to [Contact-Support])_
+- [ ] [Guest-No-Dark-Mode] — **P2** — Logged-out users have no option to switch between light and dark mode. Theme toggle is only accessible from Profile, which requires login.
+- [ ] [Guest-No-Support] — **P2** — Logged-out users have no access to a Support/Help option. _(related to [Contact-Support])_
+- [ ] [Forgot-Password] — **P1** — No recover/reset password flow anywhere in the app. Needs investigation and implementation.
 
 ---
 
@@ -80,8 +77,8 @@ Fix a bug → check the box and add the commit: `- [x] Description — fixed in 
 
 <!-- submission queue, venue/deal CRUD, user management -->
 
-- [Approving-Submissions] - **P0** - Cannot approve a New Deal submission — "Failed to Fetch" error. Rejection works fine. Approval fails.
-- [Approving-Submissions-Screen] - **P2** - When reviewing a submission, would be helpful to see existing deals at the same bar side by side for comparison.
+- [x] [Approving-Submissions] — **P0** — Could not approve a New Deal submission — "Failed to Fetch" error. Root cause: mobile sends `bar_id` but backend expected `venue_id`; `bar_id` was silently dropped leaving `venue_id=null`, failing DB constraint. Fixed in 1b58ec3.
+- [x] [Approving-Submissions-Screen] — **P2** — When reviewing a submission, no way to see existing deals at the same bar for comparison. Added active deals table to review detail page. Fixed in 1b58ec3.
 
 ---
 
@@ -89,8 +86,8 @@ Fix a bug → check the box and add the commit: `- [x] Description — fixed in 
 
 <!-- performance, deep links, push notifications, onboarding -->
 
-- [Accidental-Tabs] - **P1** - Swiping on Map and Calendar pages creates a series of ghost tabs the user can swipe between. Must swipe down on all tabs to return to root. Root cause shared with [Map-Swipe-Logout] and [Calendar-Swipe-Logout] — likely a navigation gesture conflict.
-- [Event-Submission-No-Apply] - **P1** - Approving a `new_event` submission awards 75 pts but never creates the event in the DB. `_apply_submission()` in `submission_review.py` has no `new_event` case. Admin portal also shows no "On approval:" description for event submissions. Fix: add `new_event` branch to `_apply_submission`, add `EventData` schema, add description to `ReviewDetail.tsx`.
+- [ ] [Accidental-Tabs] — **P1** — Swiping on Map and Calendar pages creates a series of ghost tabs the user can swipe between. Must swipe down on all tabs to return to root. Root cause shared with [Map-Swipe-Logout] and [Calendar-Swipe-Logout] — likely a navigation gesture conflict.
+- [x] [Event-Submission-No-Apply] — **P1** — Approving a `new_event` submission awarded 75 pts but never created the event in the DB. Fixed: added `new_event` branch to `_apply_submission`, `EventData` schema, and admin portal label/description. Fixed in 13f2767.
 
 ---
 
@@ -98,4 +95,4 @@ Fix a bug → check the box and add the commit: `- [x] Description — fixed in 
 
 _Not bugs. Defer until after public launch._
 
-- [Submission-Endpoint-Split] - Split `POST /submissions/` into type-specific endpoints (`/submissions/deal`, `/submissions/venue`, etc.) for cleaner Swagger docs and more explicit API contracts. Low value vs. effort during TestFlight — current `submission_type` field handles discrimination cleanly.
+- [ ] [Submission-Endpoint-Split] — Split `POST /submissions/` into type-specific endpoints (`/submissions/deal`, `/submissions/venue`, etc.) for cleaner Swagger docs and more explicit API contracts. Low value vs. effort during TestFlight — current `submission_type` field handles discrimination cleanly.
