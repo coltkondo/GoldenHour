@@ -16,6 +16,7 @@ const TYPE_LABELS: Record<string, string> = {
   new_bar: 'New Bar',
   bar_closed: 'Bar Closed',
   bar_update: 'Bar Update',
+  new_event: 'New Event',
 };
 
 export default function PendingReview() {

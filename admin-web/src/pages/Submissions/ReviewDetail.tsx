@@ -10,6 +10,7 @@ const TYPE_LABELS: Record<string, string> = {
   new_bar: 'New Bar',
   bar_closed: 'Bar Closed',
   bar_update: 'Bar Update',
+  new_event: 'New Event',
 };
 
 const AUTO_APPLY_DESCRIPTION: Record<string, string> = {
@@ -19,6 +20,7 @@ const AUTO_APPLY_DESCRIPTION: Record<string, string> = {
   new_deal: 'A new deal will be created with the submitted data.',
   deal_expired: 'The related deal will be marked as expired (inactive).',
   deal_update: 'The related deal will be updated with the submitted data.',
+  new_event: 'A new event will be created and appear on the calendar.',
 };
 
 export default function ReviewDetail() {

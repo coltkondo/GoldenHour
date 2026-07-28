@@ -49,3 +49,18 @@ class DealData(BaseModel):
     deal_price: Optional[float] = Field(None, ge=0)
     discount_percentage: Optional[float] = Field(None, ge=0, le=100)
     items: Optional[list[str]] = None
+
+
+class EventData(BaseModel):
+    """Validated fields from a new_event submission."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    bar_id: Optional[UUID] = None
+    bar_name: Optional[str] = Field(None, max_length=255)
+    event_name: Optional[str] = Field(None, max_length=255)
+    event_type: Optional[str] = Field(None, max_length=50)
+    event_date: Optional[str] = Field(None, max_length=20)   # MM/DD/YYYY
+    start_time: Optional[str] = Field(None, max_length=10)   # HH:MM (24hr)
+    end_time: Optional[str] = Field(None, max_length=10)     # HH:MM (24hr)
+    description: Optional[str] = None

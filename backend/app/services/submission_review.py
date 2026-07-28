@@ -18,9 +18,10 @@ from app.models.submission import Submission
 from app.models.user import User
 from app.models.venue import Venue
 from app.models.deal import Deal
+from app.models.event import Event
 from app.models.point_transaction import PointTransaction
 from app.schemas.submission import ReviewAction, SubmissionResponse
-from app.schemas.submission_data import VenueData, DealData
+from app.schemas.submission_data import VenueData, DealData, EventData
 from app.core.logging import logger
 from app.services.geocoding import geocode
 
@@ -201,6 +202,50 @@ def _apply_submission(sub: Submission, db: Session, submitter: User | None = Non
         deal = _get_deal(sub, db)
         for k, v in _validated_deal(data).items():
             setattr(deal, k, v)
+
+    elif sub.submission_type == "new_event":
+        try:
+            event_data = EventData(**data)
+        except Exception as exc:
+            raise HTTPException(status_code=422, detail=str(exc))
+
+        if not event_data.bar_id:
+            raise HTTPException(status_code=422, detail="bar_id required for new_event submission")
+        if not event_data.event_name:
+            raise HTTPException(status_code=422, detail="event_name required for new_event submission")
+        if not event_data.event_date or not event_data.start_time:
+            raise HTTPException(status_code=422, detail="event_date and start_time required for new_event submission")
+
+        venue = db.query(Venue).filter(Venue.id == event_data.bar_id).first()
+        if not venue:
+            raise HTTPException(status_code=404, detail="Venue not found for new_event submission")
+
+        from zoneinfo import ZoneInfo
+        eastern = ZoneInfo("America/New_York")
+        try:
+            start_dt = datetime.strptime(
+                f"{event_data.event_date} {event_data.start_time}", "%m/%d/%Y %H:%M"
+            ).replace(tzinfo=eastern)
+            end_dt = (
+                datetime.strptime(
+                    f"{event_data.event_date} {event_data.end_time}", "%m/%d/%Y %H:%M"
+                ).replace(tzinfo=eastern)
+                if event_data.end_time else None
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=f"Invalid date/time format: {exc}")
+
+        event = Event(
+            venue_id=venue.id,
+            name=event_data.event_name,
+            event_type=event_data.event_type,
+            description=event_data.description,
+            start_datetime=start_dt,
+            end_datetime=end_dt,
+            source="user",
+        )
+        db.add(event)
+        logger.bind(venue_id=str(venue.id), event_name=event_data.event_name).info("event_created_from_submission")
 
 
 def _get_venue(sub: Submission, db: Session) -> Venue:
