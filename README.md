@@ -1,161 +1,169 @@
 # Golden Hour
 
-The best college happy hour discovery platform. Users find local happy hour deals, browse venues on a map, and contribute new information to earn points.
+Happy hour discovery app for college towns. Find real-time drink and food deals at nearby bars, submit new deals, and earn points for verified contributions.
 
-## What This App Does
+**Live markets:** State College, PA · Arlington, VA
 
-Golden Hour helps people find cheap food and drink deals at bars and restaurants near them. The mobile app shows venues on a map, lists active deals, and lets users browse by neighborhood. Logged-in users can submit new deals, flag expired ones, and report bar closures — submissions go into a review queue that admins approve. Approved submissions automatically update the database and award points to the submitter.
+---
 
-The current dataset covers State College, PA.
+## Stack
 
-## Quick Start
+| Layer | Tech | Hosting |
+|---|---|---|
+| Mobile | React Native + Expo (TypeScript) | TestFlight / App Store |
+| Backend API | FastAPI + SQLAlchemy + PostgreSQL | Railway |
+| Admin portal | React + Vite | Vercel |
 
-**Docker is required.** The app has user accounts, JWT auth, and a submission system that need a real database.
+---
 
-```bash
-# 1. Build and start the backend (PostgreSQL + Redis + FastAPI)
-docker compose build backend
-docker compose up -d
+## Live URLs
 
-# 2. Start the mobile app
-cd mobile && npx expo start
+| Service | URL |
+|---|---|
+| Backend API | `https://goldenhour-production-45a5.up.railway.app` |
+| API docs (Swagger) | `https://goldenhour-production-45a5.up.railway.app/docs` |
+| Admin portal | `https://goldenhour-smoky.vercel.app` |
+| Privacy policy | `https://coltkondo.github.io/GoldenHour/privacy/` |
 
-# 3. (Optional) Start the admin web dashboard
-cd admin-web && npm run dev
-```
+---
 
-See [FIRSTSTEP.md](FIRSTSTEP.md) for the full walkthrough including how to create an admin account.
-
-## Project Structure
+## Repo Structure
 
 ```
 GoldenHour/
-  backend/           FastAPI REST API (Python, SQLAlchemy, PostgreSQL + PostGIS)
-  mobile/            React Native mobile app (Expo, TypeScript)
-  admin-web/         React admin dashboard (Vite)
-  data/              CSV source files for venues, deals, and schedules
-  docker-compose.yml PostgreSQL, Redis, and backend containers
-  docs/              Additional documentation
+├── mobile/          React Native app (Expo)
+│   ├── src/
+│   │   ├── screens/ App screens
+│   │   ├── components/ Shared UI components
+│   │   ├── api/     API client + endpoints
+│   │   └── context/ Auth + theme context
+│   ├── assets/      App icon, splash, logo files
+│   └── eas.json     EAS Build config
+├── backend/         FastAPI backend
+│   ├── app/
+│   │   ├── api/     Route handlers (v1 + admin)
+│   │   ├── models/  SQLAlchemy models
+│   │   ├── schemas/ Pydantic schemas
+│   │   ├── services/ Business logic
+│   │   └── core/    Config, auth, rate limiter
+│   └── alembic/     Database migrations
+├── admin-web/       React admin portal (Vite)
+├── scripts/         Utility scripts (see below)
+├── docs/            GitHub Pages content (privacy policy only)
+└── notes/           Internal documentation
 ```
 
-## Architecture
+---
 
-### Backend
+## Local Development
 
-- **Framework**: FastAPI with Pydantic v2 validation
-- **Database**: PostgreSQL 15 with PostGIS
-- **ORM**: SQLAlchemy 2.0
-- **Auth**: JWT via `python-jose`, passwords hashed with `passlib[bcrypt]`
-- **Migrations**: Alembic (tables also auto-created on startup via `create_all`)
+**Option A — Mobile only, pointed at Railway (simplest):**
 
-### Mobile
+```bash
+cd mobile
+npm install
+npx expo start
+```
 
-- **Framework**: React Native with Expo SDK 54
-- **Language**: TypeScript
-- **Auth**: JWT stored in `AsyncStorage`, injected on every API request
-- **Navigation**: React Navigation (anonymous browse enabled; auth gated at contribute actions, not the root)
-- **Maps**: react-native-maps (Apple Maps on iOS)
-- **HTTP**: Axios with request interceptor for auth
+The app hits the Railway backend automatically. Scan the QR code in Expo Go.
 
-### Admin Web
+**Option B — Full local stack:**
 
-- **Framework**: React with Vite
-- **Auth**: JWT stored in `localStorage`
-- **Purpose**: CRUD management of venues/deals, submission review queue
+```bash
+# 1. Start database
+docker-compose up -d db
 
-## API Endpoints
+# 2. Backend
+cd backend
+pip install -r requirements.txt
+# Create backend/.env (see notes/SETUP.md for variables)
+alembic upgrade head
+uvicorn app.main:app --reload --port 8000
 
-### Public
+# 3. Mobile (new terminal)
+cd mobile
+npm install
+npx expo start
 
-| Endpoint | Description |
-|----------|-------------|
-| `GET /api/v1/venues/` | List all active venues |
-| `GET /api/v1/venues/nearby` | Find venues within a radius |
-| `GET /api/v1/venues/{id}/schedules` | Get schedules for a venue |
-| `GET /api/v1/deals/active` | Get all active deals |
-| `GET /api/v1/deals/today` | Get deals available today |
-| `GET /api/v1/leaderboard/` | Top contributors by points |
+# 4. Admin portal (optional, new terminal)
+cd admin-web
+npm install
+npm run dev
+```
 
-### Auth (requires account)
+See [notes/SETUP.md](notes/SETUP.md) for full environment variable reference.
 
-| Endpoint | Description |
-|----------|-------------|
-| `POST /api/v1/auth/register` | Create account, returns JWT |
-| `POST /api/v1/auth/login` | Sign in, returns JWT |
-| `GET /api/v1/auth/me` | Current user info |
-| `POST /api/v1/submissions/` | Submit a deal/bar/update/report |
-| `GET /api/v1/submissions/mine` | Your submission history |
-| `GET /api/v1/points/users/{id}` | Points balance and history |
+---
 
-### Admin only
+## Deployment
 
-| Endpoint | Description |
-|----------|-------------|
-| `GET /api/v1/submissions/` | All submissions with filters |
-| `PATCH /api/v1/submissions/{id}/review` | Approve or reject, auto-applies change |
-| `GET /api/v1/admin/venues/` | CRUD for venues |
-| `GET /api/v1/admin/deals/` | CRUD for deals |
+### Backend (Railway)
+- Auto-deploys from `main` branch, root directory `backend/`
+- Runs `alembic upgrade head` on every deploy via `docker-entrypoint.sh`
+- Environment variables managed in Railway dashboard
+
+### Admin Portal (Vercel)
+- Auto-deploys from `main` branch, root directory `admin-web/`
+- `VITE_API_URL` → Railway backend URL
+
+### Mobile (EAS Build → TestFlight)
+```bash
+cd mobile
+eas build --platform ios --profile production --auto-submit
+```
+Builds on Expo's cloud servers and submits directly to TestFlight. No Mac or Xcode needed.
+
+---
+
+## Key Scripts
+
+Run from repo root with `--db-url "postgresql://..."` (Railway connection string).
+
+| Script | Purpose |
+|---|---|
+| `scripts/create_admin.py` | Create or promote an admin user |
+| `scripts/seed_logos.py` | Bulk-set venue `logo_url` from `notes/logos.md` |
+| `scripts/geocode_addresses.py` | Geocode venue addresses via Nominatim |
+
+---
 
 ## User Roles
 
 | Role | Capabilities |
-|------|-------------|
-| `user` | Browse, submit deals/reports, view own submissions and points |
-| `admin` | Everything above + review queue, immediate publish, full CRUD in admin web |
+|---|---|
+| `user` | Browse, submit deals/reports, corroborate deals, view points |
+| `admin` | Everything above + submission review queue, venue/deal CRUD in admin portal |
 
-New accounts default to `user`. Promote to admin via psql:
+New accounts default to `user`. Use `scripts/create_admin.py` to create or promote an admin.
 
-```sql
-UPDATE users SET role = 'admin' WHERE email = 'your@email.com';
-```
+---
 
-## Points System
+## Points Economy
 
-Submitting information that gets approved earns points. The authoritative values are in [docs/ECONOMY_SPEC.md](docs/ECONOMY_SPEC.md).
+Users earn points when their submissions are approved by an admin:
 
-| Submission type | Points |
-|-----------------|--------|
-| New deal or deal correction | 50 |
-| Deal marked expired | 50 |
-| New bar added | 100 |
-| Bar marked closed | 100 |
-| Bar info correction | 50 |
+| Action | Points |
+|---|---|
+| New bar submitted | 100 |
+| Bar closed report | 100 |
+| New event submitted | 75 |
+| New deal / deal update / deal expired | 50 |
 | Corroborate an existing deal | 2 |
 
-1,000 points = $20 cash via Venmo, requested by the user. Daily cap: 200 pts/user.
+Daily cap: 200 pts (configurable per market). Payout threshold: 1,000 pts = $20.
 
-> **Arts Fest build:** The economy layer is disabled via `REWARDS_ENABLED=false` in `backend/.env` and `mobile/src/config/constants.ts`. Points are not awarded and rewards UI is hidden. Flip both flags to `true` for the August public launch.
+Full spec: [notes/ECONOMY_SPEC.md](notes/ECONOMY_SPEC.md)
 
-## Data
-
-All source data lives in `data/` as CSV files:
-
-- `pennstate_venues.csv` — venues
-- `pennstate_deals.csv` — deals
-- `pennstate_schedules.csv` — schedule entries (one row per deal-per-slot; grouped into schedule records on import)
-
-To wipe the database and re-import from the CSVs:
-
-```bash
-docker compose run --rm backend_image python -m scripts.import_csv --force
-```
-
-Always use `docker compose run --rm backend_image` for this — not `exec backend`. See [docs/DATA_MODELS.md](docs/DATA_MODELS.md) for the full CSV column reference.
-
-## Production
-
-The backend is deployed to Railway. The mobile app automatically switches between local dev and production based on build mode (`__DEV__`).
-
-```
-https://goldenhour-production.up.railway.app
-```
+---
 
 ## Documentation
 
-- [FIRSTSTEP.md](FIRSTSTEP.md) — Full setup walkthrough for new developers
-- [docs/SETUP.md](docs/SETUP.md) — Detailed environment setup
-- [docs/API.md](docs/API.md) — Full API reference
-- [docs/DATA_MODELS.md](docs/DATA_MODELS.md) — Database schema and CSV import reference
-- [docs/ECONOMY_SPEC.md](docs/ECONOMY_SPEC.md) — Points economy: values, cap, payout threshold
-- [docs/APP_STORE_COMPLIANCE.md](docs/APP_STORE_COMPLIANCE.md) — Apple App Store review checklist and known gaps
-- [docs/admin-guide.md](docs/admin-guide.md) — Admin dashboard guide
+| File | Contents |
+|---|---|
+| [notes/SETUP.md](notes/SETUP.md) | Full environment setup and variables |
+| [notes/API.md](notes/API.md) | API endpoint reference |
+| [notes/DATA_MODELS.md](notes/DATA_MODELS.md) | Database schema |
+| [notes/ECONOMY_SPEC.md](notes/ECONOMY_SPEC.md) | Points economy spec |
+| [notes/admin-guide.md](notes/admin-guide.md) | Admin portal guide |
+| [notes/APP_STORE_COMPLIANCE.md](notes/APP_STORE_COMPLIANCE.md) | App Store review checklist |
+| [notes/TODO.md](notes/TODO.md) | Build backlog and sequencing |

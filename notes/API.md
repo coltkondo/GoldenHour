@@ -3,7 +3,7 @@
 All API endpoints used by the Golden Hour mobile app and admin dashboard.
 
 Base URL (local development): `http://localhost:8000`
-Base URL (production): `https://goldenhour-production.up.railway.app`
+Base URL (production): `https://goldenhour-production-45a5.up.railway.app`
 
 All endpoints are prefixed with `/api/v1`. Admin endpoints additionally require an `Authorization: Bearer <token>` header with an admin-role JWT.
 

@@ -2,7 +2,7 @@
 
 Database schema for the Golden Hour application. Generated from the live SQLAlchemy models — treat this as the source of truth for CSV import, direct SQL, and API work.
 
-_Last updated: 2026-07-15_
+_Last updated: 2026-07-28_
 
 ---
 
@@ -47,6 +47,8 @@ Table: `venues`
 | phone | VARCHAR(20) | Yes | | |
 | website | VARCHAR(500) | Yes | | |
 | neighborhood | VARCHAR(100) | Yes | | Indexed |
+| nickname | VARCHAR(255) | Yes | | Short colloquial name shown in UI (e.g. "Champs" for "Champs Downtown Bar & Grill") |
+| logo_url | TEXT | Yes | | Direct image URL for venue logo; rendered with initials fallback in VenueLogo component |
 | venue_type | VARCHAR(50) | Yes | | "bar", "restaurant", "rooftop", etc. |
 | tags | ARRAY(VARCHAR) | Yes | | e.g. `["Sports Bar","Karaoke"]` |
 | cash_only | BOOLEAN | No | false | |

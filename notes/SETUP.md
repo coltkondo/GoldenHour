@@ -138,10 +138,12 @@ npx expo start
 The production backend is deployed on Railway at:
 
 ```
-https://goldenhour-production.up.railway.app
+https://goldenhour-production-45a5.up.railway.app
 ```
 
-The mobile app uses this URL automatically when built in release mode. In development mode (`__DEV__ === true`), it uses the local API server instead.
+Admin portal: `https://goldenhour-smoky.vercel.app`
+
+The mobile app uses the Railway URL automatically. In development mode with Expo Go, it switches to the local API server when available.
 
 ---
 
