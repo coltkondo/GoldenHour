@@ -2,7 +2,10 @@
 
 Format: `- [ ] Description` — **Priority** — _reported by / date_
 
-Priority levels: **P0** crash / data wrong · **P1** broken feature · **P2** visual / minor
+Priority levels: 
+**P0** crash / data wrong 
+**P1** broken feature 
+**P2** visual / minor
 
 Fix a bug → check the box and add the commit: `- [x] Description — fixed in abc1234`
 
@@ -40,13 +43,14 @@ Fix a bug → check the box and add the commit: `- [x] Description — fixed in 
 
 <!-- submission forms, photo upload, auth wall -->
 
-
+- [Submitted-Screen] - **P2** - "Submit Another" box looks stupid as hell  
 ---
 
 ## Profile Screen
 
 <!-- points balance, submission history, delete account, privacy/support links -->
 
+- [My-Submissions] - **P2
 
 ---
 
