@@ -86,6 +86,9 @@ Fix a bug → check the box and add the commit: `- [x] Description — fixed in 
 
 <!-- performance, deep links, push notifications, onboarding -->
 
+- [ ] [Approved-Content-Not-Visible] — **P0** — Approved deal and event submissions do not appear in the app (home screen, calendar, venue detail). Points are awarded and the submission is marked approved, but the content is invisible to users. Two root causes identified — see investigation notes below.
+  - **Events**: `Event` model default is `verified=False`. The `/events/` endpoint hard-filters `Event.verified == True`. `_apply_submission` never sets `verified=True`, so every user-submitted event is permanently invisible.
+  - **Deals**: `_apply_submission` creates a `Deal` row but never creates or links it to a `HappyHourSchedule`. The home screen (`/deals/today`) only returns deals whose ID appears in a schedule's `deal_ids` array. The venue detail screen (HappyHourScreen) does the same filter client-side. A newly approved deal has no schedule, so it is filtered out everywhere.
 - [ ] [Accidental-Tabs] — **P1** — Swiping on Map and Calendar pages creates a series of ghost tabs the user can swipe between. Must swipe down on all tabs to return to root. Root cause shared with [Map-Swipe-Logout] and [Calendar-Swipe-Logout] — likely a navigation gesture conflict.
 - [x] [Event-Submission-No-Apply] — **P1** — Approving a `new_event` submission awarded 75 pts but never created the event in the DB. Fixed: added `new_event` branch to `_apply_submission`, `EventData` schema, and admin portal label/description. Fixed in 13f2767.
 
