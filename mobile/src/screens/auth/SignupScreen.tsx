@@ -24,6 +24,7 @@ export const SignupScreen = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -51,6 +52,10 @@ export const SignupScreen = () => {
     }
     if (!/[0-9]/.test(password)) {
       setError('Password must contain at least one digit');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
       return;
     }
     setLoading(true);
@@ -136,10 +141,22 @@ export const SignupScreen = () => {
           >
             <TextInput
               style={[styles.input, { color: d.text }]}
-              placeholder="Password (8+ chars, upper, lower, digit)"
+              placeholder="Password (8+ chars, upper, lower, digit, special)"
               placeholderTextColor={d.textHint}
               value={password}
               onChangeText={setPassword}
+              secureTextEntry
+            />
+          </View>
+          <View
+            style={[styles.inputContainer, { backgroundColor: d.surface, borderColor: d.border }]}
+          >
+            <TextInput
+              style={[styles.input, { color: d.text }]}
+              placeholder="Confirm password"
+              placeholderTextColor={d.textHint}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
               secureTextEntry
             />
           </View>
