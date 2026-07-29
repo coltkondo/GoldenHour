@@ -1,5 +1,6 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { DeviceEventEmitter } from 'react-native';
 import { API_URL } from '../config/constants';
 
 const TOKEN_KEY = 'gh_token';
@@ -96,6 +97,7 @@ apiClient.interceptors.response.use(
           AsyncStorage.removeItem(TOKEN_KEY),
           AsyncStorage.removeItem(USER_KEY),
         ]);
+        DeviceEventEmitter.emit('auth:logout');
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

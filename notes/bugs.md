@@ -77,10 +77,10 @@ Assignees: bugs tagged _(Colt)_ are assigned to Colt. Untagged = Andes.
 
 <!-- login errors, registration validation, guest mode, token refresh -->
 
-- [ ] [Login-Not-Persisted] — **P1** — Login state is not saved when the app is fully closed and reopened. User has to log in again every session.
+- [x] [Login-Not-Persisted] — **P1** — Login state not saved across app restarts. Root cause: 30-min JWT + refresh endpoint required a valid token to refresh. Fixed: token lifetime extended to 30 days; `auth:logout` event clears React state when refresh fails.
 - [ ] [Guest-Mode-While-Logged-In] — **P2** — "Continue as Guest" option is shown or tappable even when already logged in, which is misleading. _(Colt)_
-- [ ] [Redirect-To-Login-While-Authenticated] — **P1** — App sometimes redirects to the login screen even when the user is already logged in. Likely a token refresh race condition — observed after tapping "Continue as Guest" while authenticated, then hitting session expired on next action.
-- [ ] [Session-Expired-On-Submit] — **P1** — "Session expired, please log back in" error appears when submitting an event. Token is not being refreshed transparently in the background before submission. _(related to [Redirect-To-Login-While-Authenticated])_
+- [x] [Redirect-To-Login-While-Authenticated] — **P1** — App redirects to login even when authenticated. Root cause: refresh failure cleared AsyncStorage but not AuthContext React state. Fixed with `DeviceEventEmitter` auth:logout event.
+- [x] [Session-Expired-On-Submit] — **P1** — "Session expired" on submission. Same root cause as above — 30-min token lifetime. Fixed by 30-day token + state sync on refresh failure.
 - [x] [Guest-No-Dark-Mode] — **P2** — Logged-out users have no option to switch between light and dark mode. Fixed: dark mode toggle added to guest Profile view.
 - [x] [Guest-No-Support] — **P2** — Logged-out users have no access to a Support/Help option. Fixed: Contact Support and Privacy Policy links added to guest Profile view.
 - [ ] [Forgot-Password] — **P1** — No recover/reset password flow anywhere in the app. Needs investigation and implementation.
