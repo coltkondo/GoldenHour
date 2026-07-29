@@ -48,7 +48,7 @@ Assignees: bugs tagged _(Colt)_ are assigned to Colt. Untagged = Andes.
 <!-- week view, event blocks, day/venue filters -->
 
 - [ ] [Events-No-Calendar-View] — **P1** — The Events toggle shows a flat card list, not a calendar. The plan was two calendar grids: one for Events (events plotted by date/time) and one for Happy Hours (existing week/day/month grid). The toggle should flip between two proper calendars, not a list and a calendar.
-- [ ] [Calendar-Swipe-Logout] — **P1** — Swiping down on the Calendar page redirects to Login screen unexpectedly. Same root cause as [Map-Swipe-Logout] and [Accidental-Tabs].
+- [x] [Calendar-Swipe-Logout] — **P1** — Swiping down on the Calendar page redirects to Login screen unexpectedly. Same root cause as [Map-Swipe-Logout] and [Accidental-Tabs]. Fixed: `gestureEnabled: false` on Main in RootNavigator.
 
 ---
 
@@ -103,7 +103,7 @@ Assignees: bugs tagged _(Colt)_ are assigned to Colt. Untagged = Andes.
 - [ ] [Approved-Content-Not-Visible] — **P0** — Approved deal and event submissions do not appear in the app (home screen, calendar, venue detail). Points are awarded and the submission is marked approved, but the content is invisible to users. Two root causes identified — see investigation notes below.
   - **Events**: `Event` model default is `verified=False`. The `/events/` endpoint hard-filters `Event.verified == True`. `_apply_submission` never sets `verified=True`, so every user-submitted event is permanently invisible. _(Colt — backend one-liner)_
   - **Deals**: `_apply_submission` creates a `Deal` row but never creates or links it to a `HappyHourSchedule`. The home screen (`/deals/today`) only returns deals whose ID appears in a schedule's `deal_ids` array. The venue detail screen (HappyHourScreen) does the same filter client-side. A newly approved deal has no schedule, so it is filtered out everywhere.
-- [ ] [Accidental-Tabs] — **P1** — Swiping on Map and Calendar pages creates a series of ghost tabs the user can swipe between. Must swipe down on all tabs to return to root. Root cause shared with [Map-Swipe-Logout] and [Calendar-Swipe-Logout] — likely a navigation gesture conflict.
+- [x] [Accidental-Tabs] — **P1** — Swiping on Map and Calendar pages creates a series of ghost tabs the user can swipe between. Must swipe down on all tabs to return to root. Fixed: `gestureEnabled: false` on Main in RootNavigator stops native stack from intercepting tab-screen swipes.
 - [x] [Event-Submission-No-Apply] — **P1** — Approving a `new_event` submission awarded 75 pts but never created the event in the DB. Fixed: added `new_event` branch to `_apply_submission`, `EventData` schema, and admin portal label/description. Fixed in 13f2767.
 
 ---

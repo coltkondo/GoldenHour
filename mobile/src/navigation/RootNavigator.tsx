@@ -36,7 +36,7 @@ function AppNavigator({ initialRoute }: { initialRoute: InitialRoute }) {
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName={initialRoute}>
-      <Stack.Screen name="Main" component={TabNavigator} />
+      <Stack.Screen name="Main" component={TabNavigator} options={{ gestureEnabled: false }} />
       {/* Auth modals — reachable from SubmitScreen/ProfileScreen auth gates */}
       <Stack.Screen
         name="Login"
