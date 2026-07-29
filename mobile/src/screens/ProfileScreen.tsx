@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Linking, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Linking, Alert, Share } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../theme';
@@ -70,7 +70,7 @@ export const ProfileScreen = () => {
             />
           </View>
           <View style={styles.guestLinks}>
-            <TouchableOpacity onPress={() => Linking.openURL(`mailto:${SUPPORT_EMAIL}`)}>
+            <TouchableOpacity onPress={handleContactSupport}>
               <Text style={[{ fontSize: 12, fontWeight: '500', color: d.textMuted }]}>Contact Support</Text>
             </TouchableOpacity>
             <Text style={[{ color: d.border }]}>·</Text>
@@ -82,6 +82,23 @@ export const ProfileScreen = () => {
       </View>
     );
   }
+
+  const handleContactSupport = async () => {
+    const url = `mailto:${SUPPORT_EMAIL}`;
+    const canOpen = await Linking.canOpenURL(url);
+    if (canOpen) {
+      Linking.openURL(url);
+    } else {
+      Alert.alert(
+        'Contact Support',
+        `Email us at ${SUPPORT_EMAIL}`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Share Email', onPress: () => Share.share({ message: SUPPORT_EMAIL }) },
+        ],
+      );
+    }
+  };
 
   const handleDeleteAccount = () => {
     Alert.alert(
@@ -277,7 +294,7 @@ export const ProfileScreen = () => {
             <TouchableOpacity
               style={styles.row}
               activeOpacity={0.7}
-              onPress={() => Linking.openURL(`mailto:${SUPPORT_EMAIL}`)}
+              onPress={handleContactSupport}
             >
               <View style={styles.rowLeft}>
                 <View style={[styles.rowIcon, { backgroundColor: d.filterInactive }]}>
