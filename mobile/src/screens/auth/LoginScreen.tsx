@@ -106,6 +106,13 @@ export const LoginScreen = () => {
             )}
           </TouchableOpacity>
 
+          <TouchableOpacity
+            style={styles.forgotBtn}
+            onPress={() => navigation.navigate('ForgotPassword')}
+          >
+            <Text style={[styles.forgotText, { color: d.textMuted }]}>Forgot password?</Text>
+          </TouchableOpacity>
+
           <TouchableOpacity style={styles.switchBtn} onPress={() => navigation.navigate('Signup')}>
             <Text style={[styles.switchText, { color: d.textMuted }]}>
               No account? <Text style={[styles.switchLink, { color: d.text }]}>Sign Up</Text>
@@ -145,6 +152,8 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   loginBtnText: { fontSize: 15, fontWeight: '600' },
+  forgotBtn: { alignItems: 'center', marginTop: 4 },
+  forgotText: { fontSize: 13, fontWeight: '500' },
   switchBtn: { alignItems: 'center', marginTop: 20 },
   switchText: { fontSize: 14, fontWeight: '500' },
   switchLink: { fontWeight: '600' },

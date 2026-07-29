@@ -53,6 +53,10 @@ class Settings(BaseSettings):
     # Set REWARDS_ENABLED=false in .env to disable all point awarding (Arts Fest beta mode)
     REWARDS_ENABLED: bool = True
 
+    # Email (password reset via Resend — resend.com)
+    RESEND_API_KEY: Optional[str] = None
+    FROM_EMAIL: str = "Golden Hour <noreply@gldnhr.com>"
+
     # Optional: Maps and external services
     GOOGLE_MAPS_API_KEY: Optional[str] = None
     MAPBOX_TOKEN: Optional[str] = None

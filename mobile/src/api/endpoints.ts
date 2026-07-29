@@ -120,6 +120,14 @@ export const authAPI = {
   deleteAccount: async () => {
     await apiClient.delete('/auth/me');
   },
+
+  forgotPassword: async (email: string) => {
+    await apiClient.post('/auth/forgot-password', { email });
+  },
+
+  resetPassword: async (data: { email: string; code: string; new_password: string }) => {
+    await apiClient.post('/auth/reset-password', data);
+  },
 };
 
 export const submissionsAPI = {
