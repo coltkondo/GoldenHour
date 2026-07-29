@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from typing import Optional, List
 from datetime import datetime, date
 from uuid import UUID
@@ -7,12 +7,18 @@ from uuid import UUID
 class DealBase(BaseModel):
     title: str = Field(..., min_length=1, max_length=255)
     description: Optional[str] = None
-    category: str  # "drinks", "food", "both"
-    deal_type: str  # "discount", "bogo", "special_price"
+    category: Optional[str] = None  # "drinks", "food", "both" — absent on user submissions
+    deal_type: Optional[str] = None  # "discount", "bogo", "special_price" — absent on user submissions
     original_price: Optional[float] = Field(None, ge=0)
     deal_price: Optional[float] = Field(None, ge=0)
     discount_percentage: Optional[float] = Field(None, ge=0, le=100)
     items: List[str] = []
+
+    @field_validator('items', mode='before')
+    @classmethod
+    def coerce_items(cls, v):
+        # ARRAY column is NULL for user-submitted deals; coerce to empty list
+        return v if v is not None else []
 
     @model_validator(mode="after")
     def validate_deal_price(self) -> "DealBase":
@@ -54,9 +60,6 @@ class DealUpdate(BaseModel):
 class DealResponse(DealBase):
     id: UUID
     venue_id: UUID
-    # Override required fields from DealBase — user submissions won't have these
-    category: Optional[str] = None
-    deal_type: Optional[str] = None
     active: bool
     verified: bool
     source: Optional[str] = "manual"
