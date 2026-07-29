@@ -42,6 +42,7 @@ Fix a bug → check the box and add the commit: `- [x] Description — fixed in 
 
 <!-- week view, event blocks, day/venue filters -->
 
+- [ ] [Events-No-Calendar-View] — **P1** — The Events toggle shows a flat card list, not a calendar. The plan was two calendar grids: one for Events (events plotted by date/time) and one for Happy Hours (existing week/day/month grid). The toggle should flip between two proper calendars, not a list and a calendar.
 - [ ] [Calendar-Swipe-Logout] — **P1** — Swiping down on the Calendar page redirects to Login screen unexpectedly. Same root cause as [Map-Swipe-Logout] and [Accidental-Tabs].
 
 ---
