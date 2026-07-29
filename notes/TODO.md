@@ -3,7 +3,7 @@
 _Economy spec: see [ECONOMY_SPEC.md](ECONOMY_SPEC.md). App Store gate detail: see [APP_STORE_COMPLIANCE.md](APP_STORE_COMPLIANCE.md)._
 
 
-**24 open items.**
+**14 open items.**
 
 ---
 
@@ -92,7 +92,7 @@ Not needed tomorrow. Needed before this leaves TestFlight for a real public list
 Required before opening to the student body — a TestFlight group of people you know personally doesn't need these yet, per the runbook's own operational-management principle for the July beta.
 
 ### `feature/email-verification`
-- [ ] Email verification — `is_verified` column exists, wire ORM + confirmation link + block point awards for unverified accounts. **Build first in this group** — it's the prerequisite for account-age gating below.
+- [ ] Email verification — `is_verified` column exists, wire ORM + confirmation link + block point awards for unverified accounts. **Build first in this group** — it's the prerequisite for account-age gating below. Resend is now wired up (added for forgot-password), so the email-sending plumbing is already in place.
 
 ### `feature/account-age-gate`
 - [ ] Account-age corroboration gate (<7 days old → 0 pts) — depends on email verification existing first.
@@ -191,3 +191,7 @@ Required before opening to the student body — a TestFlight group of people you
 - [x] **Account deletion** — `DELETE /auth/me` anonymizes account in place; Delete Account button in ProfileScreen with confirmation alert
 - [x] **In-app privacy + support links** — "LEGAL & SUPPORT" section in ProfileScreen: Privacy Policy → `coltkondo.github.io/GoldenHour/privacy/`, Contact Support → `mailto:gldnhr.app@gmail.com`
 - [x] **Privacy policy page** — `docs/privacy/index.html` written and pushed; live once GitHub Pages is enabled in repo settings (see P0 checklist)
+- [x] **Forgot password / password reset** — two-stage `ForgotPasswordScreen` (email → 6-digit OTP → new password + confirm); backend `POST /auth/forgot-password` + `POST /auth/reset-password`; OTP SHA-256 hashed, 15-min expiry; sent via Resend. `RESEND_API_KEY` must be set in Railway env.
+- [x] **Resend email infrastructure** — `resend` in requirements.txt, `RESEND_API_KEY` + `FROM_EMAIL` in config, `backend/app/services/email.py` wrapper. Ready for email verification (P3) to reuse.
+- [x] **Submission schedule creation on deal approval** — `_create_deal_schedules` reads `days`/`is_all_day`/`start_time`/`end_time` from raw submission payload and creates `HappyHourSchedule` rows; was silently dropped by `DealData.extra="ignore"` before fix.
+- [x] **Expired deal removes from schedule** — `deal_expired` approval calls `_remove_deal_from_schedules`; removes deal UUID from all matching schedule arrays, deactivates any schedule that empties.

@@ -24,6 +24,8 @@ A point = $0.02. A verified deal = ~$1. A corroboration = ~$0.04.
 
 ## Reward Threshold
 
+REWARDS NOT ACTIVE YET
+
 **1,000 points = $20 cash.**
 
 - Current payout: $20 via Venmo, on user request.
