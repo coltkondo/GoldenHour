@@ -165,19 +165,25 @@ export const SubmitScreen = () => {
   /* Success */
   if (submitted) {
     return (
-      <View style={[styles.center, { backgroundColor: d.background, flex: 1 }]}>
-        <AppIcon name="correct" size={64} role="positive" />
-        <Text style={[styles.successTitle, { color: d.text }]}>Submitted!</Text>
-        <Text style={[styles.wallSub, { color: d.textMuted }]}>
-          Thanks for helping keep GLDNHR accurate.
-        </Text>
-        {REWARDS_ENABLED && lastPts > 0 && (
-          <View style={[styles.ptsBadge, { backgroundColor: 'rgba(245,166,35,0.12)', borderColor: d.primary }]}>
-            <AppIcon name="points" size={14} role="brand" />
-            <Text style={[styles.ptsBadgeText, { color: d.primary }]}>+{lastPts} pts when approved</Text>
-          </View>
-        )}
-        <TouchableOpacity style={[styles.btn, { backgroundColor: d.primary, marginTop: 16 }]} onPress={reset}>
+      <View style={[styles.center, { backgroundColor: d.background, flex: 1, paddingHorizontal: 28 }]}>
+        <View style={[styles.successCard, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+          <AppIcon name="correct" size={52} role="positive" />
+          <Text style={[styles.successTitle, { color: d.text }]}>Submitted!</Text>
+          <Text style={[styles.wallSub, { color: d.textMuted }]}>
+            Thanks for helping keep GLDNHR accurate. We'll review it shortly.
+          </Text>
+          {REWARDS_ENABLED && lastPts > 0 && (
+            <View style={[styles.ptsBadge, { backgroundColor: 'rgba(245,166,35,0.12)', borderColor: d.primary }]}>
+              <AppIcon name="points" size={14} role="brand" />
+              <Text style={[styles.ptsBadgeText, { color: d.primary }]}>+{lastPts} pts when approved</Text>
+            </View>
+          )}
+        </View>
+        <TouchableOpacity
+          style={[styles.btn, { backgroundColor: d.primary, width: '100%', marginTop: 20 }]}
+          onPress={reset}
+          activeOpacity={0.85}
+        >
           <Text style={[styles.btnText, { color: d.buttonPrimaryText }]}>Submit Another</Text>
         </TouchableOpacity>
         <TouchableOpacity style={{ marginTop: 16 }} onPress={() => navigation.navigate('MySubmissions')}>
@@ -1080,7 +1086,15 @@ const styles = StyleSheet.create({
   /* Auth wall / success */
   wallTitle: { fontSize: 22, fontWeight: '800', letterSpacing: -0.4, marginTop: 20, marginBottom: 8, textAlign: 'center' },
   wallSub: { fontSize: 14, fontWeight: '500', textAlign: 'center', marginBottom: 4 },
-  successTitle: { fontSize: 26, fontWeight: '800', letterSpacing: -0.5, marginTop: 20, marginBottom: 8 },
+  successCard: {
+    width: '100%',
+    borderRadius: 20,
+    borderWidth: 1,
+    padding: 28,
+    alignItems: 'center',
+    gap: 10,
+  },
+  successTitle: { fontSize: 26, fontWeight: '800', letterSpacing: -0.5, marginTop: 8, marginBottom: 4 },
   mutedText: { fontSize: 13, fontWeight: '500' },
   linkText: { fontSize: 14, fontWeight: '600' },
   ptsBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 8, marginTop: 12, borderWidth: 1 },

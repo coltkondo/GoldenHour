@@ -56,7 +56,7 @@ Assignees: bugs tagged _(Colt)_ are assigned to Colt. Untagged = Andes.
 
 <!-- submission forms, photo upload, auth wall -->
 
-- [ ] [Submitted-Screen] — **P2** — "Submit Another" box looks bad. Needs a redesign.
+- [x] [Submitted-Screen] — **P2** — "Submit Another" box looks bad. Needs a redesign. Fixed in mobile/src/screens/SubmitScreen.tsx — success state now uses a proper card with full-width button.
 - [ ] [Event-Submit-Time-Defaults-AM] — **P2** — Time picker on event submission defaults to AM. Should default to PM since most events happen in the evening. _(Colt)_
 - [ ] [Event-Submit-Date-No-Picker] — **P2** — "Enter date" field is a plain text input. Should open a native calendar/date picker instead. _(Colt)_
 - [ ] [Event-Submit-No-Recurring] — **P2** — No way to mark an event as recurring when submitting. Should support weekly, biweekly, or other recurrence patterns so users don't have to re-submit the same event every week.
