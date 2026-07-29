@@ -100,6 +100,8 @@ Assignees: bugs tagged _(Colt)_ are assigned to Colt. Untagged = Andes.
 
 <!-- performance, deep links, push notifications, onboarding -->
 
+- [x] [Expired-Deal-Orphan-Schedule] — **P1** — Approving a "deal no longer active" submission set `Deal.active = False` but left the `HappyHourSchedule` row intact with the deal's UUID still in `deal_ids`. The dead time slot continued appearing in the calendar. Fixed: `deal_expired` approval now calls `_remove_deal_from_schedules` — removes the deal UUID from all matching schedule arrays, deactivates any schedule that becomes empty. Fixed in `c4882d9`.
+
 - [x] [Approved-Content-Not-Visible] — **P0** — Approved deal and event submissions do not appear in the app (home screen, calendar, venue detail). Points are awarded and the submission is marked approved, but the content is invisible to users. Two root causes identified — see investigation notes below.
   - **Events**: `Event` model default is `verified=False`. The `/events/` endpoint hard-filters `Event.verified == True`. `_apply_submission` never sets `verified=True`, so every user-submitted event is permanently invisible. _(Colt — backend one-liner)_
   - **Deals**: Fixed — `_apply_submission` now flushes the new Deal to get its ID, then calls `_create_deal_schedules` which reads `days`/`is_all_day`/`start_time`/`end_time` from the raw submission payload and creates a `HappyHourSchedule` row per day (or appends to an existing matching schedule). All data was already being submitted by the mobile; it was being silently dropped by `DealData.extra="ignore"`. Fixed in `backend/app/services/submission_review.py`.
