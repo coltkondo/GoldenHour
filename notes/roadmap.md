@@ -157,6 +157,14 @@ User picks a start time and number of stops. App builds a route where happy hour
 
 ---
 
+## Near-Term (Post-TestFlight, Pre-Update 1)
+
+Small features worth building before the first public update — low effort, high user satisfaction.
+
+- [ ] [Push-Submission-Status] — Notify users when their submission is approved or rejected. "Your event was approved! +50 pts." Simple to wire: `expo-notifications` for token registration, store token on User, fire from `submission_review.py` via Expo Push API. Needs a new TestFlight build for the push entitlement. ~1 day of work. _(Note: full notification system with favorites + nearby events is Update 3 — this is just the submission feedback loop.)_
+
+---
+
 ## Ideas Parking Lot
 
 * Host events at bars directly (GLDNHR-sponsored nights)
