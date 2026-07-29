@@ -208,6 +208,7 @@ def _apply_submission(sub: Submission, db: Session, submitter: User | None = Non
     elif sub.submission_type == "deal_expired":
         deal = _get_deal(sub, db)
         deal.active = False
+        _remove_deal_from_schedules(deal.id, deal.venue_id, db)
 
     elif sub.submission_type == "deal_update":
         deal = _get_deal(sub, db)
@@ -263,6 +264,32 @@ _DAY_NAME_TO_INT = {
     "monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3,
     "friday": 4, "saturday": 5, "sunday": 6,
 }
+
+
+def _remove_deal_from_schedules(deal_id, venue_id, db: Session) -> None:
+    """Remove an expired deal from all schedule deal_ids arrays.
+    Deactivates any schedule that becomes empty — keeps admin-managed
+    schedules alive as long as they still have other deals.
+    """
+    schedules = (
+        db.query(HappyHourSchedule)
+        .filter(
+            HappyHourSchedule.venue_id == venue_id,
+            HappyHourSchedule.deal_ids.contains([deal_id]),
+        )
+        .all()
+    )
+    for schedule in schedules:
+        remaining = [d for d in (schedule.deal_ids or []) if d != deal_id]
+        if remaining:
+            schedule.deal_ids = remaining
+        else:
+            schedule.active = False
+            schedule.deal_ids = []
+    if schedules:
+        logger.bind(deal_id=str(deal_id), schedules_updated=len(schedules)).info(
+            "deal_removed_from_schedules"
+        )
 
 
 def _create_deal_schedules(deal: Deal, data: dict, db: Session) -> None:
