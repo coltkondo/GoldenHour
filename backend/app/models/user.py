@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Boolean, Float, Enum as SAEnum, CheckConstraint, ForeignKey
+from sqlalchemy import Column, String, Integer, Boolean, Float, Enum as SAEnum, CheckConstraint, ForeignKey, DateTime
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 import uuid
@@ -27,6 +27,10 @@ class User(Base, TimestampMixin):
     signup_longitude = Column(Float, nullable=False)
     points_balance = Column(Integer, nullable=False, default=0)
     active = Column(Boolean, nullable=False, default=True)
+
+    # Password reset — populated only during an active reset flow
+    reset_token_hash = Column(String(64), nullable=True)
+    reset_token_expires = Column(DateTime(timezone=True), nullable=True)
 
     market = relationship("Market", back_populates="users")
     submissions = relationship(

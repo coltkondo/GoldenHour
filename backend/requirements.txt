@@ -38,6 +38,9 @@ limits==5.8.0
 # Structured logging
 loguru==0.7.2
 
+# Transactional email (password reset codes)
+resend
+
 # Transitive dependencies (pinned for reproducibility across Mac and Windows)
 annotated-doc==0.0.4
 annotated-types==0.7.0

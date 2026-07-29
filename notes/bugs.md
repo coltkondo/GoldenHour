@@ -83,7 +83,8 @@ Assignees: bugs tagged _(Colt)_ are assigned to Colt. Untagged = Andes.
 - [x] [Session-Expired-On-Submit] — **P1** — "Session expired" on submission. Same root cause as above — 30-min token lifetime. Fixed by 30-day token + state sync on refresh failure.
 - [x] [Guest-No-Dark-Mode] — **P2** — Logged-out users have no option to switch between light and dark mode. Fixed: dark mode toggle added to guest Profile view.
 - [x] [Guest-No-Support] — **P2** — Logged-out users have no access to a Support/Help option. Fixed: Contact Support and Privacy Policy links added to guest Profile view.
-- [ ] [Forgot-Password] — **P1** — No recover/reset password flow anywhere in the app. Needs investigation and implementation.
+- [x] [Forgot-Password] — **P1** — No recover/reset password flow anywhere in the app. Fixed: two-stage ForgotPasswordScreen (email → 6-digit OTP → new password); backend adds `/auth/forgot-password` + `/auth/reset-password` endpoints; OTP sent via Resend, SHA-256 hashed, 15-min expiry. Requires `RESEND_API_KEY` in Railway env vars.
+- [ ] [Signup-No-Confirm-Password] — **P2** — Signup screen has no "Confirm Password" field. Users can mistype their password with no way to catch it before submitting.
 
 ---
 

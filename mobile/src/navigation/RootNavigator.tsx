@@ -11,10 +11,11 @@ import { LeaderboardScreen } from '../screens/LeaderboardScreen';
 import { AdminReviewScreen } from '../screens/AdminReviewScreen';
 import { LoginScreen } from '../screens/auth/LoginScreen';
 import { SignupScreen } from '../screens/auth/SignupScreen';
+import { ForgotPasswordScreen } from '../screens/auth/ForgotPasswordScreen';
 
 const Stack = createNativeStackNavigator();
 
-type InitialRoute = 'Main' | 'Login' | 'Signup';
+type InitialRoute = 'Main' | 'Login' | 'Signup' | 'ForgotPassword';
 
 function AppNavigator({ initialRoute }: { initialRoute: InitialRoute }) {
   const { loading } = useAuth();
@@ -46,6 +47,11 @@ function AppNavigator({ initialRoute }: { initialRoute: InitialRoute }) {
       <Stack.Screen
         name="Signup"
         component={SignupScreen}
+        options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
+      />
+      <Stack.Screen
+        name="ForgotPassword"
+        component={ForgotPasswordScreen}
         options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
       />
       <Stack.Screen

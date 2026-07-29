@@ -1,4 +1,8 @@
+import hashlib
 import math
+import random
+import string
+from datetime import datetime, timezone, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import func
@@ -15,7 +19,8 @@ from app.core.security import (
 from app.models.market import Market
 from app.models.user import User
 from app.models.submission import Submission
-from app.schemas.user import UserCreate, UserLogin, UserResponse, Token
+from app.schemas.user import UserCreate, UserLogin, UserResponse, Token, ForgotPasswordRequest, ResetPasswordRequest
+from app.services.email import send_password_reset_email
 
 
 def _haversine_m(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
@@ -121,4 +126,58 @@ def delete_account(current_user: User = Depends(get_current_user), db: Session =
     current_user.signup_longitude = 0.0
     current_user.points_balance = 0
     current_user.active = False
+    db.commit()
+
+
+@router.post("/forgot-password", status_code=204)
+@limiter.limit("3/minute")
+def forgot_password(request: Request, data: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    """Send a 6-digit OTP to the email if it belongs to an active account.
+
+    Always returns 204 — never reveals whether the email is registered.
+    """
+    user = db.query(User).filter(
+        func.lower(User.email) == data.email,
+        User.active == True,
+    ).first()
+    if user is None:
+        return
+
+    code = "".join(random.choices(string.digits, k=6))
+    user.reset_token_hash = hashlib.sha256(code.encode()).hexdigest()
+    user.reset_token_expires = datetime.now(timezone.utc) + timedelta(minutes=15)
+    db.commit()
+
+    try:
+        send_password_reset_email(user.email, code)
+    except Exception:
+        # Fail silently — don't leak account existence via timing or error shape
+        pass
+
+
+@router.post("/reset-password", status_code=204)
+@limiter.limit("5/minute")
+def reset_password(request: Request, data: ResetPasswordRequest, db: Session = Depends(get_db)):
+    """Validate the OTP and set a new password."""
+    user = db.query(User).filter(
+        func.lower(User.email) == data.email,
+        User.active == True,
+    ).first()
+    if user is None:
+        raise HTTPException(status_code=400, detail="Invalid or expired code")
+
+    code_hash = hashlib.sha256(data.code.encode()).hexdigest()
+    now = datetime.now(timezone.utc)
+
+    if (
+        not user.reset_token_hash
+        or user.reset_token_hash != code_hash
+        or user.reset_token_expires is None
+        or user.reset_token_expires.replace(tzinfo=timezone.utc) < now
+    ):
+        raise HTTPException(status_code=400, detail="Invalid or expired code")
+
+    user.password_hash = hash_password(data.new_password)
+    user.reset_token_hash = None
+    user.reset_token_expires = None
     db.commit()
