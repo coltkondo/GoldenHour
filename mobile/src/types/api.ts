@@ -26,8 +26,8 @@ export interface Deal {
   venue_id: string;
   title: string;
   description: string | null;
-  category: string;
-  deal_type: string;
+  category: string | null;
+  deal_type: string | null;
   original_price: number | null;
   deal_price: number | null;
   discount_percentage: number | null;

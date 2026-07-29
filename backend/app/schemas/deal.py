@@ -54,6 +54,9 @@ class DealUpdate(BaseModel):
 class DealResponse(DealBase):
     id: UUID
     venue_id: UUID
+    # Override required fields from DealBase — user submissions won't have these
+    category: Optional[str] = None
+    deal_type: Optional[str] = None
     active: bool
     verified: bool
     source: Optional[str] = "manual"
