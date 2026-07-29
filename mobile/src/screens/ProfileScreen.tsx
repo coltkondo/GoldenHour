@@ -55,6 +55,30 @@ export const ProfileScreen = () => {
             Just browsing — take me to deals
           </Text>
         </TouchableOpacity>
+
+        {/* Dark mode toggle + support links accessible without login */}
+        <View style={[styles.guestFooter, { borderTopColor: d.border }]}>
+          <View style={styles.guestDarkModeRow}>
+            <Text style={[{ fontSize: 13, fontWeight: '500', color: d.textMuted }]}>
+              {mode === 'dark' ? 'Dark Mode' : 'Light Mode'}
+            </Text>
+            <Switch
+              value={mode === 'dark'}
+              onValueChange={toggleMode}
+              trackColor={{ false: d.filterInactive, true: d.primary }}
+              thumbColor={d.background}
+            />
+          </View>
+          <View style={styles.guestLinks}>
+            <TouchableOpacity onPress={() => Linking.openURL(`mailto:${SUPPORT_EMAIL}`)}>
+              <Text style={[{ fontSize: 12, fontWeight: '500', color: d.textMuted }]}>Contact Support</Text>
+            </TouchableOpacity>
+            <Text style={[{ color: d.border }]}>·</Text>
+            <TouchableOpacity onPress={() => Linking.openURL(PRIVACY_URL)}>
+              <Text style={[{ fontSize: 12, fontWeight: '500', color: d.textMuted }]}>Privacy Policy</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
     );
   }
@@ -360,4 +384,23 @@ const styles = StyleSheet.create({
     paddingTop: 2,
   },
   logoutLabel: { fontSize: 14, fontWeight: '500' },
+
+  guestFooter: {
+    width: '100%',
+    marginTop: 40,
+    paddingTop: 24,
+    borderTopWidth: 0.5,
+    gap: 16,
+  },
+  guestDarkModeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  guestLinks: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
 });

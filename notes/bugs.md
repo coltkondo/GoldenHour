@@ -81,8 +81,8 @@ Assignees: bugs tagged _(Colt)_ are assigned to Colt. Untagged = Andes.
 - [ ] [Guest-Mode-While-Logged-In] — **P2** — "Continue as Guest" option is shown or tappable even when already logged in, which is misleading. _(Colt)_
 - [ ] [Redirect-To-Login-While-Authenticated] — **P1** — App sometimes redirects to the login screen even when the user is already logged in. Likely a token refresh race condition — observed after tapping "Continue as Guest" while authenticated, then hitting session expired on next action.
 - [ ] [Session-Expired-On-Submit] — **P1** — "Session expired, please log back in" error appears when submitting an event. Token is not being refreshed transparently in the background before submission. _(related to [Redirect-To-Login-While-Authenticated])_
-- [ ] [Guest-No-Dark-Mode] — **P2** — Logged-out users have no option to switch between light and dark mode. Theme toggle is only accessible from Profile, which requires login.
-- [ ] [Guest-No-Support] — **P2** — Logged-out users have no access to a Support/Help option. _(related to [Contact-Support])_
+- [x] [Guest-No-Dark-Mode] — **P2** — Logged-out users have no option to switch between light and dark mode. Fixed: dark mode toggle added to guest Profile view.
+- [x] [Guest-No-Support] — **P2** — Logged-out users have no access to a Support/Help option. Fixed: Contact Support and Privacy Policy links added to guest Profile view.
 - [ ] [Forgot-Password] — **P1** — No recover/reset password flow anywhere in the app. Needs investigation and implementation.
 
 ---
