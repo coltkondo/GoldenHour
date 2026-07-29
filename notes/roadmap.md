@@ -42,6 +42,10 @@ The feature that turns a "check it once a week" app into a "check it every day" 
 * Bar partners can submit events through the same submission pipeline
 * Begin outreach to local bars for event coordination
 
+ALREADY IMPLEMENTED
+
+Could be cool to do *Private Events* like lets say a club wants to throw an event at a local bar, cna advertise it there. Think run clubs, greek life fundraisers, friends hanging, coworkers hanging. Something worth investigating
+
 ---
 
 ## Update 2 — App-Specific Deals (the moat)
@@ -162,6 +166,16 @@ User picks a start time and number of stops. App builds a route where happy hour
 Small features worth building before the first public update — low effort, high user satisfaction.
 
 - [ ] [Push-Submission-Status] — Notify users when their submission is approved or rejected. "Your event was approved! +50 pts." Simple to wire: `expo-notifications` for token registration, store token on User, fire from `submission_review.py` via Expo Push API. Needs a new TestFlight build for the push entitlement. ~1 day of work. _(Note: full notification system with favorites + nearby events is Update 3 — this is just the submission feedback loop.)_
+
+---
+
+## Technical Backlog
+
+Structural improvements that aren't user-facing but unblock future features.
+
+- [ ] [Venue-Opening-Hours] — Add per-venue opening hours to the database (7-day structure). Currently missing: "all day" deal submissions default to 11:00–23:59 because there's nothing to look up. Google Places API returns `opening_hours` as part of Place Details — seed from there when a `google_place_id` exists. Store as JSONB on the Venue row (`{"monday": {"open": "11:00", "close": "23:00"}, ...}`) — no separate table needed at this scale. Payoff: accurate "all day" deal windows, "open now" filtering on the home screen, closing-time warnings on venue cards.
+
+- [ ] [Event-Schedule-Table] — Events are currently one-off rows. Recurring events (weekly trivia, monthly crawls, biweekly karaoke) need either a recurrence rule on the `Event` model (`rrule` string) or a separate `EventSchedule` table mirroring the `HappyHourSchedule` pattern — one row per recurring slot, with the event template linked. The two-table pattern (Event + EventSchedule) is the cleanest parallel to Deals + HappyHourSchedule and makes calendar rendering straightforward. Worth deciding before [Event-Submit-No-Recurring] is built, since that submission flow determines what data gets collected.
 
 ---
 

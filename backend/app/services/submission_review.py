@@ -18,6 +18,7 @@ from app.models.submission import Submission
 from app.models.user import User
 from app.models.venue import Venue
 from app.models.deal import Deal
+from app.models.happy_hour import HappyHourSchedule
 from app.models.event import Event
 from app.models.point_transaction import PointTransaction
 from app.schemas.submission import ReviewAction, SubmissionResponse
@@ -201,6 +202,8 @@ def _apply_submission(sub: Submission, db: Session, submitter: User | None = Non
             raise HTTPException(status_code=422, detail="venue_id or bar_id required for new_deal submission")
         deal = Deal(**deal_fields)
         db.add(deal)
+        db.flush()  # populate deal.id before schedule rows reference it
+        _create_deal_schedules(deal, data, db)
 
     elif sub.submission_type == "deal_expired":
         deal = _get_deal(sub, db)
@@ -254,6 +257,78 @@ def _apply_submission(sub: Submission, db: Session, submitter: User | None = Non
         )
         db.add(event)
         logger.bind(venue_id=str(venue.id), event_name=event_data.event_name).info("event_created_from_submission")
+
+
+_DAY_NAME_TO_INT = {
+    "monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3,
+    "friday": 4, "saturday": 5, "sunday": 6,
+}
+
+
+def _create_deal_schedules(deal: Deal, data: dict, db: Session) -> None:
+    """Create or update HappyHourSchedule rows from the schedule fields the mobile submitted."""
+    from datetime import time as dt_time
+
+    days = [d.lower() for d in (data.get("days") or [])]
+    if not days:
+        return
+
+    is_all_day = data.get("is_all_day", False)
+    start_str = data.get("start_time")
+    end_str = data.get("end_time")
+
+    if is_all_day or not start_str or not end_str:
+        # No venue opening hours stored yet — default to a wide window
+        start_t = dt_time(11, 0)
+        end_t = dt_time(23, 59)
+    else:
+        try:
+            sh, sm = map(int, start_str.split(":"))
+            eh, em = map(int, end_str.split(":"))
+            start_t, end_t = dt_time(sh, sm), dt_time(eh, em)
+        except (ValueError, AttributeError):
+            logger.bind(deal_id=str(deal.id), start=start_str, end=end_str).warning(
+                "deal_schedule_unparseable_time"
+            )
+            return
+
+    if start_t >= end_t:
+        logger.bind(deal_id=str(deal.id), start=str(start_t), end=str(end_t)).warning(
+            "deal_schedule_invalid_window"
+        )
+        return
+
+    for day_name in days:
+        day_int = _DAY_NAME_TO_INT.get(day_name)
+        if day_int is None:
+            continue
+
+        existing = (
+            db.query(HappyHourSchedule)
+            .filter(
+                HappyHourSchedule.venue_id == deal.venue_id,
+                HappyHourSchedule.day_of_week == day_int,
+                HappyHourSchedule.start_time == start_t,
+                HappyHourSchedule.end_time == end_t,
+                HappyHourSchedule.active.is_(True),
+            )
+            .first()
+        )
+
+        if existing:
+            current_ids = list(existing.deal_ids or [])
+            if deal.id not in current_ids:
+                existing.deal_ids = current_ids + [deal.id]
+        else:
+            db.add(HappyHourSchedule(
+                venue_id=deal.venue_id,
+                day_of_week=day_int,
+                start_time=start_t,
+                end_time=end_t,
+                deal_ids=[deal.id],
+            ))
+
+    logger.bind(deal_id=str(deal.id), days=days).info("deal_schedules_created")
 
 
 def _get_venue(sub: Submission, db: Session) -> Venue:
