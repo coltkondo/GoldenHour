@@ -6,6 +6,8 @@ Priority levels: **P0** crash / data wrong · **P1** broken feature · **P2** vi
 
 Fix a bug → check the box and add the commit: `- [x] Description — fixed in abc1234`
 
+Assignees: bugs tagged _(Colt)_ are assigned to Colt. Untagged = Andes.
+
 ---
 
 ## Home Screen
@@ -21,7 +23,7 @@ Fix a bug → check the box and add the commit: `- [x] Description — fixed in 
 <!-- logo, nickname, day selector, deals per day, directions/call/website, corroborate button -->
 
 - [ ] [Corroborate-Vicinity-Gate] — **P1** — "Still Accurate" corroborate button should only appear when the user is physically within range of the bar. Currently shows regardless of location.
-- [ ] [Corroborate-Daily-Cap] — **P1** — No limit on how many times a bar can be corroborated in a day. Should cap at 5 corroborations per bar per day across all users. Needs backend enforcement.
+- [ ] [Corroborate-Daily-Cap] — **P1** — No limit on how many times a bar can be corroborated in a day. Should cap at 5 corroborations per bar per day across all users. Needs backend enforcement. _(Colt)_
 
 ---
 
@@ -29,13 +31,13 @@ Fix a bug → check the box and add the commit: `- [x] Description — fixed in 
 
 <!-- venue pins, map loading, filter sheet -->
 
-- [ ] [Map-Page-Scroll] — **P1** — Bottom sheet popup does not fully expand — gets stuck awkwardly mid-screen. _(see also [Accidental-Tabs] and [Map-Swipe-Logout] — likely same root cause)_
-- [ ] [Map-Swipe-Logout] — **P1** — Swiping down on the map or bottom venue panel redirects to Login screen unexpectedly. _(duplicate of [Map-Page-Scroll] swipe behavior and [Accidental-Tabs])_
-- [ ] [Map-Filtering] — **P1** — Shows Happy Hours in State College when in Arlington sometimes randomly.
-- [ ] [Currently-Serving-Happy-Hour] — **P1** — All locations show "Currently Serving Happy Hour" regardless of actual schedule. Same root cause likely as [Coming-Soon-Ended-Deals].
-- [ ] [Map-Icon-Alignment] — **P2** — Selected venue icons are not centered/aligned correctly when a venue is selected on the map.
-- [ ] [Map-Venue-Detail-Link] — **P2** — No way to open a venue's full details page from the map selection panel. Should add a "View Details" tap target.
-- [ ] [Map-Bottom-Panel-UX] — **P2** — Bottom venue panel layout needs refactor. Selected venues should have a clearer, more prominent highlight/outline. _(related to [Map-Page-Scroll])_
+- [ ] [Map-Page-Scroll] — **P1** — Bottom sheet popup does not fully expand — gets stuck awkwardly mid-screen. _(see also [Accidental-Tabs] and [Map-Swipe-Logout] — likely same root cause)_ _(Colt)_
+- [ ] [Map-Swipe-Logout] — **P1** — Swiping down on the map or bottom venue panel redirects to Login screen unexpectedly. _(duplicate of [Map-Page-Scroll] swipe behavior and [Accidental-Tabs])_ _(Colt)_
+- [ ] [Map-Filtering] — **P1** — Shows Happy Hours in State College when in Arlington sometimes randomly. _(Colt)_
+- [ ] [Currently-Serving-Happy-Hour] — **P1** — All locations show "Currently Serving Happy Hour" regardless of actual schedule. Same root cause likely as [Coming-Soon-Ended-Deals]. _(Colt)_
+- [ ] [Map-Icon-Alignment] — **P2** — Selected venue icons are not centered/aligned correctly when a venue is selected on the map. _(Colt)_
+- [ ] [Map-Venue-Detail-Link] — **P2** — No way to open a venue's full details page from the map selection panel. Should add a "View Details" tap target. _(Colt)_
+- [ ] [Map-Bottom-Panel-UX] — **P2** — Bottom venue panel layout needs refactor. Selected venues should have a clearer, more prominent highlight/outline. _(related to [Map-Page-Scroll])_ _(Colt)_
 - [x] [Courthaus-Social] — **P1** — Incorrect phone number and dead website link. Fixed in admin portal.
 - [x] [Bar-Bao] — **P1** — Website button active but no website on record. Fixed in admin portal.
 
@@ -55,8 +57,8 @@ Fix a bug → check the box and add the commit: `- [x] Description — fixed in 
 <!-- submission forms, photo upload, auth wall -->
 
 - [ ] [Submitted-Screen] — **P2** — "Submit Another" box looks bad. Needs a redesign.
-- [ ] [Event-Submit-Time-Defaults-AM] — **P2** — Time picker on event submission defaults to AM. Should default to PM since most events happen in the evening.
-- [ ] [Event-Submit-Date-No-Picker] — **P2** — "Enter date" field is a plain text input. Should open a native calendar/date picker instead.
+- [ ] [Event-Submit-Time-Defaults-AM] — **P2** — Time picker on event submission defaults to AM. Should default to PM since most events happen in the evening. _(Colt)_
+- [ ] [Event-Submit-Date-No-Picker] — **P2** — "Enter date" field is a plain text input. Should open a native calendar/date picker instead. _(Colt)_
 - [ ] [Event-Submit-No-Recurring] — **P2** — No way to mark an event as recurring when submitting. Should support weekly, biweekly, or other recurrence patterns so users don't have to re-submit the same event every week.
 
 ---
@@ -65,8 +67,8 @@ Fix a bug → check the box and add the commit: `- [x] Description — fixed in 
 
 <!-- points balance, submission history, delete account, privacy/support links -->
 
-- [ ] [My-Submissions] — **P2** — Does not specify what the submission is. Simply says "New Deal". Should be more descriptive.
-- [ ] [My-Submissions-Show-Rejected] — **P2** — Submission history shows rejected submissions. Rejected entries aren't useful to users and could feel discouraging. Should only show pending, approved, and corroborated submissions.
+- [ ] [My-Submissions] — **P2** — Does not specify what the submission is. Simply says "New Deal". Should be more descriptive. _(Colt)_
+- [ ] [My-Submissions-Show-Rejected] — **P2** — Submission history shows rejected submissions. Rejected entries aren't useful to users and could feel discouraging. Should only show pending, approved, and corroborated submissions. _(Colt)_
 - [ ] [Contact-Support] — **P1** — Only works if native Mail app is set up. Should also route to Gmail or a web fallback.
 
 ---
@@ -76,7 +78,7 @@ Fix a bug → check the box and add the commit: `- [x] Description — fixed in 
 <!-- login errors, registration validation, guest mode, token refresh -->
 
 - [ ] [Login-Not-Persisted] — **P1** — Login state is not saved when the app is fully closed and reopened. User has to log in again every session.
-- [ ] [Guest-Mode-While-Logged-In] — **P2** — "Continue as Guest" option is shown or tappable even when already logged in, which is misleading.
+- [ ] [Guest-Mode-While-Logged-In] — **P2** — "Continue as Guest" option is shown or tappable even when already logged in, which is misleading. _(Colt)_
 - [ ] [Redirect-To-Login-While-Authenticated] — **P1** — App sometimes redirects to the login screen even when the user is already logged in. Likely a token refresh race condition — observed after tapping "Continue as Guest" while authenticated, then hitting session expired on next action.
 - [ ] [Session-Expired-On-Submit] — **P1** — "Session expired, please log back in" error appears when submitting an event. Token is not being refreshed transparently in the background before submission. _(related to [Redirect-To-Login-While-Authenticated])_
 - [ ] [Guest-No-Dark-Mode] — **P2** — Logged-out users have no option to switch between light and dark mode. Theme toggle is only accessible from Profile, which requires login.
@@ -99,7 +101,7 @@ Fix a bug → check the box and add the commit: `- [x] Description — fixed in 
 <!-- performance, deep links, push notifications, onboarding -->
 
 - [ ] [Approved-Content-Not-Visible] — **P0** — Approved deal and event submissions do not appear in the app (home screen, calendar, venue detail). Points are awarded and the submission is marked approved, but the content is invisible to users. Two root causes identified — see investigation notes below.
-  - **Events**: `Event` model default is `verified=False`. The `/events/` endpoint hard-filters `Event.verified == True`. `_apply_submission` never sets `verified=True`, so every user-submitted event is permanently invisible.
+  - **Events**: `Event` model default is `verified=False`. The `/events/` endpoint hard-filters `Event.verified == True`. `_apply_submission` never sets `verified=True`, so every user-submitted event is permanently invisible. _(Colt — backend one-liner)_
   - **Deals**: `_apply_submission` creates a `Deal` row but never creates or links it to a `HappyHourSchedule`. The home screen (`/deals/today`) only returns deals whose ID appears in a schedule's `deal_ids` array. The venue detail screen (HappyHourScreen) does the same filter client-side. A newly approved deal has no schedule, so it is filtered out everywhere.
 - [ ] [Accidental-Tabs] — **P1** — Swiping on Map and Calendar pages creates a series of ghost tabs the user can swipe between. Must swipe down on all tabs to return to root. Root cause shared with [Map-Swipe-Logout] and [Calendar-Swipe-Logout] — likely a navigation gesture conflict.
 - [x] [Event-Submission-No-Apply] — **P1** — Approving a `new_event` submission awarded 75 pts but never created the event in the DB. Fixed: added `new_event` branch to `_apply_submission`, `EventData` schema, and admin portal label/description. Fixed in 13f2767.
