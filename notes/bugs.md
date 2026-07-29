@@ -31,13 +31,13 @@ Assignees: bugs tagged _(Colt)_ are assigned to Colt. Untagged = Andes.
 
 <!-- venue pins, map loading, filter sheet -->
 
-- [ ] [Map-Page-Scroll] — **P1** — Bottom sheet popup does not fully expand — gets stuck awkwardly mid-screen. _(see also [Accidental-Tabs] and [Map-Swipe-Logout] — likely same root cause)_ _(Colt)_
-- [ ] [Map-Swipe-Logout] — **P1** — Swiping down on the map or bottom venue panel redirects to Login screen unexpectedly. _(duplicate of [Map-Page-Scroll] swipe behavior and [Accidental-Tabs])_ _(Colt)_
-- [ ] [Map-Filtering] — **P1** — Shows Happy Hours in State College when in Arlington sometimes randomly. _(Colt)_
+- [x] [Map-Page-Scroll] — **P1** — Bottom sheet popup does not fully expand — gets stuck awkwardly mid-screen. _(see also [Accidental-Tabs] and [Map-Swipe-Logout] — likely same root cause)_ _(Colt)_
+- [x] [Map-Swipe-Logout] — **P1** — Swiping down on the map or bottom venue panel redirects to Login screen unexpectedly. _(duplicate of [Map-Page-Scroll] swipe behavior and [Accidental-Tabs])_ _(Colt)_
+- [x] [Map-Filtering] — **P1** — Shows Happy Hours in State College when in Arlington sometimes randomly. _(Colt)_
 - [ ] [Currently-Serving-Happy-Hour] — **P1** — All locations show "Currently Serving Happy Hour" regardless of actual schedule. Same root cause likely as [Coming-Soon-Ended-Deals]. _(Colt)_
-- [ ] [Map-Icon-Alignment] — **P2** — Selected venue icons are not centered/aligned correctly when a venue is selected on the map. _(Colt)_
+- [x] [Map-Icon-Alignment] — **P2** — Selected venue icons are not centered/aligned correctly when a venue is selected on the map. _(Colt)_
 - [ ] [Map-Venue-Detail-Link] — **P2** — No way to open a venue's full details page from the map selection panel. Should add a "View Details" tap target. _(Colt)_
-- [ ] [Map-Bottom-Panel-UX] — **P2** — Bottom venue panel layout needs refactor. Selected venues should have a clearer, more prominent highlight/outline. _(related to [Map-Page-Scroll])_ _(Colt)_
+- [x] [Map-Bottom-Panel-UX] — **P2** — Bottom venue panel layout needs refactor. Selected venues should have a clearer, more prominent highlight/outline. _(related to [Map-Page-Scroll])_ _(Colt)_
 - [x] [Courthaus-Social] — **P1** — Incorrect phone number and dead website link. Fixed in admin portal.
 - [x] [Bar-Bao] — **P1** — Website button active but no website on record. Fixed in admin portal.
 

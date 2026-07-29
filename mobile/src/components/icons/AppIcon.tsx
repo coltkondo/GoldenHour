@@ -18,6 +18,7 @@ import { CrownIcon } from 'phosphor-react-native/src/icons/Crown';
 import { MapPinIcon } from 'phosphor-react-native/src/icons/MapPin';
 import { ArrowLeftIcon } from 'phosphor-react-native/src/icons/ArrowLeft';
 import { CaretDownIcon } from 'phosphor-react-native/src/icons/CaretDown';
+import { CaretUpIcon } from 'phosphor-react-native/src/icons/CaretUp';
 import { CaretRightIcon } from 'phosphor-react-native/src/icons/CaretRight';
 import { HouseIcon } from 'phosphor-react-native/src/icons/House';
 import { UserIcon } from 'phosphor-react-native/src/icons/User';
@@ -78,6 +79,7 @@ export const IconMap = {
   location: 'MapPin',
   back: 'ArrowLeft',
   dropdown: 'CaretDown',
+  caretUp: 'CaretUp',
   chevronRight: 'CaretRight',
   home: 'House',
   profile: 'User',
@@ -134,6 +136,7 @@ const PHOSPHOR_ICONS: Record<string, React.FC<any>> = {
   MapPin: MapPinIcon,
   ArrowLeft: ArrowLeftIcon,
   CaretDown: CaretDownIcon,
+  CaretUp: CaretUpIcon,
   CaretRight: CaretRightIcon,
   House: HouseIcon,
   User: UserIcon,

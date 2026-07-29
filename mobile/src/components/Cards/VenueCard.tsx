@@ -66,10 +66,7 @@ export const VenueCard: React.FC<VenueCardProps> = ({
     <TouchableOpacity
       style={[
         styles.card,
-        {
-          backgroundColor: isSelected ? d.selectedSurface : d.cardBackground,
-          borderColor: isSelected ? d.selectedBorder : d.border,
-        },
+        { backgroundColor: d.cardBackground, borderColor: isSelected ? d.primary : d.border },
       ]}
       activeOpacity={0.8}
       onPress={handlePress}
@@ -77,10 +74,7 @@ export const VenueCard: React.FC<VenueCardProps> = ({
       <View style={styles.header}>
         <View style={styles.titleContainer}>
           <View style={styles.nameRow}>
-            <Text
-              style={[styles.venueName, { color: isSelected ? d.primary : d.text }]}
-              numberOfLines={1}
-            >
+            <Text style={[styles.venueName, { color: d.text }]} numberOfLines={1}>
               {venue.name}
             </Text>
             {venue.verified && (
@@ -100,10 +94,10 @@ export const VenueCard: React.FC<VenueCardProps> = ({
               <View
                 style={[
                   styles.typeBadge,
-                  { backgroundColor: isSelected ? d.selectedBorder : d.filterInactive },
+                  { backgroundColor: d.filterInactive },
                 ]}
               >
-                <Text style={[styles.typeText, { color: isSelected ? d.primary : d.textMuted }]}>
+                <Text style={[styles.typeText, { color: d.textMuted }]}>
                   {venue.venue_type}
                 </Text>
               </View>
@@ -122,7 +116,7 @@ export const VenueCard: React.FC<VenueCardProps> = ({
         <View
           style={[
             styles.distanceContainer,
-            { backgroundColor: isSelected ? d.selectedBorder : d.filterInactive },
+            { backgroundColor: d.filterInactive },
           ]}
         >
           <Text style={[styles.distanceValue, { color: d.primary }]}>{distance.toFixed(1)}</Text>
@@ -139,7 +133,7 @@ export const VenueCard: React.FC<VenueCardProps> = ({
       )}
 
       <View
-        style={[styles.actionBar, { borderTopColor: isSelected ? d.selectedBorder : d.border }]}
+        style={[styles.actionBar, { borderTopColor: d.border }]}
       >
         <TouchableOpacity style={styles.actionButton} onPress={handleDirectionsPress}>
           <AppIcon name="directions" size={14} role="brand" />
@@ -151,7 +145,7 @@ export const VenueCard: React.FC<VenueCardProps> = ({
             <View
               style={[
                 styles.actionDivider,
-                { backgroundColor: isSelected ? d.selectedBorder : d.border },
+                { backgroundColor: d.border },
               ]}
             />
             <TouchableOpacity style={styles.actionButton} onPress={handlePhonePress}>
@@ -166,7 +160,7 @@ export const VenueCard: React.FC<VenueCardProps> = ({
             <View
               style={[
                 styles.actionDivider,
-                { backgroundColor: isSelected ? d.selectedBorder : d.border },
+                { backgroundColor: d.border },
               ]}
             />
             <TouchableOpacity style={styles.actionButton} onPress={handleWebsitePress}>
@@ -181,7 +175,7 @@ export const VenueCard: React.FC<VenueCardProps> = ({
         <View
           style={[
             styles.statusBar,
-            { backgroundColor: isSelected ? 'rgba(45,212,160,0.06)' : d.cardBackgroundAlt },
+            { backgroundColor: d.cardBackgroundAlt },
           ]}
         >
           <StatusDot status="live" size={8} pulse={false} />
@@ -197,13 +191,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 12,
     borderRadius: 16,
+    borderWidth: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 12,
     elevation: 4,
     overflow: 'hidden',
-    borderWidth: 1,
   },
   header: {
     flexDirection: 'row',

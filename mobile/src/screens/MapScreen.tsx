@@ -94,7 +94,8 @@ export const MapScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedVenueId, setSelectedVenueId] = useState<string | null>(null);
-  const [mapRegion, setMapRegion] = useState<Region | null>(location ?? null);
+  const [mapRegion, setMapRegion] = useState<Region | null>(null);
+  const hasAnimatedToUser = useRef(false);
   const isMounted = useRef(true);
 
   useEffect(() => {
@@ -115,6 +116,20 @@ export const MapScreen = () => {
       filterVisibleVenues(mapRegion);
     }
   }, [mapRegion, venues]);
+
+  useEffect(() => {
+    if (!location || locationLoading || !mapRef.current) return;
+    if (hasAnimatedToUser.current) return;
+    const isDefault =
+      Math.abs(location.latitude - 40.7934) < 0.001 &&
+      Math.abs(location.longitude - -77.86) < 0.001;
+    if (isDefault) return;
+    hasAnimatedToUser.current = true;
+    mapRef.current.animateToRegion(
+      { ...location, latitudeDelta: 0.03, longitudeDelta: 0.03 },
+      800,
+    );
+  }, [location, locationLoading]);
 
   const loadAllVenues = async () => {
     try {
@@ -152,13 +167,12 @@ export const MapScreen = () => {
   const handleVenueCardPress = (venue: Venue) => {
     setSelectedVenueId(venue.id);
     if (mapRef.current) {
+      const latitudeDelta = 0.01;
+      const longitudeDelta = 0.01;
+      const sheetHeightRatio = 0.5;
+      const latitude = venue.latitude - latitudeDelta * sheetHeightRatio * 0.5;
       mapRef.current.animateToRegion(
-        {
-          latitude: venue.latitude,
-          longitude: venue.longitude,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
-        },
+        { latitude, longitude: venue.longitude, latitudeDelta, longitudeDelta },
         500,
       );
     }
@@ -236,10 +250,15 @@ export const MapScreen = () => {
         showsBuildings={false}
         showsIndoors={false}
         onRegionChangeComplete={handleRegionChangeComplete}
+        onMapReady={() => {
+          if (location && !mapRegion) {
+            setMapRegion(location);
+          }
+        }}
         customMapStyle={mode === 'dark' ? darkMapStyle : undefined}
         mapType="standard"
       >
-        {venues.map((venue) => (
+        {visibleVenues.map((venue) => (
           <VenueMarker
             key={venue.id}
             venue={venue}

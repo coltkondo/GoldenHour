@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   PanResponder,
   Dimensions,
   ScrollView,
+  Platform,
 } from 'react-native';
 import { useTheme } from '../theme';
 import { Venue } from '../types/api';
@@ -17,7 +18,7 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const MINIMIZED_HEIGHT = 120;
 const EXPANDED_HEIGHT = SCREEN_HEIGHT * 0.5;
 const DRAG_THRESHOLD = 50;
-const VISIBLE_SCROLL_HEIGHT = EXPANDED_HEIGHT + 20;
+const VISIBLE_SCROLL_HEIGHT = EXPANDED_HEIGHT + 40;
 
 interface VenueBottomSheetProps {
   venues: Venue[];
@@ -41,15 +42,20 @@ export const VenueBottomSheet: React.FC<VenueBottomSheetProps> = ({
   const [isScrollEnabled, setIsScrollEnabled] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const venueRefs = useRef<{ [key: string]: number }>({});
+  const isExpandedRef = useRef(isExpanded);
+
+  useEffect(() => {
+    isExpandedRef.current = isExpanded;
+  }, [isExpanded]);
 
   useEffect(() => {
     if (selectedVenueId && isExpanded && scrollViewRef.current) {
-      const selectedIndex = venues.findIndex((v) => v.id === selectedVenueId);
-      if (selectedIndex !== -1 && venueRefs.current[selectedVenueId] !== undefined) {
-        scrollViewRef.current.scrollTo({ y: venueRefs.current[selectedVenueId], animated: true });
+      const yPos = venueRefs.current[selectedVenueId];
+      if (yPos !== undefined) {
+        scrollViewRef.current.scrollTo({ y: yPos, animated: true });
       }
     }
-  }, [selectedVenueId, isExpanded, venues]);
+  }, [selectedVenueId, isExpanded]);
 
   useEffect(() => {
     if (selectedVenueId && !isExpanded) {
@@ -57,65 +63,89 @@ export const VenueBottomSheet: React.FC<VenueBottomSheetProps> = ({
     }
   }, [selectedVenueId]);
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_, gs) => Math.abs(gs.dy) > Math.abs(gs.dx),
-      onPanResponderGrant: () => setIsScrollEnabled(false),
-      onPanResponderMove: (_, gs) => {
-        const baseY = SCREEN_HEIGHT - (isExpanded ? EXPANDED_HEIGHT : MINIMIZED_HEIGHT);
-        const newY = baseY + gs.dy;
-        const clampedY = Math.max(
-          SCREEN_HEIGHT - EXPANDED_HEIGHT,
-          Math.min(SCREEN_HEIGHT - MINIMIZED_HEIGHT, newY),
-        );
-        translateY.setValue(clampedY);
-      },
-      onPanResponderRelease: (_, gs) => {
-        let shouldExpand: boolean;
-        if (Math.abs(gs.vy) > 0.5) {
-          shouldExpand = gs.vy < 0;
-        } else {
-          shouldExpand = isExpanded ? gs.dy > -DRAG_THRESHOLD : gs.dy < DRAG_THRESHOLD;
-        }
-        animateToPosition(shouldExpand);
-      },
-    }),
-  ).current;
-
-  const animateToPosition = (expand: boolean) => {
-    const targetY = SCREEN_HEIGHT - (expand ? EXPANDED_HEIGHT : MINIMIZED_HEIGHT);
-    Animated.spring(translateY, {
-      toValue: targetY,
-      useNativeDriver: true,
-      damping: 20,
-      stiffness: 150,
-    }).start(() => {
+  const animateToPosition = useCallback(
+    (expand: boolean) => {
       setIsExpanded(expand);
-      setIsScrollEnabled(expand);
-      if (!expand && scrollViewRef.current) {
-        scrollViewRef.current.scrollTo({ y: 0, animated: false });
-      }
-    });
-  };
+      const targetY = SCREEN_HEIGHT - (expand ? EXPANDED_HEIGHT : MINIMIZED_HEIGHT);
+      Animated.spring(translateY, {
+        toValue: targetY,
+        useNativeDriver: true,
+        damping: 24,
+        stiffness: 180,
+      }).start(() => {
+        setIsScrollEnabled(expand);
+        if (!expand && scrollViewRef.current) {
+          scrollViewRef.current.scrollTo({ y: 0, animated: false });
+        }
+      });
+    },
+    [translateY],
+  );
 
-  const handleVenueCardPress = (venue: Venue) => {
-    onVenuePress(venue);
-  };
+  const panResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponder: (_, gs) => Math.abs(gs.dy) > Math.abs(gs.dx),
+        onPanResponderGrant: () => {
+          setIsScrollEnabled(false);
+        },
+        onPanResponderMove: (_, gs) => {
+          const expanded = isExpandedRef.current;
+          const baseY = SCREEN_HEIGHT - (expanded ? EXPANDED_HEIGHT : MINIMIZED_HEIGHT);
+          const newY = baseY + gs.dy;
+          const clampedY = Math.max(
+            SCREEN_HEIGHT - EXPANDED_HEIGHT,
+            Math.min(SCREEN_HEIGHT - MINIMIZED_HEIGHT, newY),
+          );
+          translateY.setValue(clampedY);
+        },
+        onPanResponderRelease: (_, gs) => {
+          const isTap = Math.abs(gs.dx) < 5 && Math.abs(gs.dy) < 5;
+          if (isTap) {
+            animateToPosition(!isExpandedRef.current);
+            return;
+          }
+          const expanded = isExpandedRef.current;
+          let shouldExpand: boolean;
+          if (Math.abs(gs.vy) > 0.5) {
+            shouldExpand = gs.vy < 0;
+          } else {
+            shouldExpand = expanded ? gs.dy > -DRAG_THRESHOLD : gs.dy < DRAG_THRESHOLD;
+          }
+          animateToPosition(shouldExpand);
+        },
+      }),
+    [translateY, animateToPosition],
+  );
 
-  const handleCardLayout = (venueId: string, yPosition: number) => {
+  const handleVenueCardPress = useCallback(
+    (venue: Venue) => {
+      onVenuePress(venue);
+    },
+    [onVenuePress],
+  );
+
+  const handleCardLayout = useCallback((venueId: string, yPosition: number) => {
     venueRefs.current[venueId] = yPosition;
-  };
+  }, []);
 
   return (
     <Animated.View
       style={[
         styles.bottomSheet,
-        { backgroundColor: d.cardBackground, transform: [{ translateY }] },
+        {
+          backgroundColor: d.cardBackground,
+          borderTopColor: d.border,
+          shadowColor: '#000',
+          transform: [{ translateY }],
+        },
       ]}
     >
       <View {...panResponder.panHandlers} style={styles.dragHandleContainer}>
-        <View style={[styles.dragHandle, { backgroundColor: d.textMuted }]} />
+        <View style={[styles.handlePill, { backgroundColor: d.filterInactive }]}>
+          <AppIcon name={isExpanded ? 'dropdown' : 'caretUp'} size={14} role="muted" />
+        </View>
         <Text style={[styles.sheetTitle, { color: d.text }]}>
           {venues.length} Happy Hour{venues.length !== 1 ? 's' : ''} Nearby
         </Text>
@@ -126,26 +156,27 @@ export const VenueBottomSheet: React.FC<VenueBottomSheetProps> = ({
         )}
       </View>
 
-      <ScrollView
-        ref={scrollViewRef}
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        scrollEnabled={isScrollEnabled}
-        showsVerticalScrollIndicator={false}
-        bounces={false}
-      >
-        {venues.length === 0 ? (
-          <View style={styles.emptyState}>
-            <View style={[styles.emptyIconContainer, { backgroundColor: d.filterInactive }]}>
-              <AppIcon name="search" size={32} role="muted" />
-            </View>
-            <Text style={[styles.emptyText, { color: d.text }]}>No venues in this area</Text>
-            <Text style={[styles.emptySubtext, { color: d.textMuted }]}>
-              Try zooming out or panning the map
-            </Text>
+      {venues.length === 0 ? (
+        <View style={styles.emptyState}>
+          <View style={[styles.emptyIconContainer, { backgroundColor: d.filterInactive }]}>
+            <AppIcon name="search" size={32} role="muted" />
           </View>
-        ) : (
-          venues.map((venue) => (
+          <Text style={[styles.emptyText, { color: d.text }]}>No venues in this area</Text>
+          <Text style={[styles.emptySubtext, { color: d.textMuted }]}>
+            Try zooming out or panning the map
+          </Text>
+        </View>
+      ) : (
+        <ScrollView
+          ref={scrollViewRef}
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          scrollEnabled={isScrollEnabled}
+          showsVerticalScrollIndicator={false}
+          bounces={true}
+          overScrollMode="never"
+        >
+          {venues.map((venue) => (
             <View
               key={venue.id}
               onLayout={(event) => {
@@ -160,9 +191,9 @@ export const VenueBottomSheet: React.FC<VenueBottomSheetProps> = ({
                 isSelected={selectedVenueId === venue.id}
               />
             </View>
-          ))
-        )}
-      </ScrollView>
+          ))}
+        </ScrollView>
+      )}
     </Animated.View>
   );
 };
@@ -176,7 +207,7 @@ const styles = StyleSheet.create({
     height: SCREEN_HEIGHT,
     borderTopLeftRadius: 22,
     borderTopRightRadius: 22,
-    shadowColor: '#000',
+    borderTopWidth: 0.5,
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
@@ -189,7 +220,14 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     borderBottomColor: '#2A2A2A',
   },
-  dragHandle: { width: 40, height: 4, borderRadius: 2, marginBottom: 12 },
+  handlePill: {
+    width: 36,
+    height: 24,
+    borderRadius: 12,
+    marginBottom: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   sheetTitle: { fontSize: 16, fontWeight: '600', letterSpacing: -0.2 },
   sheetSubtitle: { fontSize: 12, fontWeight: '500', marginTop: 4 },
   scrollView: { flex: 1 },
