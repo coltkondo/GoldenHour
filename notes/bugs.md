@@ -20,6 +20,9 @@ Fix a bug → check the box and add the commit: `- [x] Description — fixed in 
 
 <!-- logo, nickname, day selector, deals per day, directions/call/website, corroborate button -->
 
+- [ ] [Corroborate-Vicinity-Gate] — **P1** — "Still Accurate" corroborate button should only appear when the user is physically within range of the bar. Currently shows regardless of location.
+- [ ] [Corroborate-Daily-Cap] — **P1** — No limit on how many times a bar can be corroborated in a day. Should cap at 5 corroborations per bar per day across all users. Needs backend enforcement.
+
 ---
 
 ## Map / Browse Tab
@@ -52,6 +55,9 @@ Fix a bug → check the box and add the commit: `- [x] Description — fixed in 
 <!-- submission forms, photo upload, auth wall -->
 
 - [ ] [Submitted-Screen] — **P2** — "Submit Another" box looks bad. Needs a redesign.
+- [ ] [Event-Submit-Time-Defaults-AM] — **P2** — Time picker on event submission defaults to AM. Should default to PM since most events happen in the evening.
+- [ ] [Event-Submit-Date-No-Picker] — **P2** — "Enter date" field is a plain text input. Should open a native calendar/date picker instead.
+- [ ] [Event-Submit-No-Recurring] — **P2** — No way to mark an event as recurring when submitting. Should support weekly, biweekly, or other recurrence patterns so users don't have to re-submit the same event every week.
 
 ---
 
@@ -60,6 +66,7 @@ Fix a bug → check the box and add the commit: `- [x] Description — fixed in 
 <!-- points balance, submission history, delete account, privacy/support links -->
 
 - [ ] [My-Submissions] — **P2** — Does not specify what the submission is. Simply says "New Deal". Should be more descriptive.
+- [ ] [My-Submissions-Show-Rejected] — **P2** — Submission history shows rejected submissions. Rejected entries aren't useful to users and could feel discouraging. Should only show pending, approved, and corroborated submissions.
 - [ ] [Contact-Support] — **P1** — Only works if native Mail app is set up. Should also route to Gmail or a web fallback.
 
 ---
@@ -68,6 +75,10 @@ Fix a bug → check the box and add the commit: `- [x] Description — fixed in 
 
 <!-- login errors, registration validation, guest mode, token refresh -->
 
+- [ ] [Login-Not-Persisted] — **P1** — Login state is not saved when the app is fully closed and reopened. User has to log in again every session.
+- [ ] [Guest-Mode-While-Logged-In] — **P2** — "Continue as Guest" option is shown or tappable even when already logged in, which is misleading.
+- [ ] [Redirect-To-Login-While-Authenticated] — **P1** — App sometimes redirects to the login screen even when the user is already logged in. Likely a token refresh race condition — observed after tapping "Continue as Guest" while authenticated, then hitting session expired on next action.
+- [ ] [Session-Expired-On-Submit] — **P1** — "Session expired, please log back in" error appears when submitting an event. Token is not being refreshed transparently in the background before submission. _(related to [Redirect-To-Login-While-Authenticated])_
 - [ ] [Guest-No-Dark-Mode] — **P2** — Logged-out users have no option to switch between light and dark mode. Theme toggle is only accessible from Profile, which requires login.
 - [ ] [Guest-No-Support] — **P2** — Logged-out users have no access to a Support/Help option. _(related to [Contact-Support])_
 - [ ] [Forgot-Password] — **P1** — No recover/reset password flow anywhere in the app. Needs investigation and implementation.
