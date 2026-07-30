@@ -67,6 +67,8 @@ export const HappyHourScreen = () => {
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [selectedDay, setSelectedDay] = useState(todayDb);
   const [corrState, setCorrState] = useState<Record<string, 'idle' | 'loading' | 'done' | 'already'>>({});
+  // null = still checking; false = not nearby or no permission; true = within range
+  const [isNearby, setIsNearby] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (!venue) { navigation.goBack(); return; }
@@ -84,7 +86,25 @@ export const HappyHourScreen = () => {
         setLoading(false);
       }
     })();
+    checkProximity();
   }, []);
+
+  async function checkProximity() {
+    if (!venue) return;
+    try {
+      const { status } = await Location.getForegroundPermissionsAsync();
+      if (status !== 'granted') { setIsNearby(false); return; }
+      // getLastKnownPositionAsync is instant; fall back to a fresh fix only if needed
+      const pos =
+        (await Location.getLastKnownPositionAsync()) ??
+        (await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }));
+      if (!pos) { setIsNearby(false); return; }
+      const dist = haversineMeters(pos.coords.latitude, pos.coords.longitude, venue.latitude, venue.longitude);
+      setIsNearby(dist <= CORROBORATE_RADIUS_M);
+    } catch {
+      setIsNearby(false);
+    }
+  }
 
   if (!venue) return null;
 
@@ -280,7 +300,7 @@ export const HappyHourScreen = () => {
                           <Text style={[styles.dealPrice, { color: d.primary }]}>{deal.discount_percentage}% OFF</Text>
                         ) : null}
                       </View>
-                      {user && (
+                      {user && isNearby === true && (
                         <TouchableOpacity
                           style={[
                             styles.corrButton,
