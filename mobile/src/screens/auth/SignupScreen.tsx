@@ -134,6 +134,8 @@ export const SignupScreen = () => {
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
+              textContentType="username"
+              autoComplete="email"
             />
           </View>
           <View
@@ -146,6 +148,8 @@ export const SignupScreen = () => {
               value={password}
               onChangeText={setPassword}
               secureTextEntry
+              textContentType="newPassword"
+              autoComplete="new-password"
             />
           </View>
           <View
@@ -158,6 +162,8 @@ export const SignupScreen = () => {
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               secureTextEntry
+              textContentType="newPassword"
+              autoComplete="new-password"
             />
           </View>
 

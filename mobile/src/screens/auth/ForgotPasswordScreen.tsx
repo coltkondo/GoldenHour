@@ -140,6 +140,8 @@ export const ForgotPasswordScreen = () => {
                   autoCapitalize="none"
                   autoCorrect={false}
                   autoFocus
+                  textContentType="username"
+                  autoComplete="email"
                 />
               </View>
 
@@ -199,6 +201,8 @@ export const ForgotPasswordScreen = () => {
                   value={newPassword}
                   onChangeText={setNewPassword}
                   secureTextEntry
+                  textContentType="newPassword"
+                  autoComplete="new-password"
                 />
               </View>
 
@@ -210,6 +214,8 @@ export const ForgotPasswordScreen = () => {
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
                   secureTextEntry
+                  textContentType="newPassword"
+                  autoComplete="new-password"
                 />
               </View>
 

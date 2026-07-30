@@ -78,6 +78,8 @@ export const LoginScreen = () => {
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
+              textContentType="username"
+              autoComplete="email"
             />
           </View>
           <View
@@ -90,6 +92,8 @@ export const LoginScreen = () => {
               value={password}
               onChangeText={setPassword}
               secureTextEntry
+              textContentType="password"
+              autoComplete="current-password"
             />
           </View>
 
