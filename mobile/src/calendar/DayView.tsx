@@ -6,7 +6,7 @@ import { useCalendar } from './CalendarContext';
 import { TimelineGrid } from './components/TimelineGrid';
 import { EmptyState } from './components/EmptyState';
 import { CalendarEvent } from './types';
-import { jsDayToDow, HOUR_HEIGHT } from './utils/dateGrid';
+import { jsDayToDow, scrollOffsetForEvents } from './utils/dateGrid';
 
 interface DayViewProps {
   onClusterPress?: (events: CalendarEvent[]) => void;
@@ -32,7 +32,7 @@ export const DayView: React.FC<DayViewProps> = ({ onClusterPress }) => {
 
   return (
     <View style={styles.flex}>
-      <ScrollView showsVerticalScrollIndicator={false} contentOffset={{ x: 0, y: HOUR_HEIGHT * 11 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentOffset={{ x: 0, y: scrollOffsetForEvents(events) }}>
         <TimelineGrid
           dates={[selectedDate]}
           onEventPress={onEventPress}

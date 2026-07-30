@@ -115,7 +115,7 @@ function passAlwaysFilters(
 export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [view, setView] = useState<ViewMode>('week');
+  const [view, setView] = useState<ViewMode>('day');
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [events, setEvents] = useState<CalendarEvent[]>([]);

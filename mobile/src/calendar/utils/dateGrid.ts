@@ -73,16 +73,37 @@ export function hourLabel(hour24: number): string {
   return `${h - 12}p`;
 }
 
+// Vertical scroll offset for a Day/Week timeline: just before the earliest
+// visible item, not a fixed hour. Happy hours and events skew afternoon/
+// evening, so a fixed anchor (previously 11am) wasted a lot of empty scroll
+// on a typical day and would hide anything earlier if pushed later (e.g. a
+// fixed 3pm anchor scrolls past an 11am event entirely). Falls back to 11am
+// only if called with zero events — callers normally guard that case with
+// an EmptyState instead of rendering the timeline at all.
+const SCROLL_LEAD_IN_MIN = 30;
+
+export function scrollOffsetForEvents(events: { startMinutes: number }[]): number {
+  if (events.length === 0) return HOUR_HEIGHT * 11;
+  const earliest = Math.min(...events.map((e) => e.startMinutes));
+  const withLeadIn = Math.max(earliest - SCROLL_LEAD_IN_MIN, 0);
+  return (withLeadIn / 60) * HOUR_HEIGHT;
+}
+
 // Layout overlapping events into side-by-side columns (Teams/Google style).
 // Returns shallow copies of events annotated with `column` and `columns`.
-export function layoutDay(events: CalendarEvent[]): CalendarEvent[] {
+// Generic over any item shaped like { startMinutes, endMinutes } so both the
+// HH grid (CalendarEvent) and the Events grid (EventCalItem) can share this
+// without either depending on the other's fields.
+type Layoutable = { startMinutes: number; endMinutes: number; column?: number; columns?: number };
+
+export function layoutDay<T extends Layoutable>(events: T[]): T[] {
   const sorted = [...events].sort(
     (a, b) => a.startMinutes - b.startMinutes || a.endMinutes - b.endMinutes,
   );
-  const out: CalendarEvent[] = [];
+  const out: T[] = [];
   let i = 0;
   while (i < sorted.length) {
-    const cluster: CalendarEvent[] = [sorted[i]];
+    const cluster: T[] = [sorted[i]];
     let clusterEnd = sorted[i].endMinutes;
     i++;
     while (i < sorted.length && sorted[i].startMinutes < clusterEnd) {
@@ -92,7 +113,7 @@ export function layoutDay(events: CalendarEvent[]): CalendarEvent[] {
     }
 
     const cols: number[] = [];
-    const laid: CalendarEvent[] = [];
+    const laid: T[] = [];
     for (const ev of cluster) {
       let placed = -1;
       for (let c = 0; c < cols.length; c++) {

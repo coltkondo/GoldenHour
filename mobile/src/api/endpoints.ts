@@ -75,7 +75,7 @@ export const dealsAPI = {
 };
 
 export const eventsAPI = {
-  getUpcoming: async (params?: { market_slug?: string | null; venue_id?: string; from_dt?: string; to_dt?: string }) => {
+  getUpcoming: async (params?: { market_slug?: string | null; venue_id?: string; from_dt?: string; to_dt?: string; upcoming_only?: boolean; limit?: number }) => {
     const response = await apiClient.get<Event[]>('/events/', {
       params: { upcoming_only: true, limit: 50, ...params },
     });

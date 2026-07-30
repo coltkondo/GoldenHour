@@ -1,4 +1,4 @@
-import { Venue, Deal, HappyHourSchedule } from '../types/api';
+import { Venue, Deal, HappyHourSchedule, Event as ApiEvent } from '../types/api';
 
 export { DAY_NAMES } from '../types/api';
 
@@ -38,6 +38,22 @@ export interface CalendarEvent {
   endMinutes: number; // minutes from midnight (may exceed 1440)
   priceLevel: number | null;
   // layout (set by layoutDay)
+  column?: number;
+  columns?: number;
+}
+
+// Events calendar item — dated occurrence, not a recurring weekly slot.
+// Deliberately parallel to CalendarEvent (same id/title/startMinutes/endMinutes
+// shape) so it can flow through the same layoutDay() column-packing function,
+// but `date` replaces `dayOfWeek` since two Tuesdays can show different events.
+export interface EventCalItem {
+  id: string;
+  venue: Venue;
+  event: ApiEvent;
+  title: string;
+  date: Date; // local calendar date this occurrence falls on
+  startMinutes: number; // minutes from midnight, local to `date`
+  endMinutes: number;
   column?: number;
   columns?: number;
 }

@@ -47,7 +47,7 @@ const ThemedTabBar = ({ state, descriptors, navigation }: any) => {
               : route.name === 'SubmitTab'
                 ? 'plus'
                 : route.name === 'ExplorerTab'
-                  ? 'search'
+                  ? 'events'
                   : 'profile';
 
         if (isSubmit) {
@@ -94,7 +94,7 @@ export const TabNavigator = () => {
       <Tab.Screen
         name="ExplorerTab"
         component={ExploreCalendarScreen}
-        options={{ tabBarLabel: 'Explore' }}
+        options={{ tabBarLabel: 'Calendar' }}
       />
       <Tab.Screen
         name="ProfileTab"
