@@ -104,7 +104,7 @@ export default function ReviewDetail() {
           <strong>⚠ Possible duplicate</strong> — this deal closely matches an existing active deal
           or another pending submission for the same bar. If approved, the submitter earns 2 pts
           (corroboration rate) instead of the standard {'{'}
-          {sub.submission_type === 'new_deal' ? '50' : '—'}
+          {sub.submission_type === 'new_deal' ? '25' : '—'}
           {'}'} pts. Reject if it's a true duplicate.
         </div>
       )}

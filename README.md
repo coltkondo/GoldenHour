@@ -107,11 +107,28 @@ See [notes/SETUP.md](notes/SETUP.md) for full environment variable reference.
 - `VITE_API_URL` → Railway backend URL
 
 ### Mobile (EAS Build → TestFlight)
+
+One-time setup, if not already done on this machine:
+```bash
+npm install -g eas-cli
+eas login          # log into the Expo account that owns this project (andespar15@gmail.com)
+```
+
+To ship a new build:
 ```bash
 cd mobile
 eas build --platform ios --profile production --auto-submit
 ```
-Builds on Expo's cloud servers and submits directly to TestFlight. No Mac or Xcode needed.
+Builds on Expo's cloud servers and submits straight to App Store Connect / TestFlight in one step — no Mac or Xcode needed. The `production` profile and the Apple credentials it submits with (`appleId`, `ascAppId`, `appleTeamId`) are already configured in `mobile/eas.json`.
+
+What happens after you run it:
+- EAS queues and runs the build remotely — watch progress at the URL it prints, or check `eas build:list` later.
+- On success, `--auto-submit` uploads it to App Store Connect automatically.
+- Apple still needs a few minutes to finish processing the build server-side before it shows up under TestFlight (this is Apple's step, not EAS's — don't assume a stalled build if it's not instant).
+
+Before shipping, bump `version` in `mobile/app.json` if this is a real version release (e.g. `1.0.0` → `1.0.1`) — not required for every internal TestFlight iteration, but expected once you're past internal testing. The iOS *build number* is separate from `version` and isn't set explicitly anywhere in this repo (`app.json` has no `ios.buildNumber`, `eas.json` has no `appVersionSource` override), meaning EAS is expected to auto-increment it remotely each build. If a submission ever gets rejected for a duplicate build number, that's the first thing to check — either set `ios.buildNumber` manually in `app.json` or confirm `cli.appVersionSource` in `eas.json`.
+
+To build without submitting (e.g. to test the binary before it goes to Apple), drop `--auto-submit` and run `eas submit --platform ios` separately once you're ready.
 
 ---
 
@@ -144,11 +161,12 @@ Users earn points when their submissions are approved by an admin:
 
 | Action | Points |
 |---|---|
-| New bar submitted | 100 |
-| Bar closed report | 100 |
-| New event submitted | 75 |
-| New deal / deal update / deal expired | 50 |
+| New bar submitted / bar closed report | 50 |
+| New event submitted | 50 |
+| New deal / deal update / deal expired / bar info update | 25 |
 | Corroborate an existing deal | 2 |
+
+Source of truth: `backend/app/core/points_config.py`. **Known bug:** `mobile/src/config/constants.ts`'s `POINTS_CONFIG` (what the app displays — "Submit, Earn X pts" badges) currently shows exactly double the backend's real award for every submission type except corroborate (e.g. mobile promises 50 for a new deal, backend awards 25 on approval). Not fixed as part of this doc pass — worth its own bug entry.
 
 Daily cap: 200 pts (configurable per market). Payout threshold: 1,000 pts = $20.
 
@@ -167,3 +185,5 @@ Full spec: [notes/ECONOMY_SPEC.md](notes/ECONOMY_SPEC.md)
 | [notes/admin-guide.md](notes/admin-guide.md) | Admin portal guide |
 | [notes/APP_STORE_COMPLIANCE.md](notes/APP_STORE_COMPLIANCE.md) | App Store review checklist |
 | [notes/TODO.md](notes/TODO.md) | Build backlog and sequencing |
+| [notes/roadmap.md](notes/roadmap.md) | Product vision and update sequencing (post-launch feature roadmap) |
+| [notes/bugs.md](notes/bugs.md) | Bug tracker — check a box, note the fix, commit |
