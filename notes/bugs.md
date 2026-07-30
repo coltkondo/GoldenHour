@@ -14,7 +14,7 @@ Assignees: bugs tagged _(Colt)_ are assigned to Colt. Untagged = Andes.
 
 <!-- deals feed, city chip, "Happening Now" / "Coming Up" sections, filter bubbles -->
 
-- [ ] [Coming-Soon-Ended-Deals] — **P1** — After all happy hours for the day have ended (e.g. 9pm), the home screen still shows next-day deals under "Coming Soon," implying they're happening later tonight. Goal: detect when the day's golden hour is fully over and swap to a "Golden Hour Has Passed Today" state with a "Deals Tomorrow" section header instead of "Coming Soon."
+- [x] [Coming-Soon-Ended-Deals] — **P1** — After all happy hours for the day have ended (e.g. 9pm), the home screen still shows next-day deals under "Coming Soon," implying they're happening later tonight. Fixed: added `isAlreadyEnded` helper; `comingUp` now excludes already-ended slots; `allDealsEndedToday` detects when all deals have wrapped up and swaps in a "Golden Hour Has Passed Today" card with "No more deals tonight — check back tomorrow."
 
 ---
 

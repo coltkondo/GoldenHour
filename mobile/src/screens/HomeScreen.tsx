@@ -76,6 +76,25 @@ function isCurrentlyLive(schedule: HappyHourSchedule | undefined): boolean {
   }
 }
 
+function isAlreadyEnded(schedule: HappyHourSchedule | undefined): boolean {
+  if (!schedule) return false;
+  try {
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const start = parseTimeString(schedule.start_time);
+    const end = parseTimeString(schedule.end_time);
+    const startMinutes = start.hour * 60 + start.minute;
+    const endMinutes = end.hour * 60 + end.minute;
+    // Only mark ended for normal daytime slots; midnight-crossing slots are left alone
+    if (endMinutes > startMinutes) {
+      return currentMinutes >= endMinutes;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 function matchesFilter(deal: Deal, filter: FilterCategory): boolean {
   if (filter === 'All') return true;
   const keywords = FILTER_KEYWORDS[filter] ?? [];
@@ -243,13 +262,19 @@ export const HomeScreen = () => {
   );
 
   const comingUp = useMemo(() => {
-    const notLive = filteredDeals.filter((d) => !d.isLiveNow);
-    return notLive.sort((a, b) => {
+    const upcoming = filteredDeals.filter((d) => !d.isLiveNow && !isAlreadyEnded(d.schedule));
+    return upcoming.sort((a, b) => {
       const aStart = a.schedule ? parseTimeString(a.schedule.start_time).hour * 60 + parseTimeString(a.schedule.start_time).minute : 9999;
       const bStart = b.schedule ? parseTimeString(b.schedule.start_time).hour * 60 + parseTimeString(b.schedule.start_time).minute : 9999;
       return aStart - bStart;
     });
   }, [filteredDeals]);
+
+  // True when the market has deals today but every scheduled slot has already ended
+  const allDealsEndedToday = useMemo(() => {
+    if (enrichedDeals.length === 0) return false;
+    return enrichedDeals.every((d) => !d.isLiveNow && isAlreadyEnded(d.schedule));
+  }, [enrichedDeals]);
 
   const happeningNowGroups = useMemo(() => groupDealsByVenue(happeningNow, venueEvents), [happeningNow, venueEvents]);
   const comingUpGroups = useMemo(() => groupDealsByVenue(comingUp, venueEvents), [comingUp, venueEvents]);
@@ -389,7 +414,11 @@ export const HomeScreen = () => {
               <AppIcon name="clock" size={24} role="muted" />
               <Text style={[styles.emptyTitle, { color: d.text }]}>Nothing live right now</Text>
               <Text style={[styles.emptySubtext, { color: d.textMuted }]}>
-                Check below for what's coming up later
+                {comingUp.length > 0
+                  ? 'Check below for what\'s coming up later'
+                  : allDealsEndedToday
+                  ? 'All happy hours have wrapped up for today'
+                  : 'No happy hours happening right now'}
               </Text>
             </View>
           )}
@@ -423,22 +452,38 @@ export const HomeScreen = () => {
           </View>
         )}
 
-        {/* ── No deals at all ── */}
+        {/* ── Bottom state when nothing is live or upcoming ── */}
         {happeningNow.length === 0 && comingUp.length === 0 && (
-          <View style={[styles.emptyCard, { backgroundColor: d.cardBackground, borderColor: d.border, marginTop: 12 }]}>
-            <AppIcon name="deals" size={32} role="muted" />
-            <Text style={[styles.emptyTitle, { color: d.text }]}>No deals today</Text>
-            <Text style={[styles.emptySubtext, { color: d.textMuted }]}>
-              Check back tomorrow or browse all venues
-            </Text>
-            <TouchableOpacity
-              style={[styles.browseBtn, { backgroundColor: d.primary }]}
-              onPress={() => navigation.navigate('ExplorerTab')}
-              activeOpacity={0.85}
-            >
-              <Text style={[styles.browseBtnText, { color: d.buttonPrimaryText }]}>Browse Venues</Text>
-            </TouchableOpacity>
-          </View>
+          allDealsEndedToday ? (
+            <View style={[styles.passedCard, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+              <Text style={[styles.passedTitle, { color: d.text }]}>Golden Hour Has Passed Today</Text>
+              <Text style={[styles.passedSubtext, { color: d.textMuted }]}>
+                No more deals tonight — check back tomorrow
+              </Text>
+              <TouchableOpacity
+                style={[styles.browseBtn, { backgroundColor: d.primary }]}
+                onPress={() => navigation.navigate('ExplorerTab')}
+                activeOpacity={0.85}
+              >
+                <Text style={[styles.browseBtnText, { color: d.buttonPrimaryText }]}>Browse Venues</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={[styles.emptyCard, { backgroundColor: d.cardBackground, borderColor: d.border, marginTop: 12 }]}>
+              <AppIcon name="deals" size={32} role="muted" />
+              <Text style={[styles.emptyTitle, { color: d.text }]}>No deals today</Text>
+              <Text style={[styles.emptySubtext, { color: d.textMuted }]}>
+                Check back tomorrow or browse all venues
+              </Text>
+              <TouchableOpacity
+                style={[styles.browseBtn, { backgroundColor: d.primary }]}
+                onPress={() => navigation.navigate('ExplorerTab')}
+                activeOpacity={0.85}
+              >
+                <Text style={[styles.browseBtnText, { color: d.buttonPrimaryText }]}>Browse Venues</Text>
+              </TouchableOpacity>
+            </View>
+          )
         )}
 
         <View style={{ height: 120 }} />
@@ -576,6 +621,17 @@ const styles = StyleSheet.create({
   },
   emptyTitle: { fontSize: 16, fontWeight: '700', marginTop: 4 },
   emptySubtext: { fontSize: 13, fontWeight: '500', textAlign: 'center' },
+
+  passedCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 28,
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 12,
+  },
+  passedTitle: { fontSize: 18, fontWeight: '800', textAlign: 'center', letterSpacing: -0.3 },
+  passedSubtext: { fontSize: 13, fontWeight: '500', textAlign: 'center', marginBottom: 4 },
   browseBtn: {
     marginTop: 12,
     borderRadius: 12,
