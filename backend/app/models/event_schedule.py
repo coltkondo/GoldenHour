@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Time, Integer, ForeignKey
+from sqlalchemy import Column, String, Text, Time, Integer, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from .base import Base, TimestampMixin
@@ -13,7 +13,7 @@ class EventSchedule(Base, TimestampMixin):
 
     name = Column(String(255), nullable=False)
     event_type = Column(String(50), nullable=True)
-    description = Column(String, nullable=True)
+    description = Column(Text, nullable=True)
 
     # Recurrence rule — weekly|biweekly|monthly
     recurrence_type = Column(String(20), nullable=False)

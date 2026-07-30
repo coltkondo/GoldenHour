@@ -7,7 +7,6 @@ Create Date: 2026-07-30
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
-from sqlalchemy.engine.reflection import Inspector
 
 revision = "m1n2o3p4q5r6"
 down_revision = "l1m2n3o4p5q6"
@@ -16,8 +15,8 @@ depends_on = None
 
 
 def upgrade() -> None:
-    bind = op.get_bind()
-    inspector = Inspector.from_engine(bind)
+    conn = op.get_bind()
+    inspector = sa.inspect(conn)
     existing = inspector.get_table_names()
 
     if "event_schedules" not in existing:

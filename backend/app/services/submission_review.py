@@ -237,16 +237,24 @@ def _apply_submission(sub: Submission, db: Session, submitter: User | None = Non
 
         recurrence_type = (event_data.recurrence_type or "once").lower()
 
-        if recurrence_type in ("weekly", "biweekly", "monthly"):
-            _create_recurring_events(event_data, venue, recurrence_type, db)
+        if recurrence_type in ("weekly", "biweekly"):
+            valid_days = [d for d in (event_data.days or []) if d.lower() in _DAY_NAME_TO_INT]
+            if not valid_days:
+                raise HTTPException(status_code=422, detail="At least one valid day is required for weekly/biweekly events")
+        elif recurrence_type == "monthly":
+            if event_data.day_of_month is None:
+                raise HTTPException(status_code=422, detail="day_of_month required for monthly events")
         else:
-            # once or custom — requires event_date
             if not event_data.event_date:
                 raise HTTPException(status_code=422, detail="event_date required for one-time/custom event submission")
-            try:
+
+        try:
+            if recurrence_type in ("weekly", "biweekly", "monthly"):
+                _create_recurring_events(event_data, venue, recurrence_type, db)
+            else:
                 _create_event_occurrence(event_data, venue, db)
-            except ValueError as exc:
-                raise HTTPException(status_code=422, detail=f"Invalid date/time format: {exc}")
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=f"Invalid date/time format: {exc}")
 
         logger.bind(venue_id=str(venue.id), event_name=event_data.event_name, recurrence=recurrence_type).info("event_created_from_submission")
 
@@ -272,8 +280,14 @@ def _parse_time_t(time_str: str) -> dt_time:
     return dt_time(h, m)
 
 
+def _eastern_today() -> dt_date:
+    """Calendar date in the venues' local timezone, not the server's (Railway runs UTC)."""
+    from zoneinfo import ZoneInfo
+    return datetime.now(ZoneInfo("America/New_York")).date()
+
+
 def _weekly_dates(day_of_week: int, count: int = 13) -> list[dt_date]:
-    today = dt_date.today()
+    today = _eastern_today()
     diff = (day_of_week - today.weekday()) % 7
     first = today + timedelta(days=diff)
     return [first + timedelta(weeks=i) for i in range(count)]
@@ -284,7 +298,7 @@ def _biweekly_dates(day_of_week: int, count: int = 7) -> list[dt_date]:
 
 
 def _monthly_dates(day_of_month: int, count: int = 3) -> list[dt_date]:
-    today = dt_date.today()
+    today = _eastern_today()
     results = []
     year, month = today.year, today.month
     while len(results) < count:
