@@ -941,20 +941,40 @@ const NewBarForm: React.FC<VenueFormProps> = ({ d, onSubmit, submitting, submitE
 
 const EVENT_TYPES = ['Trivia', 'Karaoke', 'Watch Party', 'Comedy', 'Other'];
 
+type RecurrenceType = 'once' | 'weekly' | 'biweekly' | 'monthly' | 'custom';
+
+const RECURRENCE_TYPES: { key: RecurrenceType; label: string }[] = [
+  { key: 'once',     label: 'One Time' },
+  { key: 'weekly',   label: 'Weekly' },
+  { key: 'biweekly', label: 'Biweekly' },
+  { key: 'monthly',  label: 'Monthly' },
+  { key: 'custom',   label: 'Custom' },
+];
+
+const DAY_NAMES_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
 const NewEventForm: React.FC<VenueFormProps> = ({ d, venues, venuesLoading, onSubmit, submitting, submitError }) => {
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [name, setName] = useState('');
   const [eventType, setEventType] = useState('');
   const [customEventType, setCustomEventType] = useState('');
+  const [recurrenceType, setRecurrenceType] = useState<RecurrenceType | null>(null);
+  const [selectedDays, setSelectedDays] = useState<number[]>([]);      // weekly multi-select
+  const [selectedDay, setSelectedDay] = useState<number | null>(null); // biweekly single-select
+  const [dayOfMonth, setDayOfMonth] = useState('');
   const [date, setDate] = useState('');
+  const [notes, setNotes] = useState('');
   const [startHour, setStartHour] = useState('');
   const [startMin, setStartMin] = useState('');
-  const [startAm, setStartAm] = useState(true);
+  const [startAm, setStartAm] = useState(false); // default PM
   const [endHour, setEndHour] = useState('');
   const [endMin, setEndMin] = useState('');
-  const [endAm, setEndAm] = useState(true);
+  const [endAm, setEndAm] = useState(false); // default PM
   const [description, setDescription] = useState('');
   const [error, setError] = useState('');
+
+  const toggleDay = (i: number) =>
+    setSelectedDays((prev) => prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]);
 
   const resolvedEventType = eventType === 'Other' ? customEventType.trim() : eventType;
 
@@ -970,18 +990,53 @@ const NewEventForm: React.FC<VenueFormProps> = ({ d, venues, venuesLoading, onSu
     if (!selectedVenue) { setError('Please select a bar.'); return; }
     if (!name.trim()) { setError('Please enter the event name.'); return; }
     if (eventType === 'Other' && !customEventType.trim()) { setError('Please describe the event type.'); return; }
-    if (!date.trim()) { setError('Please enter the event date (MM/DD/YYYY).'); return; }
+    if (!recurrenceType) { setError('Please select how often this event happens.'); return; }
     if (!startHour.trim()) { setError('Please enter a start time.'); return; }
-    await onSubmit('new_event', {
+
+    if (recurrenceType === 'once' || recurrenceType === 'custom') {
+      if (!date.trim()) { setError('Please enter the event date (MM/DD/YYYY).'); return; }
+    }
+    if (recurrenceType === 'weekly' && selectedDays.length === 0) {
+      setError('Please select at least one day.'); return;
+    }
+    if (recurrenceType === 'biweekly' && selectedDay === null) {
+      setError('Please select the day of week.'); return;
+    }
+    if (recurrenceType === 'monthly') {
+      const dom = parseInt(dayOfMonth, 10);
+      if (!dayOfMonth || isNaN(dom) || dom < 1 || dom > 28) {
+        setError('Please enter a valid day of month (1–28).'); return;
+      }
+    }
+
+    const payload: Record<string, any> = {
       bar_id: selectedVenue.id,
       bar_name: selectedVenue.name,
       event_name: name.trim(),
       event_type: resolvedEventType || null,
-      event_date: date.trim(),
+      recurrence_type: recurrenceType,
       start_time: toTime24(startHour, startMin, startAm),
       end_time: endHour.trim() ? toTime24(endHour, endMin, endAm) : null,
       description: description.trim() || null,
-    }, POINTS_CONFIG.new_event);
+    };
+
+    if (recurrenceType === 'once' || recurrenceType === 'custom') {
+      payload.event_date = date.trim();
+    }
+    if (recurrenceType === 'weekly') {
+      payload.days = selectedDays.slice().sort().map((i) => DAY_NAMES_FULL[i]);
+    }
+    if (recurrenceType === 'biweekly') {
+      payload.days = [DAY_NAMES_FULL[selectedDay!]];
+    }
+    if (recurrenceType === 'monthly') {
+      payload.day_of_month = parseInt(dayOfMonth, 10);
+    }
+    if (recurrenceType === 'custom' && notes.trim()) {
+      payload.notes = notes.trim();
+    }
+
+    await onSubmit('new_event', payload, POINTS_CONFIG.new_event);
   };
 
   return (
@@ -998,13 +1053,13 @@ const NewEventForm: React.FC<VenueFormProps> = ({ d, venues, venuesLoading, onSu
       />
 
       <FieldLabel d={d} text="Event type" />
-      <View style={styles.dayRow}>
+      <View style={[styles.dayRow, { flexWrap: 'wrap' }]}>
         {EVENT_TYPES.map((t) => {
           const active = eventType === t;
           return (
             <TouchableOpacity
               key={t}
-              style={[styles.dayPill, {
+              style={[styles.recurrencePill, {
                 backgroundColor: active ? 'rgba(167,139,250,0.12)' : d.filterInactive,
                 borderColor: active ? '#a78bfa' : 'transparent',
                 borderWidth: 1,
@@ -1020,35 +1075,112 @@ const NewEventForm: React.FC<VenueFormProps> = ({ d, venues, venuesLoading, onSu
       {eventType === 'Other' && (
         <TextInput
           style={[styles.textInput, { color: d.text, backgroundColor: d.cardBackground, borderColor: d.border }]}
-          value={customEventType}
-          onChangeText={setCustomEventType}
+          value={customEventType} onChangeText={setCustomEventType}
           placeholder="e.g. Poker Night, Paint & Sip..."
-          placeholderTextColor={d.textHint}
-          autoFocus
+          placeholderTextColor={d.textHint} autoFocus
         />
       )}
 
-      <FieldLabel d={d} text="Date *" />
-      <TextInput
-        style={[styles.textInput, { color: d.text, backgroundColor: d.cardBackground, borderColor: d.border }]}
-        value={date} onChangeText={setDate}
-        placeholder="MM/DD/YYYY"
-        placeholderTextColor={d.textHint}
-        keyboardType="numbers-and-punctuation"
-      />
-
-      <FieldLabel d={d} text="Time range *" />
-      <View style={styles.timeRangeRow}>
-        <TimePicker
-          label="Start" hour={startHour} minute={startMin} isAm={startAm}
-          onHour={setStartHour} onMin={setStartMin} onToggleAmPm={() => setStartAm((a) => !a)} d={d}
-        />
-        <Text style={[styles.timeRangeDash, { color: d.textMuted }]}>—</Text>
-        <TimePicker
-          label="End (opt.)" hour={endHour} minute={endMin} isAm={endAm}
-          onHour={setEndHour} onMin={setEndMin} onToggleAmPm={() => setEndAm((a) => !a)} d={d}
-        />
+      <FieldLabel d={d} text="How often? *" />
+      <View style={[styles.dayRow, { flexWrap: 'wrap' }]}>
+        {RECURRENCE_TYPES.map((rt) => {
+          const active = recurrenceType === rt.key;
+          return (
+            <TouchableOpacity
+              key={rt.key}
+              style={[styles.recurrencePill, {
+                backgroundColor: active ? 'rgba(167,139,250,0.12)' : d.filterInactive,
+                borderColor: active ? '#a78bfa' : 'transparent',
+                borderWidth: 1,
+              }]}
+              onPress={() => setRecurrenceType(rt.key)}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.dayPillText, { color: active ? '#a78bfa' : d.textMuted }]}>{rt.label}</Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
+
+      {/* One Time / Custom — date input */}
+      {(recurrenceType === 'once' || recurrenceType === 'custom') && (
+        <>
+          <FieldLabel d={d} text={recurrenceType === 'custom' ? 'First occurrence date *' : 'Date *'} />
+          <TextInput
+            style={[styles.textInput, { color: d.text, backgroundColor: d.cardBackground, borderColor: d.border }]}
+            value={date} onChangeText={setDate}
+            placeholder="MM/DD/YYYY"
+            placeholderTextColor={d.textHint}
+            keyboardType="numbers-and-punctuation"
+          />
+        </>
+      )}
+
+      {/* Custom — free-text notes */}
+      {recurrenceType === 'custom' && (
+        <>
+          <FieldLabel d={d} text="More info (optional)" />
+          <Text style={[styles.fieldHint, { color: d.textMuted }]}>
+            Help us find the other dates — e.g. "every home gameday", "whenever it rains"
+          </Text>
+          <TextInput
+            style={[styles.textArea, { color: d.text, backgroundColor: d.cardBackground, borderColor: d.border }]}
+            value={notes} onChangeText={setNotes}
+            placeholder="Ex: every home gameday, whenever it rains, random"
+            placeholderTextColor={d.textHint}
+            multiline numberOfLines={3} textAlignVertical="top"
+          />
+        </>
+      )}
+
+      {/* Weekly — multi-day picker */}
+      {recurrenceType === 'weekly' && (
+        <>
+          <FieldLabel d={d} text="Day(s) of the week *" />
+          <DayPicker selected={selectedDays} onToggle={toggleDay} d={d} />
+        </>
+      )}
+
+      {/* Biweekly — single day picker */}
+      {recurrenceType === 'biweekly' && (
+        <>
+          <FieldLabel d={d} text="Which day? *" />
+          <SingleDayPicker selected={selectedDay} onSelect={setSelectedDay} d={d} />
+        </>
+      )}
+
+      {/* Monthly — day of month */}
+      {recurrenceType === 'monthly' && (
+        <>
+          <FieldLabel d={d} text="Day of month (1–28) *" />
+          <TextInput
+            style={[styles.textInput, { color: d.text, backgroundColor: d.cardBackground, borderColor: d.border }]}
+            value={dayOfMonth} onChangeText={(v) => setDayOfMonth(v.replace(/\D/g, ''))}
+            placeholder="e.g. 15"
+            placeholderTextColor={d.textHint}
+            keyboardType="number-pad"
+            maxLength={2}
+          />
+        </>
+      )}
+
+      {/* Time range — shown once recurrence is selected */}
+      {recurrenceType && (
+        <>
+          <FieldLabel d={d} text="Time range *" />
+          <View style={styles.timeRangeRow}>
+            <TimePicker
+              label="Start" hour={startHour} minute={startMin} isAm={startAm}
+              onHour={setStartHour} onMin={setStartMin} onToggleAmPm={() => setStartAm((a) => !a)} d={d}
+            />
+            <Text style={[styles.timeRangeDash, { color: d.textMuted }]}>—</Text>
+            <TimePicker
+              label="End (opt.)" hour={endHour} minute={endMin} isAm={endAm}
+              onHour={setEndHour} onMin={setEndMin} onToggleAmPm={() => setEndAm((a) => !a)} d={d}
+            />
+          </View>
+        </>
+      )}
 
       <FieldLabel d={d} text="Details" />
       <TextInput
@@ -1165,6 +1297,7 @@ const styles = StyleSheet.create({
   dayRow: { flexDirection: 'row', gap: 6 },
   dayPill: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 10 },
   dayPillText: { fontSize: 12, fontWeight: '700' },
+  recurrencePill: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 10 },
 
   /* Bool (all day) */
   boolRow: { flexDirection: 'row', gap: 10 },

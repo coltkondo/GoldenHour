@@ -200,6 +200,13 @@ const EventsListView: React.FC = () => {
                         </Text>
                       </View>
                     )}
+                    {(ev.is_recurring || ev.series_id) && (
+                      <View style={[styles.eventTypePill, { borderColor: EVENT_COLOR, opacity: 0.7 }]}>
+                        <Text style={[styles.eventTypePillText, { color: EVENT_COLOR }]}>
+                          Recurring
+                        </Text>
+                      </View>
+                    )}
                   </View>
                   {ev.description && (
                     <Text style={[styles.eventCardDesc, { color: d.textMuted }]} numberOfLines={2}>

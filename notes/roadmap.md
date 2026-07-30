@@ -176,6 +176,10 @@ Structural improvements that aren't user-facing but unblock future features.
 - [ ] [Venue-Opening-Hours] — Add per-venue opening hours to the database (7-day structure). Currently missing: "all day" deal submissions default to 11:00–23:59 because there's nothing to look up. Google Places API returns `opening_hours` as part of Place Details — seed from there when a `google_place_id` exists. Store as JSONB on the Venue row (`{"monday": {"open": "11:00", "close": "23:00"}, ...}`) — no separate table needed at this scale. Payoff: accurate "all day" deal windows, "open now" filtering on the home screen, closing-time warnings on venue cards.
 
 - [ ] [Event-Schedule-Table] — Events are currently one-off rows. Recurring events (weekly trivia, monthly crawls, biweekly karaoke) need either a recurrence rule on the `Event` model (`rrule` string) or a separate `EventSchedule` table mirroring the `HappyHourSchedule` pattern — one row per recurring slot, with the event template linked. The two-table pattern (Event + EventSchedule) is the cleanest parallel to Deals + HappyHourSchedule and makes calendar rendering straightforward. Worth deciding before [Event-Submit-No-Recurring] is built, since that submission flow determines what data gets collected.
+- [ ] [Save-Email-and-Password]
+- [ ] [FaceID-Login]
+- [ ] [Calendar-Page-Rename]
+- [ ] [Calendar-Day-View-Default]
 
 ---
 

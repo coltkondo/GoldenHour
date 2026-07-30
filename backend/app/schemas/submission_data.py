@@ -60,7 +60,22 @@ class EventData(BaseModel):
     bar_name: Optional[str] = Field(None, max_length=255)
     event_name: Optional[str] = Field(None, max_length=255)
     event_type: Optional[str] = Field(None, max_length=50)
-    event_date: Optional[str] = Field(None, max_length=20)   # MM/DD/YYYY
-    start_time: Optional[str] = Field(None, max_length=10)   # HH:MM (24hr)
-    end_time: Optional[str] = Field(None, max_length=10)     # HH:MM (24hr)
     description: Optional[str] = None
+
+    # Recurrence — once|weekly|biweekly|monthly|custom (omitted = once for compat)
+    recurrence_type: Optional[str] = Field(None, max_length=20)
+
+    # Date for once/custom occurrences (MM/DD/YYYY accepted; YYYY-MM-DD also accepted)
+    event_date: Optional[str] = Field(None, max_length=20)
+
+    start_time: Optional[str] = Field(None, max_length=10)   # HH:MM 24hr
+    end_time: Optional[str] = Field(None, max_length=10)     # HH:MM 24hr
+
+    # For weekly/biweekly — list of full day names, e.g. ["Monday", "Thursday"]
+    days: Optional[list[str]] = None
+
+    # For monthly — day of month 1-28
+    day_of_month: Optional[int] = Field(None, ge=1, le=28)
+
+    # For custom — free-text pattern description
+    notes: Optional[str] = None

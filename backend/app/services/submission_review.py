@@ -3,7 +3,9 @@ Shared logic for approving/rejecting a submission.
 Called by both the v1 submissions router and the admin submissions router.
 """
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date as dt_date, timedelta, time as dt_time
+import uuid as uuid_module
+import calendar as _calendar
 
 from fastapi import HTTPException
 from pydantic import ValidationError as PydanticValidationError
@@ -20,6 +22,7 @@ from app.models.venue import Venue
 from app.models.deal import Deal
 from app.models.happy_hour import HappyHourSchedule
 from app.models.event import Event
+from app.models.event_schedule import EventSchedule
 from app.models.point_transaction import PointTransaction
 from app.schemas.submission import ReviewAction, SubmissionResponse
 from app.schemas.submission_data import VenueData, DealData, EventData
@@ -225,45 +228,158 @@ def _apply_submission(sub: Submission, db: Session, submitter: User | None = Non
             raise HTTPException(status_code=422, detail="bar_id required for new_event submission")
         if not event_data.event_name:
             raise HTTPException(status_code=422, detail="event_name required for new_event submission")
-        if not event_data.event_date or not event_data.start_time:
-            raise HTTPException(status_code=422, detail="event_date and start_time required for new_event submission")
+        if not event_data.start_time:
+            raise HTTPException(status_code=422, detail="start_time required for new_event submission")
 
         venue = db.query(Venue).filter(Venue.id == event_data.bar_id).first()
         if not venue:
             raise HTTPException(status_code=404, detail="Venue not found for new_event submission")
 
-        from zoneinfo import ZoneInfo
-        eastern = ZoneInfo("America/New_York")
-        try:
-            start_dt = datetime.strptime(
-                f"{event_data.event_date} {event_data.start_time}", "%m/%d/%Y %H:%M"
-            ).replace(tzinfo=eastern)
-            end_dt = (
-                datetime.strptime(
-                    f"{event_data.event_date} {event_data.end_time}", "%m/%d/%Y %H:%M"
-                ).replace(tzinfo=eastern)
-                if event_data.end_time else None
-            )
-        except ValueError as exc:
-            raise HTTPException(status_code=422, detail=f"Invalid date/time format: {exc}")
+        recurrence_type = (event_data.recurrence_type or "once").lower()
 
-        event = Event(
-            venue_id=venue.id,
-            name=event_data.event_name,
-            event_type=event_data.event_type,
-            description=event_data.description,
-            start_datetime=start_dt,
-            end_datetime=end_dt,
-            source="user",
-        )
-        db.add(event)
-        logger.bind(venue_id=str(venue.id), event_name=event_data.event_name).info("event_created_from_submission")
+        if recurrence_type in ("weekly", "biweekly", "monthly"):
+            _create_recurring_events(event_data, venue, recurrence_type, db)
+        else:
+            # once or custom — requires event_date
+            if not event_data.event_date:
+                raise HTTPException(status_code=422, detail="event_date required for one-time/custom event submission")
+            try:
+                _create_event_occurrence(event_data, venue, db)
+            except ValueError as exc:
+                raise HTTPException(status_code=422, detail=f"Invalid date/time format: {exc}")
+
+        logger.bind(venue_id=str(venue.id), event_name=event_data.event_name, recurrence=recurrence_type).info("event_created_from_submission")
 
 
 _DAY_NAME_TO_INT = {
     "monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3,
     "friday": 4, "saturday": 5, "sunday": 6,
 }
+
+
+# ── Event occurrence helpers ──────────────────────────────────────────────────
+
+def _parse_event_date(date_str: str) -> dt_date:
+    """Accept YYYY-MM-DD (ISO) or MM/DD/YYYY."""
+    try:
+        return dt_date.fromisoformat(date_str)
+    except ValueError:
+        return datetime.strptime(date_str, "%m/%d/%Y").date()
+
+
+def _parse_time_t(time_str: str) -> dt_time:
+    h, m = map(int, time_str.split(":"))
+    return dt_time(h, m)
+
+
+def _weekly_dates(day_of_week: int, count: int = 13) -> list[dt_date]:
+    today = dt_date.today()
+    diff = (day_of_week - today.weekday()) % 7
+    first = today + timedelta(days=diff)
+    return [first + timedelta(weeks=i) for i in range(count)]
+
+
+def _biweekly_dates(day_of_week: int, count: int = 7) -> list[dt_date]:
+    return _weekly_dates(day_of_week, count * 2)[::2][:count]
+
+
+def _monthly_dates(day_of_month: int, count: int = 3) -> list[dt_date]:
+    today = dt_date.today()
+    results = []
+    year, month = today.year, today.month
+    while len(results) < count:
+        last_day = _calendar.monthrange(year, month)[1]
+        candidate = dt_date(year, month, min(day_of_month, last_day))
+        if candidate >= today:
+            results.append(candidate)
+        if month == 12:
+            year, month = year + 1, 1
+        else:
+            month += 1
+    return results
+
+
+def _build_event(venue_id, event_data, start_dt, end_dt, series_id=None) -> Event:
+    desc = event_data.description or event_data.notes
+    return Event(
+        venue_id=venue_id,
+        name=event_data.event_name,
+        event_type=event_data.event_type,
+        description=desc,
+        start_datetime=start_dt,
+        end_datetime=end_dt,
+        series_id=series_id,
+        is_recurring=series_id is not None,
+        verified=True,
+        source="user",
+    )
+
+
+def _create_event_occurrence(event_data, venue: Venue, db: Session, occurrence_date=None, series_id=None):
+    from zoneinfo import ZoneInfo
+    eastern = ZoneInfo("America/New_York")
+
+    d = occurrence_date or _parse_event_date(event_data.event_date)
+    start_t = _parse_time_t(event_data.start_time)
+    start_dt = datetime(d.year, d.month, d.day, start_t.hour, start_t.minute, tzinfo=eastern)
+
+    end_dt = None
+    if event_data.end_time:
+        end_t = _parse_time_t(event_data.end_time)
+        end_dt = datetime(d.year, d.month, d.day, end_t.hour, end_t.minute, tzinfo=eastern)
+
+    db.add(_build_event(venue.id, event_data, start_dt, end_dt, series_id))
+
+
+def _create_recurring_events(event_data, venue: Venue, recurrence_type: str, db: Session):
+    series_id = uuid_module.uuid4()
+    start_t = _parse_time_t(event_data.start_time) if event_data.start_time else dt_time(19, 0)
+    end_t = _parse_time_t(event_data.end_time) if event_data.end_time else None
+
+    occurrence_dates: list[dt_date] = []
+
+    if recurrence_type in ("weekly", "biweekly"):
+        for day_name in [n.lower() for n in (event_data.days or [])]:
+            day_int = _DAY_NAME_TO_INT.get(day_name)
+            if day_int is None:
+                continue
+            dates = _weekly_dates(day_int) if recurrence_type == "weekly" else _biweekly_dates(day_int)
+            occurrence_dates.extend(dates)
+            db.add(EventSchedule(
+                venue_id=venue.id,
+                series_id=series_id,
+                name=event_data.event_name,
+                event_type=event_data.event_type,
+                description=event_data.description or event_data.notes,
+                recurrence_type=recurrence_type,
+                day_of_week=day_int,
+                start_time=start_t,
+                end_time=end_t,
+            ))
+
+    elif recurrence_type == "monthly":
+        day_of_month = event_data.day_of_month or 1
+        occurrence_dates = _monthly_dates(day_of_month)
+        db.add(EventSchedule(
+            venue_id=venue.id,
+            series_id=series_id,
+            name=event_data.event_name,
+            event_type=event_data.event_type,
+            description=event_data.description or event_data.notes,
+            recurrence_type="monthly",
+            day_of_month=day_of_month,
+            start_time=start_t,
+            end_time=end_t,
+        ))
+
+    from zoneinfo import ZoneInfo
+    eastern = ZoneInfo("America/New_York")
+    for occ_date in sorted(set(occurrence_dates)):
+        start_dt = datetime(occ_date.year, occ_date.month, occ_date.day, start_t.hour, start_t.minute, tzinfo=eastern)
+        end_dt = None
+        if end_t:
+            end_dt = datetime(occ_date.year, occ_date.month, occ_date.day, end_t.hour, end_t.minute, tzinfo=eastern)
+        db.add(_build_event(venue.id, event_data, start_dt, end_dt, series_id))
 
 
 def _remove_deal_from_schedules(deal_id, venue_id, db: Session) -> None:
