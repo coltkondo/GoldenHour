@@ -61,7 +61,7 @@ Assignees: bugs tagged _(Colt)_ are assigned to Colt. Untagged = Andes.
 
 - [x] [Submitted-Screen] — **P2** — "Submit Another" box looks bad. Needs a redesign. Fixed in mobile/src/screens/SubmitScreen.tsx — success state now uses a proper card with full-width button.
 - [x] [Event-Submit-Time-Defaults-AM] — **P2** — Time picker on event submission defaults to AM. Fixed: `startAm` and `endAm` now initialize to `false` (PM) in NewEventForm.
-- [ ] [Event-Submit-Date-No-Picker] — **P2** — "Enter date" field is a plain text input. Should open a native calendar/date picker instead. _(Colt — needs @react-native-community/datetimepicker)_
+- [x] [Event-Submit-Date-No-Picker] — **P2** — "Enter date" field is a plain text input. Should open a native calendar/date picker instead. _(Colt — needs @react-native-community/datetimepicker)_
 - [x] [Event-Submit-No-Recurring] — **P2** — No way to mark an event as recurring when submitting. Fixed: NewEventForm now has a "How often?" recurrence selector (One Time / Weekly / Biweekly / Monthly / Custom). Weekly shows multi-day picker; biweekly shows single-day; monthly asks for day of month; custom shows first-occurrence date + free-text notes field. Backend generates ~13 weeks of Event rows on approval for weekly/biweekly and 3 months for monthly, all sharing a `series_id`. `EventSchedule` rows store the recurrence rule.
 
 ---
@@ -70,8 +70,8 @@ Assignees: bugs tagged _(Colt)_ are assigned to Colt. Untagged = Andes.
 
 <!-- points balance, submission history, delete account, privacy/support links -->
 
-- [ ] [My-Submissions] — **P2** — Does not specify what the submission is. Simply says "New Deal". Should be more descriptive. _(Colt)_
-- [ ] [My-Submissions-Show-Rejected] — **P2** — Submission history shows rejected submissions. Rejected entries aren't useful to users and could feel discouraging. Should only show pending, approved, and corroborated submissions. _(Colt)_
+- [x] [My-Submissions] — **P2** — Does not specify what the submission is. Simply says "New Deal". Should be more descriptive. _(Colt)_
+- [x] [My-Submissions-Show-Rejected] — **P2** — Submission history shows rejected submissions. Rejected entries aren't useful to users and could feel discouraging. Should only show pending, approved, and corroborated submissions. _(Colt)_
 - [x] [Contact-Support] — **P1** — Only works if native Mail app is set up. Fixed: checks if mailto can open; if not, shows Alert with email + native Share sheet (includes Copy).
 
 ---

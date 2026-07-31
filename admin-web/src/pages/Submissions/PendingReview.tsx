@@ -19,6 +19,26 @@ const TYPE_LABELS: Record<string, string> = {
   new_event: 'New Event',
 };
 
+function submissionTitle(sub: Submission): string {
+  const data = sub.submitted_data ?? {};
+  switch (sub.submission_type) {
+    case 'new_deal':
+      return data.title || data.bar_name || '';
+    case 'deal_update':
+    case 'deal_expired':
+      return data.deal_title || data.bar_name || '';
+    case 'new_bar':
+      return data.name || '';
+    case 'bar_update':
+    case 'bar_closed':
+      return data.bar_name || '';
+    case 'new_event':
+      return data.event_name || data.bar_name || '';
+    default:
+      return '';
+  }
+}
+
 export default function PendingReview() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,7 +84,6 @@ export default function PendingReview() {
           <option value="">All Statuses</option>
           <option value="pending">Pending</option>
           <option value="approved">Approved</option>
-          <option value="rejected">Rejected</option>
         </select>
         <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
           <option value="">All Types</option>
@@ -91,26 +110,27 @@ export default function PendingReview() {
       ) : (
         <table className="data-table">
           <thead>
-            <tr>
-              <th>Type</th>
-              <th>Submitted By</th>
-              <th>Status</th>
-              <th>Points Awarded</th>
-              <th>Submitted</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {submissions.map((sub) => (
-              <tr key={sub.id}>
-                <td>
-                  <span className="type-badge">
-                    {TYPE_LABELS[sub.submission_type] ?? sub.submission_type}
-                  </span>
-                  {sub.is_flagged_duplicate && (
-                    <span className="dupe-badge" title="Possible duplicate deal">⚠ Dupe?</span>
-                  )}
-                </td>
+              <tr>
+                <th>Submission</th>
+                <th>Submitted By</th>
+                <th>Status</th>
+                <th>Points Awarded</th>
+                <th>Submitted</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {submissions.map((sub) => (
+                <tr key={sub.id}>
+                  <td>
+                    <div className="sub-title">{submissionTitle(sub) || '—'}</div>
+                    <span className="type-badge">
+                      {TYPE_LABELS[sub.submission_type] ?? sub.submission_type}
+                    </span>
+                    {sub.is_flagged_duplicate && (
+                      <span className="dupe-badge" title="Possible duplicate deal">⚠ Dupe?</span>
+                    )}
+                  </td>
                 <td>{sub.submitter_username}</td>
                 <td>
                   <span

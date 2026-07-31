@@ -22,6 +22,54 @@ const TYPE_LABELS: Record<string, string> = {
   new_bar: 'New Bar',
   bar_closed: 'Bar Closed',
   bar_update: 'Bar Update',
+  new_event: 'New Event',
+};
+
+const RECURRENCE_LABELS: Record<string, string> = {
+  once: 'One time',
+  weekly: 'Weekly',
+  biweekly: 'Biweekly',
+  monthly: 'Monthly',
+  custom: 'Custom',
+};
+
+const submissionSummary = (sub: Submission) => {
+  const data = sub.submitted_data ?? {};
+  switch (sub.submission_type) {
+    case 'new_deal':
+      return {
+        title: data.title || 'New deal',
+        subtitle: [data.bar_name, data.price_note].filter(Boolean).join(' · '),
+      };
+    case 'deal_update':
+    case 'deal_expired':
+      return {
+        title: data.deal_title || 'Deal update',
+        subtitle: [data.bar_name, data.correction].filter(Boolean).join(' · '),
+      };
+    case 'new_bar':
+      return {
+        title: data.name || 'New bar',
+        subtitle: data.address || '',
+      };
+    case 'bar_update':
+    case 'bar_closed':
+      return {
+        title: data.bar_name || 'Bar update',
+        subtitle: data.correction || '',
+      };
+    case 'new_event':
+      return {
+        title: data.event_name || 'New event',
+        subtitle: [
+          data.bar_name,
+          RECURRENCE_LABELS[data.recurrence_type] ?? '',
+          data.event_date,
+        ].filter(Boolean).join(' · '),
+      };
+    default:
+      return { title: '', subtitle: '' };
+  }
 };
 
 const getStatusColor = (status: string) => {
@@ -62,6 +110,8 @@ export const MySubmissionsScreen = () => {
   const totalPoints = submissions
     .filter((s) => s.status === 'approved')
     .reduce((sum, s) => sum + s.points_awarded, 0);
+
+  const visibleSubmissions = submissions.filter((s) => s.status !== 'rejected');
 
   return (
     <View style={[styles.container, { backgroundColor: d.background }]}>
@@ -106,10 +156,10 @@ export const MySubmissionsScreen = () => {
 
         {/* Stats Row */}
         <View style={styles.statsRow}>
-          {(['pending', 'approved', 'rejected'] as const).map((status) => (
+          {(['pending', 'approved'] as const).map((status) => (
             <View key={status} style={styles.statItem}>
               <Text style={[styles.statNum, { color: getStatusColor(status) }]}>
-                {submissions.filter((s) => s.status === status).length}
+                {visibleSubmissions.filter((s) => s.status === status).length}
               </Text>
               <Text style={[styles.statLabel, { color: d.textMuted }]}>
                 {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -120,7 +170,7 @@ export const MySubmissionsScreen = () => {
 
         {loading ? (
           <ActivityIndicator size="large" color={d.primary} style={{ marginTop: 40 }} />
-        ) : submissions.length === 0 ? (
+        ) : visibleSubmissions.length === 0 ? (
           <View
             style={[
               styles.emptyState,
@@ -133,8 +183,9 @@ export const MySubmissionsScreen = () => {
             </Text>
           </View>
         ) : (
-          submissions.map((sub) => {
+          visibleSubmissions.map((sub) => {
             const statusColor = getStatusColor(sub.status);
+            const summary = submissionSummary(sub);
             return (
               <View
                 key={sub.id}
@@ -159,6 +210,12 @@ export const MySubmissionsScreen = () => {
                     </Text>
                   </View>
                 </View>
+                {summary.title ? (
+                  <Text style={[styles.subTitle, { color: d.text }]}>{summary.title}</Text>
+                ) : null}
+                {summary.subtitle ? (
+                  <Text style={[styles.subSubtitle, { color: d.textMuted }]}>{summary.subtitle}</Text>
+                ) : null}
                 <Text style={[styles.subDate, { color: d.textMuted }]}>
                   {new Date(sub.created_at).toLocaleDateString()}
                 </Text>
@@ -225,6 +282,8 @@ const styles = StyleSheet.create({
   subCard: { borderRadius: 16, borderWidth: 1, padding: 14, marginBottom: 10, gap: 6 },
   subHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   subType: { fontSize: 14, fontWeight: '600' },
+  subTitle: { fontSize: 16, fontWeight: '700', letterSpacing: -0.2, marginTop: 2 },
+  subSubtitle: { fontSize: 13, fontWeight: '500', lineHeight: 18 },
   statusPill: {
     flexDirection: 'row',
     alignItems: 'center',

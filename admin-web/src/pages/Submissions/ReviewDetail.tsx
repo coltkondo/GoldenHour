@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { submissionsApi, dealsApi } from '../../services/adminApi';
+import SubmissionDetails from './SubmissionDetails';
 import type { Submission, DealWithVenue } from '../../types';
 
 const TYPE_LABELS: Record<string, string> = {
@@ -117,7 +118,7 @@ export default function ReviewDetail() {
 
       <div className="detail-section">
         <h3>Submitted Data</h3>
-        <pre className="json-block">{JSON.stringify(sub.submitted_data, null, 2)}</pre>
+        <SubmissionDetails submission={sub} />
       </div>
 
       {/* Existing deals at this venue — shown for new_deal submissions */}

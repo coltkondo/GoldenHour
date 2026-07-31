@@ -24,6 +24,7 @@ const TYPE_LABELS: Record<string, string> = {
   new_bar: 'New Bar',
   bar_closed: 'Bar Closed',
   bar_update: 'Bar Update',
+  new_event: 'New Event',
 };
 
 const AUTO_APPLY: Record<string, string> = {
@@ -33,6 +34,143 @@ const AUTO_APPLY: Record<string, string> = {
   new_deal: 'Creates a new deal',
   deal_expired: 'Marks deal as expired',
   deal_update: 'Updates deal info',
+  new_event: 'Creates a new event',
+};
+
+const ISSUE_LABELS: Record<string, string> = {
+  price_wrong: 'Price is wrong',
+  time_wrong: 'Hours / time is wrong',
+  days_wrong: 'Days offered are wrong',
+  description_wrong: 'Description is wrong',
+  no_longer_active: 'Deal is no longer active',
+  name: 'Bar name is wrong',
+  address: 'Address is wrong',
+  phone: 'Phone number is wrong',
+  website: 'Website is wrong',
+  other: 'Something else is wrong',
+  bar_closed: 'Bar is permanently closed',
+};
+
+const RECURRENCE_LABELS: Record<string, string> = {
+  once: 'One time',
+  weekly: 'Weekly',
+  biweekly: 'Biweekly',
+  monthly: 'Monthly',
+  custom: 'Custom',
+};
+
+const SUBMISSION_FIELDS: Record<string, { label: string; key: string; type?: 'bool' | 'array' }[]> = {
+  new_deal: [
+    { label: 'Bar', key: 'bar_name' },
+    { label: 'Deal', key: 'title' },
+    { label: 'Days', key: 'days', type: 'array' },
+    { label: 'All day', key: 'is_all_day', type: 'bool' },
+    { label: 'Start time', key: 'start_time' },
+    { label: 'End time', key: 'end_time' },
+    { label: 'Price note', key: 'price_note' },
+  ],
+  deal_update: [
+    { label: 'Bar', key: 'bar_name' },
+    { label: 'Deal', key: 'deal_title' },
+    { label: "What's wrong", key: 'issue_type' },
+    { label: 'Correction', key: 'correction' },
+  ],
+  deal_expired: [
+    { label: 'Bar', key: 'bar_name' },
+    { label: 'Deal', key: 'deal_title' },
+  ],
+  new_bar: [
+    { label: 'Bar name', key: 'name' },
+    { label: 'Address', key: 'address' },
+    { label: 'Neighborhood', key: 'neighborhood' },
+    { label: 'Latitude', key: 'latitude' },
+    { label: 'Longitude', key: 'longitude' },
+    { label: 'Description', key: 'description' },
+  ],
+  bar_update: [
+    { label: 'Bar', key: 'bar_name' },
+    { label: 'Correction', key: 'correction' },
+  ],
+  bar_closed: [{ label: 'Bar', key: 'bar_name' }],
+  new_event: [
+    { label: 'Bar', key: 'bar_name' },
+    { label: 'Event name', key: 'event_name' },
+    { label: 'Event type', key: 'event_type' },
+    { label: 'Repeats', key: 'recurrence_type' },
+    { label: 'Date', key: 'event_date' },
+    { label: 'Start time', key: 'start_time' },
+    { label: 'End time', key: 'end_time' },
+    { label: 'Days', key: 'days', type: 'array' },
+    { label: 'Day of month', key: 'day_of_month' },
+    { label: 'Notes', key: 'notes' },
+    { label: 'Description', key: 'description' },
+  ],
+};
+
+const formatFieldValue = (field: { label: string; key: string; type?: 'bool' | 'array' }, raw: any): string | null => {
+  if (raw === undefined || raw === null || raw === '') return null;
+  if (Array.isArray(raw)) return raw.length === 0 ? null : raw.join(', ');
+  if (field.type === 'bool') return raw ? 'Yes' : 'No';
+  if (field.key === 'issue_type') return ISSUE_LABELS[String(raw)] ?? String(raw);
+  if (field.key === 'recurrence_type') return RECURRENCE_LABELS[String(raw)] ?? String(raw);
+  return String(raw);
+};
+
+const submissionTitle = (sub: Submission): string => {
+  const data = sub.submitted_data ?? {};
+  switch (sub.submission_type) {
+    case 'new_deal':
+      return data.title || data.bar_name || '';
+    case 'deal_update':
+    case 'deal_expired':
+      return data.deal_title || data.bar_name || '';
+    case 'new_bar':
+      return data.name || '';
+    case 'bar_update':
+    case 'bar_closed':
+      return data.bar_name || '';
+    case 'new_event':
+      return data.event_name || data.bar_name || '';
+    default:
+      return '';
+  }
+};
+
+const SubmissionDataBlock: React.FC<{ type: string; data: Record<string, any>; d: any }> = ({ type, data, d }) => {
+  const fields = SUBMISSION_FIELDS[type];
+  const rows: { label: string; value: string }[] = [];
+  if (fields) {
+    for (const field of fields) {
+      const value = formatFieldValue(field, data[field.key]);
+      if (value !== null) rows.push({ label: field.label, value });
+    }
+  } else {
+    for (const [key, raw] of Object.entries(data)) {
+      const value = formatFieldValue({ label: key, key }, raw);
+      if (value !== null) rows.push({ label: key, value });
+    }
+  }
+
+  if (rows.length === 0) {
+    return <Text style={[styles.dataEmpty, { color: d.textMuted }]}>No submitted data.</Text>;
+  }
+
+  return (
+    <View style={[styles.dataBlock, { backgroundColor: d.surface, borderColor: d.border }]}>
+      {rows.map((row, i) => (
+        <View
+          key={row.label}
+          style={[
+            styles.dataRow,
+            i < rows.length - 1 && { borderBottomWidth: 0.5, borderBottomColor: d.border },
+          ]}
+        >
+          <Text style={[styles.dataRowLabel, { color: d.textMuted }]}>{row.label}</Text>
+          <Text style={[styles.dataRowValue, { color: d.text }]}>{row.value}</Text>
+        </View>
+      ))}
+    </View>
+  );
 };
 
 const getStatusColor = (status: string) => {
@@ -119,7 +257,7 @@ export const AdminReviewScreen = () => {
         </View>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow}>
-          {['pending', 'approved', 'rejected', ''].map((f) => (
+          {['pending', 'approved', ''].map((f) => (
             <TouchableOpacity
               key={f}
               style={[
@@ -194,6 +332,9 @@ export const AdminReviewScreen = () => {
                       <AppIcon name="dropdown" size={16} role="muted" />
                     </View>
                   </View>
+                  <Text style={[styles.cardTitle, { color: d.text }]}>
+                    {submissionTitle(sub) || '—'}
+                  </Text>
                   <Text style={[styles.cardDate, { color: d.textHint }]}>
                     {new Date(sub.created_at).toLocaleDateString()}
                   </Text>
@@ -202,16 +343,7 @@ export const AdminReviewScreen = () => {
                 {expanded && (
                   <View style={styles.expandedContent}>
                     <Text style={[styles.dataLabel, { color: d.textMuted }]}>Submitted Data</Text>
-                    <View
-                      style={[
-                        styles.jsonBlock,
-                        { backgroundColor: d.surface, borderColor: d.border },
-                      ]}
-                    >
-                      <Text style={[styles.jsonText, { color: d.text }]}>
-                        {JSON.stringify(sub.submitted_data, null, 2)}
-                      </Text>
-                    </View>
+                    <SubmissionDataBlock type={sub.submission_type} data={sub.submitted_data} d={d} />
 
                     {sub.status === 'pending' && (
                       <>
@@ -315,11 +447,15 @@ const styles = StyleSheet.create({
   typePill: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, alignSelf: 'flex-start' },
   typePillText: { fontSize: 11, fontWeight: '600' },
   submitter: { fontSize: 11, fontWeight: '500' },
-  cardDate: { fontSize: 10, fontWeight: '500', marginTop: 6 },
+  cardTitle: { fontSize: 15, fontWeight: '700', letterSpacing: -0.2, marginTop: 8 },
+  cardDate: { fontSize: 10, fontWeight: '500', marginTop: 2 },
   expandedContent: { marginTop: 14, gap: 10 },
   dataLabel: { fontSize: 11, fontWeight: '600' },
-  jsonBlock: { borderRadius: 10, borderWidth: 1, padding: 12 },
-  jsonText: { fontFamily: 'monospace', fontSize: 11, lineHeight: 16 },
+  dataBlock: { borderRadius: 10, borderWidth: 1, overflow: 'hidden' },
+  dataRow: { flexDirection: 'row', gap: 12, paddingHorizontal: 12, paddingVertical: 9 },
+  dataRowLabel: { flexBasis: 110, fontSize: 11, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.4, paddingTop: 1 },
+  dataRowValue: { flex: 1, fontSize: 13, lineHeight: 18 },
+  dataEmpty: { fontSize: 12, fontStyle: 'italic', paddingVertical: 4 },
   applyNote: { borderRadius: 10, borderWidth: 1, padding: 12 },
   applyNoteText: { fontSize: 12, fontWeight: '500' },
   notesInputContainer: { borderRadius: 10, borderWidth: 1 },
