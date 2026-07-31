@@ -45,7 +45,8 @@
         {
           "locationAlwaysAndWhenInUsePermission": "Allow Golden Hour to use your location to find nearby happy hours."
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "extra": {
       "apiUrl": "https://goldenhour-production-45a5.up.railway.app/api/v1",

@@ -12,6 +12,7 @@ import {
   Alert,
 } from 'react-native';
 import * as Location from 'expo-location';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useNavigation } from '@react-navigation/native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../theme';
@@ -962,7 +963,8 @@ const NewEventForm: React.FC<VenueFormProps> = ({ d, venues, venuesLoading, onSu
   const [selectedDays, setSelectedDays] = useState<number[]>([]);      // weekly multi-select
   const [selectedDay, setSelectedDay] = useState<number | null>(null); // biweekly single-select
   const [dayOfMonth, setDayOfMonth] = useState('');
-  const [date, setDate] = useState('');
+  const [date, setDate] = useState<Date | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [notes, setNotes] = useState('');
   const [startHour, setStartHour] = useState('');
   const [startMin, setStartMin] = useState('');
@@ -985,6 +987,17 @@ const NewEventForm: React.FC<VenueFormProps> = ({ d, venues, venuesLoading, onSu
     return `${String(h24).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
   };
 
+  const formatDate = (d: Date) => {
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${m}/${day}/${d.getFullYear()}`;
+  };
+
+  const onDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    if (Platform.OS === 'android') setShowDatePicker(false);
+    if (event.type === 'set' && selectedDate) setDate(selectedDate);
+  };
+
   const handleSubmit = async () => {
     setError('');
     if (!selectedVenue) { setError('Please select a bar.'); return; }
@@ -994,7 +1007,7 @@ const NewEventForm: React.FC<VenueFormProps> = ({ d, venues, venuesLoading, onSu
     if (!startHour.trim()) { setError('Please enter a start time.'); return; }
 
     if (recurrenceType === 'once' || recurrenceType === 'custom') {
-      if (!date.trim()) { setError('Please enter the event date (MM/DD/YYYY).'); return; }
+      if (!date) { setError('Please select the event date.'); return; }
     }
     if (recurrenceType === 'weekly' && selectedDays.length === 0) {
       setError('Please select at least one day.'); return;
@@ -1021,7 +1034,7 @@ const NewEventForm: React.FC<VenueFormProps> = ({ d, venues, venuesLoading, onSu
     };
 
     if (recurrenceType === 'once' || recurrenceType === 'custom') {
-      payload.event_date = date.trim();
+      payload.event_date = formatDate(date!);
     }
     if (recurrenceType === 'weekly') {
       payload.days = selectedDays.slice().sort().map((i) => DAY_NAMES_FULL[i]);
@@ -1106,13 +1119,35 @@ const NewEventForm: React.FC<VenueFormProps> = ({ d, venues, venuesLoading, onSu
       {(recurrenceType === 'once' || recurrenceType === 'custom') && (
         <>
           <FieldLabel d={d} text={recurrenceType === 'custom' ? 'First occurrence date *' : 'Date *'} />
-          <TextInput
-            style={[styles.textInput, { color: d.text, backgroundColor: d.cardBackground, borderColor: d.border }]}
-            value={date} onChangeText={setDate}
-            placeholder="MM/DD/YYYY"
-            placeholderTextColor={d.textHint}
-            keyboardType="numbers-and-punctuation"
-          />
+          <TouchableOpacity
+            style={[styles.selectorBtn, { backgroundColor: d.cardBackground, borderColor: showDatePicker ? d.primary : d.border }]}
+            onPress={() => setShowDatePicker(true)}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.selectorBtnText, { color: date ? d.text : d.textHint, flex: 1 }]} numberOfLines={1}>
+              {date ? formatDate(date) : 'Select date...'}
+            </Text>
+            <AppIcon name="calendarBlank" size={16} role="muted" />
+          </TouchableOpacity>
+          {showDatePicker && (
+            <>
+              <DateTimePicker
+                value={date ?? new Date()}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={onDateChange}
+              />
+              {Platform.OS === 'ios' && (
+                <TouchableOpacity
+                  style={[styles.dateDoneBtn, { backgroundColor: 'rgba(167,139,250,0.12)' }]}
+                  onPress={() => setShowDatePicker(false)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.dateDoneText, { color: d.primary }]}>Done</Text>
+                </TouchableOpacity>
+              )}
+            </>
+          )}
         </>
       )}
 
@@ -1285,6 +1320,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14, paddingVertical: 14, gap: 8,
   },
   selectorBtnText: { fontSize: 15 },
+  dateDoneBtn: { alignSelf: 'flex-end', borderRadius: 10, paddingHorizontal: 16, paddingVertical: 8 },
+  dateDoneText: { fontSize: 14, fontWeight: '700' },
   selectorList: {
     borderRadius: 12, borderWidth: 1.5,
     marginTop: 4, overflow: 'hidden',
