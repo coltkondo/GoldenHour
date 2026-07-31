@@ -81,7 +81,7 @@ Assignees: bugs tagged _(Colt)_ are assigned to Colt. Untagged = Andes.
 <!-- login errors, registration validation, guest mode, token refresh -->
 
 - [x] [Login-Not-Persisted] — **P1** — Login state not saved across app restarts. Root cause: 30-min JWT + refresh endpoint required a valid token to refresh. Fixed: token lifetime extended to 30 days; `auth:logout` event clears React state when refresh fails.
-- [ ] [Guest-Mode-While-Logged-In] — **P2** — "Continue as Guest" option is shown or tappable even when already logged in, which is misleading. _(Colt)_
+- [x] [Guest-Mode-While-Logged-In] — **P2** — "Continue as Guest" option is shown or tappable even when already logged in, which is misleading. _(Colt)_
 - [x] [Redirect-To-Login-While-Authenticated] — **P1** — App redirects to login even when authenticated. Root cause: refresh failure cleared AsyncStorage but not AuthContext React state. Fixed with `DeviceEventEmitter` auth:logout event.
 - [x] [Session-Expired-On-Submit] — **P1** — "Session expired" on submission. Same root cause as above — 30-min token lifetime. Fixed by 30-day token + state sync on refresh failure.
 - [x] [Guest-No-Dark-Mode] — **P2** — Logged-out users have no option to switch between light and dark mode. Fixed: dark mode toggle added to guest Profile view.

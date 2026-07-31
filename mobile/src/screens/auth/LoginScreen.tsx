@@ -14,6 +14,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../theme';
 import { useAuth } from '../../context/AuthContext';
 import { authAPI } from '../../api/endpoints';
+import { AppIcon } from '../../components/icons';
 
 export const LoginScreen = () => {
   const { theme } = useTheme();
@@ -22,6 +23,7 @@ export const LoginScreen = () => {
   const navigation = useNavigation<any>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -91,10 +93,18 @@ export const LoginScreen = () => {
               placeholderTextColor={d.textHint}
               value={password}
               onChangeText={setPassword}
-              secureTextEntry
+              secureTextEntry={!showPassword}
               textContentType="password"
               autoComplete="current-password"
             />
+            <TouchableOpacity
+              style={styles.eyeBtn}
+              onPress={() => setShowPassword((s) => !s)}
+              activeOpacity={0.7}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <AppIcon name={showPassword ? 'eyeSlash' : 'eye'} size={20} role="muted" />
+            </TouchableOpacity>
           </View>
 
           <TouchableOpacity
@@ -146,8 +156,9 @@ const styles = StyleSheet.create({
   errorBox: { borderWidth: 0.5, borderRadius: 12, padding: 12, marginBottom: 16 },
   errorText: { fontSize: 13, textAlign: 'center', fontWeight: '500' },
   form: { gap: 12 },
-  inputContainer: { borderRadius: 14, borderWidth: 0.5 },
-  input: { padding: 16, fontSize: 15 },
+  inputContainer: { borderRadius: 14, borderWidth: 0.5, flexDirection: 'row', alignItems: 'center' },
+  input: { flex: 1, padding: 16, fontSize: 15 },
+  eyeBtn: { paddingHorizontal: 14, paddingVertical: 12 },
   loginBtn: {
     borderRadius: 20,
     height: 48,

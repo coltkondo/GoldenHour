@@ -53,6 +53,8 @@ import { SparkleIcon } from 'phosphor-react-native/src/icons/Sparkle';
 import { ArrowBendDownRightIcon } from 'phosphor-react-native/src/icons/ArrowBendDownRight';
 import { MoonIcon } from 'phosphor-react-native/src/icons/Moon';
 import { SunIcon } from 'phosphor-react-native/src/icons/Sun';
+import { EyeIcon } from 'phosphor-react-native/src/icons/Eye';
+import { EyeSlashIcon } from 'phosphor-react-native/src/icons/EyeSlash';
 import { useTheme } from '../../theme';
 
 export type IconRole = 'brand' | 'positive' | 'urgent' | 'discovery' | 'muted' | 'default';
@@ -114,6 +116,8 @@ export const IconMap = {
   arrowBendDownRight: 'ArrowBendDownRight',
   moon: 'Moon',
   sun: 'Sun',
+  eye: 'Eye',
+  eyeSlash: 'EyeSlash',
 } as const;
 
 const PHOSPHOR_ICONS: Record<string, React.FC<any>> = {
@@ -171,6 +175,8 @@ const PHOSPHOR_ICONS: Record<string, React.FC<any>> = {
   ArrowBendDownRight: ArrowBendDownRightIcon,
   Moon: MoonIcon,
   Sun: SunIcon,
+  Eye: EyeIcon,
+  EyeSlash: EyeSlashIcon,
 };
 
 interface AppIconProps {
