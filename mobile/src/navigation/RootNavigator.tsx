@@ -2,7 +2,7 @@ import React from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { AuthProvider, useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { TabNavigator } from './TabNavigator';
 import { HappyHourScreen } from '../screens/HappyHourScreen';
 
@@ -80,10 +80,8 @@ function AppNavigator({ initialRoute }: { initialRoute: InitialRoute }) {
 
 export const RootNavigator = ({ initialRoute = 'Main' }: { initialRoute?: InitialRoute }) => {
   return (
-    <AuthProvider>
-      <NavigationContainer>
-        <AppNavigator initialRoute={initialRoute} />
-      </NavigationContainer>
-    </AuthProvider>
+    <NavigationContainer>
+      <AppNavigator initialRoute={initialRoute} />
+    </NavigationContainer>
   );
 };

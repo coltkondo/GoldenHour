@@ -15,9 +15,11 @@ import { AppIcon } from '../components/icons';
 const { width, height } = Dimensions.get('window');
 
 interface LoadingScreenProps {
-  onGetStarted: () => void;
-  onLogin: () => void;
-  onGuest: () => void;
+  onGetStarted?: () => void;
+  onLogin?: () => void;
+  onGuest?: () => void;
+  splash?: boolean;
+  onComplete?: () => void;
 }
 
 const FEATURES = [
@@ -27,7 +29,7 @@ const FEATURES = [
   { icon: 'rewards' as const, label: 'REWARDS' },
 ] as const;
 
-export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onGetStarted, onLogin, onGuest }) => {
+export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onGetStarted, onLogin, onGuest, splash, onComplete }) => {
   const { theme } = useTheme();
   const d = theme.derived;
 
@@ -87,7 +89,9 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onGetStarted, onLo
           useNativeDriver: true,
         }),
       ]),
-    ]).start();
+    ]).start(({ finished }) => {
+      if (splash && finished && onComplete) onComplete();
+    });
   }, []);
 
   return (
@@ -161,40 +165,42 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onGetStarted, onLo
         </Animated.View>
 
         {/* CTA Buttons */}
-        <Animated.View
-          style={[
-            styles.ctaSection,
-            { opacity: ctaOpacity, transform: [{ translateY: ctaTranslateY }] },
-          ]}
-        >
-          <TouchableOpacity
-            style={[styles.primaryButton, { backgroundColor: d.primary }]}
-            activeOpacity={0.85}
-            onPress={onGetStarted}
+        {!splash && (
+          <Animated.View
+            style={[
+              styles.ctaSection,
+              { opacity: ctaOpacity, transform: [{ translateY: ctaTranslateY }] },
+            ]}
           >
-            <Text style={[styles.primaryButtonText, { color: d.buttonPrimaryText }]}>
-              GET STARTED
-            </Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.primaryButton, { backgroundColor: d.primary }]}
+              activeOpacity={0.85}
+              onPress={onGetStarted}
+            >
+              <Text style={[styles.primaryButtonText, { color: d.buttonPrimaryText }]}>
+                GET STARTED
+              </Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[styles.secondaryButton, { borderColor: d.border }]}
-            activeOpacity={0.7}
-            onPress={onLogin}
-          >
-            <Text style={[styles.secondaryButtonText, { color: d.text }]}>I HAVE AN ACCOUNT</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.secondaryButton, { borderColor: d.border }]}
+              activeOpacity={0.7}
+              onPress={onLogin}
+            >
+              <Text style={[styles.secondaryButtonText, { color: d.text }]}>I HAVE AN ACCOUNT</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.guestButton}
-            activeOpacity={0.6}
-            onPress={onGuest}
-          >
-            <Text style={[styles.guestButtonText, { color: d.textMuted }]}>
-              Continue as guest
-            </Text>
-          </TouchableOpacity>
-        </Animated.View>
+            <TouchableOpacity
+              style={styles.guestButton}
+              activeOpacity={0.6}
+              onPress={onGuest}
+            >
+              <Text style={[styles.guestButtonText, { color: d.textMuted }]}>
+                Continue as guest
+              </Text>
+            </TouchableOpacity>
+          </Animated.View>
+        )}
 
         {/* Fine Print */}
         <View style={styles.finePrint}>
