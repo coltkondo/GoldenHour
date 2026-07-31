@@ -12,6 +12,7 @@ interface VenueCardProps {
     longitude: number;
   };
   onPress: (venue: Venue) => void;
+  onViewDetails?: (venue: Venue) => void;
   isSelected?: boolean;
 }
 
@@ -33,6 +34,7 @@ export const VenueCard: React.FC<VenueCardProps> = ({
   venue,
   userLocation,
   onPress,
+  onViewDetails,
   isSelected = false,
 }) => {
   const { theme } = useTheme();
@@ -54,6 +56,10 @@ export const VenueCard: React.FC<VenueCardProps> = ({
   const handleWebsitePress = (e: any) => {
     e.stopPropagation();
     if (venue.website) Linking.openURL(venue.website);
+  };
+  const handleViewDetailsPress = (e: any) => {
+    e.stopPropagation();
+    onViewDetails?.(venue);
   };
   const handleDirectionsPress = (e: any) => {
     e.stopPropagation();
@@ -135,6 +141,17 @@ export const VenueCard: React.FC<VenueCardProps> = ({
       <View
         style={[styles.actionBar, { borderTopColor: d.border }]}
       >
+        <TouchableOpacity style={styles.actionButton} onPress={handleViewDetailsPress}>
+          <AppIcon name="arrowRight" size={14} role="brand" />
+          <Text style={[styles.actionText, { color: d.primary }]}>View Details</Text>
+        </TouchableOpacity>
+
+        <View
+          style={[
+            styles.actionDivider,
+            { backgroundColor: d.border },
+          ]}
+        />
         <TouchableOpacity style={styles.actionButton} onPress={handleDirectionsPress}>
           <AppIcon name="directions" size={14} role="brand" />
           <Text style={[styles.actionText, { color: d.primary }]}>Directions</Text>

@@ -7,7 +7,6 @@ import {
   PanResponder,
   Dimensions,
   ScrollView,
-  Platform,
 } from 'react-native';
 import { useTheme } from '../theme';
 import { Venue } from '../types/api';
@@ -26,6 +25,7 @@ interface VenueBottomSheetProps {
   userLocation: { latitude: number; longitude: number };
   selectedVenueId: string | null;
   onVenuePress: (venue: Venue) => void;
+  onViewDetails?: (venue: Venue) => void;
 }
 
 export const VenueBottomSheet: React.FC<VenueBottomSheetProps> = ({
@@ -34,6 +34,7 @@ export const VenueBottomSheet: React.FC<VenueBottomSheetProps> = ({
   userLocation,
   selectedVenueId,
   onVenuePress,
+  onViewDetails,
 }) => {
   const { theme } = useTheme();
   const d = theme.derived;
@@ -41,7 +42,8 @@ export const VenueBottomSheet: React.FC<VenueBottomSheetProps> = ({
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT - MINIMIZED_HEIGHT)).current;
   const [isScrollEnabled, setIsScrollEnabled] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
-  const venueRefs = useRef<{ [key: string]: number }>({});
+  const venueRefs = useRef<{ [key: string]: { y: number; height: number } }>({});
+  const scrollViewHeightRef = useRef(0);
   const isExpandedRef = useRef(isExpanded);
 
   useEffect(() => {
@@ -50,18 +52,19 @@ export const VenueBottomSheet: React.FC<VenueBottomSheetProps> = ({
 
   useEffect(() => {
     if (selectedVenueId && isExpanded && scrollViewRef.current) {
-      const yPos = venueRefs.current[selectedVenueId];
-      if (yPos !== undefined) {
-        scrollViewRef.current.scrollTo({ y: yPos, animated: true });
+      const pos = venueRefs.current[selectedVenueId];
+      if (pos && scrollViewHeightRef.current > 0) {
+        const targetY = Math.max(0, pos.y - (scrollViewHeightRef.current - pos.height) / 2);
+        scrollViewRef.current.scrollTo({ y: targetY, animated: true });
       }
     }
-  }, [selectedVenueId, isExpanded]);
+  }, [selectedVenueId, isExpanded, venues]);
 
   useEffect(() => {
     if (selectedVenueId && !isExpanded) {
       animateToPosition(true);
     }
-  }, [selectedVenueId]);
+  }, [selectedVenueId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const animateToPosition = useCallback(
     (expand: boolean) => {
@@ -126,9 +129,12 @@ export const VenueBottomSheet: React.FC<VenueBottomSheetProps> = ({
     [onVenuePress],
   );
 
-  const handleCardLayout = useCallback((venueId: string, yPosition: number) => {
-    venueRefs.current[venueId] = yPosition;
-  }, []);
+  const handleCardLayout = useCallback(
+    (venueId: string, y: number, height: number) => {
+      venueRefs.current[venueId] = { y, height };
+    },
+    [],
+  );
 
   return (
     <Animated.View
@@ -142,7 +148,10 @@ export const VenueBottomSheet: React.FC<VenueBottomSheetProps> = ({
         },
       ]}
     >
-      <View {...panResponder.panHandlers} style={styles.dragHandleContainer}>
+      <View
+        {...panResponder.panHandlers}
+        style={[styles.dragHandleContainer, { borderBottomColor: d.border }]}
+      >
         <View style={[styles.handlePill, { backgroundColor: d.filterInactive }]}>
           <AppIcon name={isExpanded ? 'dropdown' : 'caretUp'} size={14} role="muted" />
         </View>
@@ -175,19 +184,23 @@ export const VenueBottomSheet: React.FC<VenueBottomSheetProps> = ({
           showsVerticalScrollIndicator={false}
           bounces={true}
           overScrollMode="never"
+          onLayout={(e) => {
+            scrollViewHeightRef.current = e.nativeEvent.layout.height;
+          }}
         >
           {venues.map((venue) => (
             <View
               key={venue.id}
               onLayout={(event) => {
-                const { y } = event.nativeEvent.layout;
-                handleCardLayout(venue.id, y);
+                const { y, height } = event.nativeEvent.layout;
+                handleCardLayout(venue.id, y, height);
               }}
             >
               <VenueCard
                 venue={venue}
                 userLocation={userLocation}
                 onPress={handleVenueCardPress}
+                onViewDetails={onViewDetails}
                 isSelected={selectedVenueId === venue.id}
               />
             </View>
@@ -218,7 +231,6 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     alignItems: 'center',
     borderBottomWidth: 0.5,
-    borderBottomColor: '#2A2A2A',
   },
   handlePill: {
     width: 36,

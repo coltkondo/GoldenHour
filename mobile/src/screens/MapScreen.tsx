@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   StyleSheet,
@@ -6,10 +6,11 @@ import {
   Text,
   TouchableOpacity,
   Platform,
+  Dimensions,
 } from 'react-native';
 import MapView, { Region } from 'react-native-maps';
 import { useNavigation } from '@react-navigation/native';
-import { useTheme, ThemeMode } from '../theme';
+import { useTheme } from '../theme';
 import { useLocation } from '../hooks/useLocation';
 import { venuesAPI } from '../api/endpoints';
 import { Venue } from '../types/api';
@@ -21,16 +22,8 @@ const darkMapStyle = [
   { elementType: 'geometry', stylers: [{ color: '#1a1a1a' }] },
   { elementType: 'labels.text.stroke', stylers: [{ color: '#0d0d0d' }] },
   { elementType: 'labels.text.fill', stylers: [{ color: '#6b6b6b' }] },
-  {
-    featureType: 'administrative',
-    elementType: 'geometry.stroke',
-    stylers: [{ color: '#2a2a2a' }],
-  },
-  {
-    featureType: 'administrative.land_parcel',
-    elementType: 'labels.text.fill',
-    stylers: [{ color: '#555555' }],
-  },
+  { featureType: 'administrative', elementType: 'geometry.stroke', stylers: [{ color: '#2a2a2a' }] },
+  { featureType: 'administrative.land_parcel', elementType: 'labels.text.fill', stylers: [{ color: '#555555' }] },
   { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#1a1a1a' }] },
   { featureType: 'poi', elementType: 'labels.text.fill', stylers: [{ color: '#555555' }] },
   { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#161616' }] },
@@ -41,11 +34,7 @@ const darkMapStyle = [
   { featureType: 'road.highway', elementType: 'geometry.stroke', stylers: [{ color: '#1a1a1a' }] },
   { featureType: 'road.local', elementType: 'labels.text.fill', stylers: [{ color: '#555555' }] },
   { featureType: 'transit', elementType: 'geometry', stylers: [{ color: '#1a1a1a' }] },
-  {
-    featureType: 'transit.station',
-    elementType: 'labels.text.fill',
-    stylers: [{ color: '#555555' }],
-  },
+  { featureType: 'transit.station', elementType: 'labels.text.fill', stylers: [{ color: '#555555' }] },
   { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0f0f0f' }] },
   { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#444444' }] },
 ];
@@ -54,16 +43,8 @@ const lightMapStyle = [
   { elementType: 'geometry', stylers: [{ color: '#f5f3ef' }] },
   { elementType: 'labels.text.stroke', stylers: [{ color: '#faf9f6' }] },
   { elementType: 'labels.text.fill', stylers: [{ color: '#6b6b6b' }] },
-  {
-    featureType: 'administrative',
-    elementType: 'geometry.stroke',
-    stylers: [{ color: '#e5e2dc' }],
-  },
-  {
-    featureType: 'administrative.land_parcel',
-    elementType: 'labels.text.fill',
-    stylers: [{ color: '#9b978e' }],
-  },
+  { featureType: 'administrative', elementType: 'geometry.stroke', stylers: [{ color: '#e5e2dc' }] },
+  { featureType: 'administrative.land_parcel', elementType: 'labels.text.fill', stylers: [{ color: '#9b978e' }] },
   { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#f0ede6' }] },
   { featureType: 'poi', elementType: 'labels.text.fill', stylers: [{ color: '#9b978e' }] },
   { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#e8e5df' }] },
@@ -74,14 +55,17 @@ const lightMapStyle = [
   { featureType: 'road.highway', elementType: 'geometry.stroke', stylers: [{ color: '#e5e2dc' }] },
   { featureType: 'road.local', elementType: 'labels.text.fill', stylers: [{ color: '#9b978e' }] },
   { featureType: 'transit', elementType: 'geometry', stylers: [{ color: '#f0ede6' }] },
-  {
-    featureType: 'transit.station',
-    elementType: 'labels.text.fill',
-    stylers: [{ color: '#9b978e' }],
-  },
+  { featureType: 'transit.station', elementType: 'labels.text.fill', stylers: [{ color: '#9b978e' }] },
   { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#d4e8f0' }] },
   { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#7a9aae' }] },
 ];
+
+const VIEWPORT_PADDING = 0.5;
+const REGION_DEBOUNCE_MS = 200;
+const PIN_IMAGE_HEIGHT = 25;
+const LABEL_GAP = 3;
+const LABEL_DEFAULT_WIDTH = 120;
+const LABEL_DEFAULT_HEIGHT = 26;
 
 export const MapScreen = () => {
   const mapRef = useRef<MapView>(null);
@@ -97,6 +81,13 @@ export const MapScreen = () => {
   const [mapRegion, setMapRegion] = useState<Region | null>(null);
   const hasAnimatedToUser = useRef(false);
   const isMounted = useRef(true);
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [labelPoint, setLabelPoint] = useState<{ x: number; y: number } | null>(null);
+  const [labelSize, setLabelSize] = useState<{ width: number; height: number } | null>(null);
+  const selectedVenueRef = useRef<Venue | null>(null);
+  const labelRequestId = useRef(0);
+  const lastLabelUpdate = useRef(0);
+  const lastLabelVenueId = useRef<string | null>(null);
 
   useEffect(() => {
     isMounted.current = true;
@@ -115,7 +106,7 @@ export const MapScreen = () => {
     if (mapRegion && venues.length > 0) {
       filterVisibleVenues(mapRegion);
     }
-  }, [mapRegion, venues]);
+  }, [mapRegion, venues]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!location || locationLoading || !mapRef.current) return;
@@ -130,6 +121,12 @@ export const MapScreen = () => {
       800,
     );
   }, [location, locationLoading]);
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
+  }, []);
 
   const loadAllVenues = async () => {
     try {
@@ -148,39 +145,90 @@ export const MapScreen = () => {
   };
 
   const filterVisibleVenues = (region: Region) => {
+    const latHalf = (region.latitudeDelta / 2) * (1 + VIEWPORT_PADDING);
+    const lonHalf = (region.longitudeDelta / 2) * (1 + VIEWPORT_PADDING);
     const visible = venues.filter((venue) => {
       const latInBounds =
-        venue.latitude >= region.latitude - region.latitudeDelta / 2 &&
-        venue.latitude <= region.latitude + region.latitudeDelta / 2;
+        venue.latitude >= region.latitude - latHalf &&
+        venue.latitude <= region.latitude + latHalf;
       const lonInBounds =
-        venue.longitude >= region.longitude - region.longitudeDelta / 2 &&
-        venue.longitude <= region.longitude + region.longitudeDelta / 2;
+        venue.longitude >= region.longitude - lonHalf &&
+        venue.longitude <= region.longitude + lonHalf;
       return latInBounds && lonInBounds;
     });
     setVisibleVenues(visible);
   };
 
-  const handleRegionChangeComplete = (region: Region) => {
-    setMapRegion(region);
+  const handleRegionChangeComplete = useCallback((region: Region) => {
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => setMapRegion(region), REGION_DEBOUNCE_MS);
+  }, []);
+
+  const handleViewDetails = (venue: Venue) => {
+    navigation.navigate('HappyHour', { venue });
+  };
+
+  const focusOnVenue = (venue: Venue, zoomTo: number | null) => {
+    if (!mapRef.current) return;
+    const latitudeDelta = zoomTo ?? mapRegion?.latitudeDelta ?? 0.01;
+    const longitudeDelta = zoomTo ?? mapRegion?.longitudeDelta ?? 0.01;
+    const sheetHeightRatio = 0.5;
+    const latitude = venue.latitude - latitudeDelta * sheetHeightRatio * 0.5;
+    mapRef.current.animateToRegion(
+      { latitude, longitude: venue.longitude, latitudeDelta, longitudeDelta },
+      500,
+    );
   };
 
   const handleVenueCardPress = (venue: Venue) => {
     setSelectedVenueId(venue.id);
-    if (mapRef.current) {
-      const latitudeDelta = 0.01;
-      const longitudeDelta = 0.01;
-      const sheetHeightRatio = 0.5;
-      const latitude = venue.latitude - latitudeDelta * sheetHeightRatio * 0.5;
-      mapRef.current.animateToRegion(
-        { latitude, longitude: venue.longitude, latitudeDelta, longitudeDelta },
-        500,
-      );
-    }
+    focusOnVenue(venue, 0.01);
   };
 
-  const handleMarkerPress = (venue: Venue) => {
-    setSelectedVenueId(venue.id);
-  };
+  const handleMarkerPress = useCallback(
+    (venue: Venue) => {
+      setSelectedVenueId(venue.id);
+      focusOnVenue(venue, null);
+    },
+    [mapRegion],
+  );
+
+  const selectedVenue = selectedVenueId
+    ? venues.find((v) => v.id === selectedVenueId) ?? null
+    : null;
+
+  selectedVenueRef.current = selectedVenue;
+
+  const updateLabelPoint = useCallback(() => {
+    const venue = selectedVenueRef.current;
+    if (!venue || !mapRef.current) {
+      setLabelPoint(null);
+      return;
+    }
+    const now = Date.now();
+    const venueChanged = venue.id !== lastLabelVenueId.current;
+    if (!venueChanged && now - lastLabelUpdate.current < 33) return;
+    lastLabelVenueId.current = venue.id;
+    lastLabelUpdate.current = now;
+    const requestId = ++labelRequestId.current;
+    mapRef.current
+      .pointForCoordinate({
+        latitude: venue.latitude,
+        longitude: venue.longitude,
+      })
+      .then((point) => {
+        if (requestId !== labelRequestId.current) return;
+        const { width, height } = Dimensions.get('window');
+        const inView =
+          point.x >= -40 && point.x <= width + 40 && point.y >= -40 && point.y <= height + 40;
+        setLabelPoint(inView ? { x: point.x, y: point.y } : null);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    updateLabelPoint();
+  }, [selectedVenue, selectedVenueId, mapRegion, updateLabelPoint]);
 
   const recenterMap = () => {
     if (mapRef.current && location) {
@@ -194,11 +242,7 @@ export const MapScreen = () => {
   const zoomIn = () => {
     if (mapRef.current && mapRegion) {
       mapRef.current.animateToRegion(
-        {
-          ...mapRegion,
-          latitudeDelta: mapRegion.latitudeDelta / 2,
-          longitudeDelta: mapRegion.longitudeDelta / 2,
-        },
+        { ...mapRegion, latitudeDelta: mapRegion.latitudeDelta / 2, longitudeDelta: mapRegion.longitudeDelta / 2 },
         300,
       );
     }
@@ -250,6 +294,7 @@ export const MapScreen = () => {
         showsBuildings={false}
         showsIndoors={false}
         onRegionChangeComplete={handleRegionChangeComplete}
+        onRegionChange={updateLabelPoint}
         onMapReady={() => {
           if (location && !mapRegion) {
             setMapRegion(location);
@@ -258,24 +303,43 @@ export const MapScreen = () => {
         customMapStyle={mode === 'dark' ? darkMapStyle : undefined}
         mapType="standard"
       >
-        {visibleVenues.map((venue) => (
+        {venues.map((venue) => (
           <VenueMarker
             key={venue.id}
             venue={venue}
             isSelected={selectedVenueId === venue.id}
             onPress={handleMarkerPress}
-            themeColors={d}
           />
         ))}
       </MapView>
 
-      <View style={styles.topOverlay}>
+      {selectedVenue && labelPoint && (
         <View
+          pointerEvents="none"
+          onLayout={(e) =>
+            setLabelSize({
+              width: e.nativeEvent.layout.width,
+              height: e.nativeEvent.layout.height,
+            })
+          }
           style={[
-            styles.venueCountChip,
-            { backgroundColor: d.cardBackground, borderColor: d.border },
+            styles.markerLabel,
+            {
+              top: labelPoint.y - PIN_IMAGE_HEIGHT - LABEL_GAP - (labelSize?.height ?? LABEL_DEFAULT_HEIGHT),
+              left: labelPoint.x - (labelSize?.width ?? LABEL_DEFAULT_WIDTH) / 2,
+              backgroundColor: d.cardBackground,
+              borderColor: d.border,
+            },
           ]}
         >
+          <Text numberOfLines={1} style={[styles.markerLabelText, { color: d.text }]}>
+            {selectedVenue.name}
+          </Text>
+        </View>
+      )}
+
+      <View style={styles.topOverlay}>
+        <View style={[styles.venueCountChip, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
           <AppIcon name="location" size={12} role="brand" />
           <Text style={[styles.venueCountText, { color: d.text }]}>
             {visibleVenues.length} {visibleVenues.length === 1 ? 'venue' : 'venues'} in view
@@ -284,10 +348,7 @@ export const MapScreen = () => {
       </View>
 
       <TouchableOpacity
-        style={[
-          styles.recenterButton,
-          { backgroundColor: d.cardBackground, borderColor: d.border },
-        ]}
+        style={[styles.recenterButton, { backgroundColor: d.cardBackground, borderColor: d.border }]}
         onPress={recenterMap}
         activeOpacity={0.8}
       >
@@ -319,6 +380,7 @@ export const MapScreen = () => {
           userLocation={location}
           selectedVenueId={selectedVenueId}
           onVenuePress={handleVenueCardPress}
+          onViewDetails={handleViewDetails}
         />
       )}
     </View>
@@ -329,77 +391,26 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   map: { flex: 1 },
   centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
-  loadingSpinner: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
+  loadingSpinner: { width: 56, height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
   loadingText: { fontSize: 17, fontWeight: '700', letterSpacing: -0.3 },
   errorText: { fontSize: 16, textAlign: 'center', fontWeight: '600' },
-  topOverlay: {
-    position: 'absolute',
-    top: Platform.OS === 'ios' ? 64 : 56,
-    alignSelf: 'center',
-    zIndex: 10,
-  },
-  venueCountChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 16,
-    borderWidth: 1,
-  },
+  topOverlay: { position: 'absolute', top: Platform.OS === 'ios' ? 64 : 56, alignSelf: 'center', zIndex: 10 },
+  venueCountChip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 9, borderRadius: 16, borderWidth: 1 },
   venueCountText: { fontSize: 12, fontWeight: '600', letterSpacing: 0.1 },
-  recenterButton: {
+  recenterButton: { position: 'absolute', top: Platform.OS === 'ios' ? 114 : 106, right: 16, width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center', borderWidth: 1, zIndex: 10 },
+  zoomControls: { position: 'absolute', top: Platform.OS === 'ios' ? 166 : 158, right: 16, width: 40, borderRadius: 12, borderWidth: 1, overflow: 'hidden', zIndex: 10, borderColor: 'transparent' },
+  zoomButton: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center', borderWidth: 1 },
+  zoomButtonTop: { borderBottomWidth: 0, borderTopLeftRadius: 12, borderTopRightRadius: 12, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 },
+  zoomButtonBottom: { borderTopWidth: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0, borderBottomLeftRadius: 12, borderBottomRightRadius: 12 },
+  zoomDivider: { height: 1 },
+  markerLabel: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 114 : 106,
-    right: 16,
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
+    maxWidth: 200,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 14,
     borderWidth: 1,
-    zIndex: 10,
+    zIndex: 20,
   },
-  zoomControls: {
-    position: 'absolute',
-    top: Platform.OS === 'ios' ? 166 : 158,
-    right: 16,
-    width: 40,
-    borderRadius: 12,
-    borderWidth: 1,
-    overflow: 'hidden',
-    zIndex: 10,
-    borderColor: 'transparent',
-  },
-  zoomButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-  },
-  zoomButtonTop: {
-    borderBottomWidth: 0,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-  },
-  zoomButtonBottom: {
-    borderTopWidth: 0,
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-    borderBottomLeftRadius: 12,
-    borderBottomRightRadius: 12,
-  },
-  zoomDivider: {
-    height: 1,
-  },
+  markerLabelText: { fontSize: 13, fontWeight: '700', letterSpacing: -0.2 },
 });
