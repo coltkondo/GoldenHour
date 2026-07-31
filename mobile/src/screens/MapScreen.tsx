@@ -12,6 +12,7 @@ import MapView, { Region } from 'react-native-maps';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { useLocation } from '../hooks/useLocation';
+import { useLiveVenueStatus } from '../hooks/useLiveVenueStatus';
 import { venuesAPI } from '../api/endpoints';
 import { Venue } from '../types/api';
 import { VenueBottomSheet } from '../components/VenueBottomSheet';
@@ -88,6 +89,8 @@ export const MapScreen = () => {
   const labelRequestId = useRef(0);
   const lastLabelUpdate = useRef(0);
   const lastLabelVenueId = useRef<string | null>(null);
+
+  const liveVenueIds = useLiveVenueStatus(visibleVenues);
 
   useEffect(() => {
     isMounted.current = true;
@@ -381,6 +384,7 @@ export const MapScreen = () => {
           selectedVenueId={selectedVenueId}
           onVenuePress={handleVenueCardPress}
           onViewDetails={handleViewDetails}
+          liveVenueIds={liveVenueIds}
         />
       )}
     </View>

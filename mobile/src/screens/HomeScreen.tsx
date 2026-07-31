@@ -16,7 +16,7 @@ import { useTheme } from '../theme';
 import { useAuth } from '../context/AuthContext';
 import { venuesAPI, dealsAPI, eventsAPI } from '../api/endpoints';
 import { Venue, Deal, HappyHourSchedule, Event, DAY_NAMES } from '../types/api';
-import { formatScheduleRange, parseTimeString } from '../utils/scheduleUtils';
+import { formatScheduleRange, parseTimeString, isCurrentlyLive, isAlreadyEnded, todayDbIndex } from '../utils/scheduleUtils';
 import { AppIcon } from '../components/icons';
 import { REWARDS_ENABLED } from '../config/constants';
 import { LiveBadge } from '../components/ui/LiveBadge';
@@ -56,43 +56,6 @@ interface VenueGroup {
   logoUrl: string | null;
   timeGroups: TimeGroup[];
   events: Event[];
-}
-
-function isCurrentlyLive(schedule: HappyHourSchedule | undefined): boolean {
-  if (!schedule) return false;
-  try {
-    const now = new Date();
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
-    const start = parseTimeString(schedule.start_time);
-    const end = parseTimeString(schedule.end_time);
-    const startMinutes = start.hour * 60 + start.minute;
-    const endMinutes = end.hour * 60 + end.minute;
-    if (endMinutes > startMinutes) {
-      return currentMinutes >= startMinutes && currentMinutes < endMinutes;
-    }
-    return currentMinutes >= startMinutes || currentMinutes < endMinutes;
-  } catch {
-    return false;
-  }
-}
-
-function isAlreadyEnded(schedule: HappyHourSchedule | undefined): boolean {
-  if (!schedule) return false;
-  try {
-    const now = new Date();
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
-    const start = parseTimeString(schedule.start_time);
-    const end = parseTimeString(schedule.end_time);
-    const startMinutes = start.hour * 60 + start.minute;
-    const endMinutes = end.hour * 60 + end.minute;
-    // Only mark ended for normal daytime slots; midnight-crossing slots are left alone
-    if (endMinutes > startMinutes) {
-      return currentMinutes >= endMinutes;
-    }
-    return false;
-  } catch {
-    return false;
-  }
 }
 
 function matchesFilter(deal: Deal, filter: FilterCategory): boolean {
@@ -209,8 +172,7 @@ export const HomeScreen = () => {
       );
       if (!isMounted.current) return;
 
-      const today = now.getDay();
-      const todayDb = today === 0 ? 6 : today - 1;
+      const todayDb = todayDbIndex(now);
       const newMap = new Map<string, HappyHourSchedule>();
       for (const scheds of scheduleSets) {
         for (const s of scheds) {
@@ -284,8 +246,7 @@ export const HomeScreen = () => {
     if (venue) navigation.navigate('HappyHour', { venue });
   };
 
-  const today = new Date().getDay();
-  const todayDb = today === 0 ? 6 : today - 1;
+  const todayDb = todayDbIndex();
   const todayName = DAY_NAMES[todayDb];
 
   const activeMarketSlug = marketOverride ?? user?.market_slug ?? guestMarketSlug;

@@ -26,6 +26,7 @@ interface VenueBottomSheetProps {
   selectedVenueId: string | null;
   onVenuePress: (venue: Venue) => void;
   onViewDetails?: (venue: Venue) => void;
+  liveVenueIds?: Set<string>;
 }
 
 export const VenueBottomSheet: React.FC<VenueBottomSheetProps> = ({
@@ -35,6 +36,7 @@ export const VenueBottomSheet: React.FC<VenueBottomSheetProps> = ({
   selectedVenueId,
   onVenuePress,
   onViewDetails,
+  liveVenueIds,
 }) => {
   const { theme } = useTheme();
   const d = theme.derived;
@@ -202,6 +204,7 @@ export const VenueBottomSheet: React.FC<VenueBottomSheetProps> = ({
                 onPress={handleVenueCardPress}
                 onViewDetails={onViewDetails}
                 isSelected={selectedVenueId === venue.id}
+                isLiveNow={liveVenueIds?.has(venue.id) ?? false}
               />
             </View>
           ))}

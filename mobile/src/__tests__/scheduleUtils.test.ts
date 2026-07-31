@@ -1,4 +1,14 @@
-import { parseTimeString, formatScheduleRange } from '../utils/scheduleUtils';
+import {
+  parseTimeString,
+  formatScheduleRange,
+  todayDbIndex,
+  isCurrentlyLive,
+  isAlreadyEnded,
+} from '../utils/scheduleUtils';
+import { HappyHourSchedule } from '../types/api';
+
+const schedule = (startTime: string, endTime: string): HappyHourSchedule =>
+  ({ start_time: startTime, end_time: endTime }) as HappyHourSchedule;
 
 // ---------------------------------------------------------------------------
 // parseTimeString
@@ -113,5 +123,131 @@ describe('formatScheduleRange', () => {
     for (const [s, e] of inputs) {
       expect(() => formatScheduleRange(s, e)).not.toThrow();
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// todayDbIndex
+// ---------------------------------------------------------------------------
+
+describe('todayDbIndex', () => {
+  test('maps Sunday (getDay 0) to backend 6', () => {
+    expect(todayDbIndex(new Date(2026, 6, 26, 12, 0, 0))).toBe(6);
+  });
+
+  test('maps Monday (getDay 1) to backend 0', () => {
+    expect(todayDbIndex(new Date(2026, 6, 27, 12, 0, 0))).toBe(0);
+  });
+
+  test('maps Wednesday (getDay 3) to backend 2', () => {
+    expect(todayDbIndex(new Date(2026, 6, 29, 12, 0, 0))).toBe(2);
+  });
+
+  test('maps Saturday (getDay 6) to backend 5', () => {
+    expect(todayDbIndex(new Date(2026, 7, 1, 12, 0, 0))).toBe(5);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// isCurrentlyLive
+// ---------------------------------------------------------------------------
+
+describe('isCurrentlyLive', () => {
+  test('false before the window opens', () => {
+    const now = new Date(2026, 6, 29, 15, 0, 0);
+    expect(isCurrentlyLive(schedule('16:00:00', '19:00:00'), now)).toBe(false);
+  });
+
+  test('true exactly at the start time (inclusive)', () => {
+    const now = new Date(2026, 6, 29, 16, 0, 0);
+    expect(isCurrentlyLive(schedule('16:00:00', '19:00:00'), now)).toBe(true);
+  });
+
+  test('true in the middle of the window', () => {
+    const now = new Date(2026, 6, 29, 17, 30, 0);
+    expect(isCurrentlyLive(schedule('16:00:00', '19:00:00'), now)).toBe(true);
+  });
+
+  test('false exactly at the end time (exclusive)', () => {
+    const now = new Date(2026, 6, 29, 19, 0, 0);
+    expect(isCurrentlyLive(schedule('16:00:00', '19:00:00'), now)).toBe(false);
+  });
+
+  test('false after the window closes', () => {
+    const now = new Date(2026, 6, 29, 20, 0, 0);
+    expect(isCurrentlyLive(schedule('16:00:00', '19:00:00'), now)).toBe(false);
+  });
+
+  test('midnight-crossing window live in the evening', () => {
+    const now = new Date(2026, 6, 29, 23, 0, 0);
+    expect(isCurrentlyLive(schedule('21:00:00', '01:00:00'), now)).toBe(true);
+  });
+
+  test('midnight-crossing window live after midnight', () => {
+    const now = new Date(2026, 6, 30, 0, 30, 0);
+    expect(isCurrentlyLive(schedule('21:00:00', '01:00:00'), now)).toBe(true);
+  });
+
+  test('midnight-crossing window not live in the afternoon', () => {
+    const now = new Date(2026, 6, 30, 14, 0, 0);
+    expect(isCurrentlyLive(schedule('21:00:00', '01:00:00'), now)).toBe(false);
+  });
+
+  test('false when there is no schedule', () => {
+    const now = new Date(2026, 6, 29, 17, 0, 0);
+    expect(isCurrentlyLive(undefined, now)).toBe(false);
+  });
+
+  test('false on malformed times', () => {
+    const now = new Date(2026, 6, 29, 17, 0, 0);
+    expect(isCurrentlyLive(schedule('not-a-time', '19:00:00'), now)).toBe(false);
+    expect(isCurrentlyLive(schedule('16:00:00', 'bad'), now)).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// isAlreadyEnded
+// ---------------------------------------------------------------------------
+
+describe('isAlreadyEnded', () => {
+  test('false before the window opens', () => {
+    const now = new Date(2026, 6, 29, 15, 0, 0);
+    expect(isAlreadyEnded(schedule('16:00:00', '19:00:00'), now)).toBe(false);
+  });
+
+  test('false in the middle of the window', () => {
+    const now = new Date(2026, 6, 29, 17, 30, 0);
+    expect(isAlreadyEnded(schedule('16:00:00', '19:00:00'), now)).toBe(false);
+  });
+
+  test('true exactly at the end time', () => {
+    const now = new Date(2026, 6, 29, 19, 0, 0);
+    expect(isAlreadyEnded(schedule('16:00:00', '19:00:00'), now)).toBe(true);
+  });
+
+  test('true after the window closes', () => {
+    const now = new Date(2026, 6, 29, 20, 0, 0);
+    expect(isAlreadyEnded(schedule('16:00:00', '19:00:00'), now)).toBe(true);
+  });
+
+  test('midnight-crossing window never marked ended while live in the evening', () => {
+    const now = new Date(2026, 6, 29, 23, 0, 0);
+    expect(isAlreadyEnded(schedule('21:00:00', '01:00:00'), now)).toBe(false);
+  });
+
+  test('midnight-crossing window not marked ended after midnight', () => {
+    const now = new Date(2026, 6, 30, 0, 30, 0);
+    expect(isAlreadyEnded(schedule('21:00:00', '01:00:00'), now)).toBe(false);
+  });
+
+  test('false when there is no schedule', () => {
+    const now = new Date(2026, 6, 29, 20, 0, 0);
+    expect(isAlreadyEnded(undefined, now)).toBe(false);
+  });
+
+  test('false on malformed times', () => {
+    const now = new Date(2026, 6, 29, 20, 0, 0);
+    expect(isAlreadyEnded(schedule('not-a-time', '19:00:00'), now)).toBe(false);
+    expect(isAlreadyEnded(schedule('16:00:00', 'bad'), now)).toBe(false);
   });
 });

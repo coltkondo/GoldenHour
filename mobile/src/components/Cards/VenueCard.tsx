@@ -14,6 +14,7 @@ interface VenueCardProps {
   onPress: (venue: Venue) => void;
   onViewDetails?: (venue: Venue) => void;
   isSelected?: boolean;
+  isLiveNow?: boolean;
 }
 
 const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
@@ -36,6 +37,7 @@ export const VenueCard: React.FC<VenueCardProps> = ({
   onPress,
   onViewDetails,
   isSelected = false,
+  isLiveNow = false,
 }) => {
   const { theme } = useTheme();
   const d = theme.derived;
@@ -188,7 +190,7 @@ export const VenueCard: React.FC<VenueCardProps> = ({
         )}
       </View>
 
-      {venue.active && (
+      {isLiveNow && (
         <View
           style={[
             styles.statusBar,
