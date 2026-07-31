@@ -23,7 +23,7 @@ Assignees: bugs tagged _(Colt)_ are assigned to Colt. Untagged = Andes.
 <!-- logo, nickname, day selector, deals per day, directions/call/website, corroborate button -->
 
 - [x] [Corroborate-Vicinity-Gate] — **P1** — "Still Accurate" corroborate button should only appear when the user is physically within range of the bar. Currently shows regardless of location. Fixed: `checkProximity()` runs on mount using `getLastKnownPositionAsync` (instant); button only renders when `isNearby === true` (within 50m). No permission prompt on mount — if permission not yet granted, button stays hidden.
-- [ ] [Corroborate-Daily-Cap] — **P1** — No limit on how many times a bar can be corroborated in a day. Should cap at 5 corroborations per bar per day across all users. Needs backend enforcement. _(Colt)_
+- [x] [Corroborate-Daily-Cap] — **P1** — No limit on how many times a bar can be corroborated in a day. Should cap at 5 corroborations per bar per day across all users. Needs backend enforcement. _(Colt)_
 
 ---
 
