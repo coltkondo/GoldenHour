@@ -8,19 +8,38 @@ depending on the database's internal row ordering.
 The fix: added User.username.asc() as a secondary sort key in leaderboard.py.
 Ties are now broken alphabetically by username — deterministic and stable.
 """
+
+import uuid
+
 import pytest
 
+from app.models.market import Market
 from app.models.user import User
 from app.models.submission import Submission
 
 
 def _make_user(db, *, username, points):
+    market = db.query(Market).first()
+    if market is None:
+        market = Market(
+            name="State College",
+            slug=f"state-college-{uuid.uuid4().hex[:8]}",
+            region_center_lat=40.79,
+            region_center_lng=-77.86,
+            region_radius_meters=50_000,
+            daily_points_cap=200,
+        )
+        db.add(market)
+        db.flush()
     u = User(
         username=username,
         email=f"{username}@t.example",
         password_hash="x",
         role="user",
         points_balance=points,
+        market_id=market.id,
+        signup_latitude=40.79,
+        signup_longitude=-77.86,
     )
     db.add(u)
     db.flush()
@@ -28,7 +47,6 @@ def _make_user(db, *, username, points):
 
 
 class TestLeaderboardOrdering:
-
     def test_higher_points_ranks_first(self, db):
         """Users with more points appear earlier in the list."""
         low = _make_user(db, username="zara", points=10)
@@ -36,6 +54,7 @@ class TestLeaderboardOrdering:
         db.commit()
 
         from sqlalchemy import func
+
         rows = (
             db.query(User.id, User.username, User.points_balance)
             .filter(User.points_balance > 0)
@@ -96,6 +115,6 @@ class TestLeaderboardOrdering:
             .order_by(User.points_balance.desc(), User.username.asc())
             .all()
         )
-        assert rows[0].username == "alpha"   # 200, alphabetically first
-        assert rows[1].username == "beta"    # 200, alphabetically second
-        assert rows[2].username == "gamma"   # 100
+        assert rows[0].username == "alpha"  # 200, alphabetically first
+        assert rows[1].username == "beta"  # 200, alphabetically second
+        assert rows[2].username == "gamma"  # 100

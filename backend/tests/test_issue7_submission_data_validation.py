@@ -20,6 +20,7 @@ ALLOWED_VENUE/DEAL_FIELDS sets) and carry Field() constraints:
 
 Invalid data now raises HTTP 422 before any DB write.
 """
+
 import pytest
 from fastapi import HTTPException
 from pydantic import ValidationError
@@ -37,11 +38,15 @@ _VALID_PASSWORD = "Qwerty12!"
 # Unit tests for the Pydantic schemas (no DB)
 # ---------------------------------------------------------------------------
 
-class TestVenueDataSchema:
 
+class TestVenueDataSchema:
     def test_valid_venue_data_passes(self):
-        v = VenueData(name="The Phyrst", address="101 W College Ave",
-                      latitude=40.79, longitude=-77.86)
+        v = VenueData(
+            name="The Phyrst",
+            address="101 W College Ave",
+            latitude=40.79,
+            longitude=-77.86,
+        )
         assert v.name == "The Phyrst"
 
     def test_latitude_too_high_fails(self):
@@ -105,11 +110,12 @@ class TestVenueDataSchema:
 
 
 class TestDealDataSchema:
-
     def test_valid_deal_data_passes(self):
         import uuid
-        d = DealData(title="$3 drafts", venue_id=uuid.uuid4(),
-                     original_price=6.0, deal_price=3.0)
+
+        d = DealData(
+            title="$3 drafts", venue_id=uuid.uuid4(), original_price=6.0, deal_price=3.0
+        )
         assert d.title == "$3 drafts"
 
     def test_original_price_negative_fails(self):
@@ -144,33 +150,62 @@ class TestDealDataSchema:
 # Integration tests: invalid data rejected at review time (with DB)
 # ---------------------------------------------------------------------------
 
+
 def _make_user(db, *, username, role="user"):
+    import uuid
+
+    from app.models.market import Market
     from app.models.user import User
-    u = User(username=username, email=f"{username}@t.example",
-             password_hash="x", role=role, points_balance=0)
+
+    market = db.query(Market).first()
+    if market is None:
+        market = Market(
+            name="State College",
+            slug=f"state-college-{uuid.uuid4().hex[:8]}",
+            region_center_lat=40.79,
+            region_center_lng=-77.86,
+            region_radius_meters=50_000,
+            daily_points_cap=200,
+        )
+        db.add(market)
+        db.flush()
+    u = User(
+        username=username,
+        email=f"{username}@t.example",
+        password_hash="x",
+        role=role,
+        points_balance=0,
+        market_id=market.id,
+        signup_latitude=40.79,
+        signup_longitude=-77.86,
+    )
     db.add(u)
     db.flush()
     return u
 
 
 def _make_submission(db, *, user_id, submission_type, submitted_data):
-    s = Submission(user_id=user_id, submission_type=submission_type,
-                   submitted_data=submitted_data, status="pending")
+    s = Submission(
+        user_id=user_id,
+        submission_type=submission_type,
+        submitted_data=submitted_data,
+        status="pending",
+    )
     db.add(s)
     db.flush()
     return s
 
 
 class TestInvalidDataRaisesOnApproval:
-
     def test_out_of_range_latitude_raises_422(self, db):
         submitter = _make_user(db, username="sub_lat")
         admin = _make_user(db, username="adm_lat", role="admin")
-        sub = _make_submission(db, user_id=submitter.id,
-                               submission_type="new_bar",
-                               submitted_data={"name": "Bad Bar",
-                                               "address": "1 St",
-                                               "latitude": 999})
+        sub = _make_submission(
+            db,
+            user_id=submitter.id,
+            submission_type="new_bar",
+            submitted_data={"name": "Bad Bar", "address": "1 St", "latitude": 999},
+        )
         db.commit()
         with pytest.raises(HTTPException) as exc:
             review_submission(sub.id, ReviewAction(status="approved"), admin, db)
@@ -179,11 +214,12 @@ class TestInvalidDataRaisesOnApproval:
     def test_out_of_range_longitude_raises_422(self, db):
         submitter = _make_user(db, username="sub_lon")
         admin = _make_user(db, username="adm_lon", role="admin")
-        sub = _make_submission(db, user_id=submitter.id,
-                               submission_type="new_bar",
-                               submitted_data={"name": "Bad Bar",
-                                               "address": "1 St",
-                                               "longitude": -999})
+        sub = _make_submission(
+            db,
+            user_id=submitter.id,
+            submission_type="new_bar",
+            submitted_data={"name": "Bad Bar", "address": "1 St", "longitude": -999},
+        )
         db.commit()
         with pytest.raises(HTTPException) as exc:
             review_submission(sub.id, ReviewAction(status="approved"), admin, db)
@@ -192,10 +228,12 @@ class TestInvalidDataRaisesOnApproval:
     def test_negative_deal_price_raises_422(self, db):
         submitter = _make_user(db, username="sub_price")
         admin = _make_user(db, username="adm_price", role="admin")
-        sub = _make_submission(db, user_id=submitter.id,
-                               submission_type="new_deal",
-                               submitted_data={"title": "Bad Deal",
-                                               "deal_price": -10})
+        sub = _make_submission(
+            db,
+            user_id=submitter.id,
+            submission_type="new_deal",
+            submitted_data={"title": "Bad Deal", "deal_price": -10},
+        )
         db.commit()
         with pytest.raises(HTTPException) as exc:
             review_submission(sub.id, ReviewAction(status="approved"), admin, db)
@@ -204,12 +242,17 @@ class TestInvalidDataRaisesOnApproval:
     def test_valid_data_approves_cleanly(self, db):
         submitter = _make_user(db, username="sub_valid")
         admin = _make_user(db, username="adm_valid", role="admin")
-        sub = _make_submission(db, user_id=submitter.id,
-                               submission_type="new_bar",
-                               submitted_data={"name": "Good Bar",
-                                               "address": "1 College Ave",
-                                               "latitude": 40.79,
-                                               "longitude": -77.86})
+        sub = _make_submission(
+            db,
+            user_id=submitter.id,
+            submission_type="new_bar",
+            submitted_data={
+                "name": "Good Bar",
+                "address": "1 College Ave",
+                "latitude": 40.79,
+                "longitude": -77.86,
+            },
+        )
         db.commit()
         # Should not raise
         result = review_submission(sub.id, ReviewAction(status="approved"), admin, db)
@@ -222,19 +265,25 @@ class TestInvalidDataRaisesOnApproval:
         """
         submitter = _make_user(db, username="sub_priv")
         admin = _make_user(db, username="adm_priv", role="admin")
-        sub = _make_submission(db, user_id=submitter.id,
-                               submission_type="new_bar",
-                               submitted_data={"name": "Sneaky Bar",
-                                               "address": "2 St",
-                                               "verified": True,
-                                               "active": False,
-                                               "id": "00000000-0000-0000-0000-000000000001"})
+        sub = _make_submission(
+            db,
+            user_id=submitter.id,
+            submission_type="new_bar",
+            submitted_data={
+                "name": "Sneaky Bar",
+                "address": "2 St",
+                "verified": True,
+                "active": False,
+                "id": "00000000-0000-0000-0000-000000000001",
+            },
+        )
         db.commit()
         # Approval must succeed (privileged fields silently ignored)
         result = review_submission(sub.id, ReviewAction(status="approved"), admin, db)
         assert result.status == "approved"
 
         from app.models.venue import Venue
+
         venue = db.query(Venue).filter(Venue.name == "Sneaky Bar").first()
         assert venue is not None
         assert venue.verified is False  # default, not overridden by submission

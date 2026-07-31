@@ -17,6 +17,7 @@ test validates correctness of logic (no lost updates in the SQL path) even
 though true parallel I/O is not exercised. PostgreSQL-level lock semantics
 are guaranteed by the SQL form of the UPDATE statement itself.
 """
+
 import threading
 import uuid
 
@@ -24,6 +25,7 @@ import pytest
 from fastapi import HTTPException
 
 from app.core.points_config import POINTS_CONFIG
+from app.models.market import Market
 from app.models.point_transaction import PointTransaction
 from app.models.submission import Submission
 from app.models.user import User
@@ -35,13 +37,35 @@ from app.services.submission_review import review_submission
 # Helpers
 # ---------------------------------------------------------------------------
 
+
+def _ensure_market(db) -> Market:
+    """Reuse any existing market in this test's session, else create one."""
+    market = db.query(Market).first()
+    if market is None:
+        market = Market(
+            name="State College",
+            slug=f"state-college-{uuid.uuid4().hex[:8]}",
+            region_center_lat=40.79,
+            region_center_lng=-77.86,
+            region_radius_meters=50_000,
+            daily_points_cap=200,
+        )
+        db.add(market)
+        db.flush()
+    return market
+
+
 def _make_user(db, *, username, role="user"):
+    market = _ensure_market(db)
     user = User(
         username=username,
         email=f"{username}@test.example",
         password_hash="irrelevant_in_tests",
         role=role,
         points_balance=0,
+        market_id=market.id,
+        signup_latitude=40.79,
+        signup_longitude=-77.86,
     )
     db.add(user)
     db.flush()  # get id without full commit
@@ -65,8 +89,8 @@ def _make_submission(db, *, user_id, submission_type="new_bar"):
 # Tests: single approval
 # ---------------------------------------------------------------------------
 
-class TestSingleApproval:
 
+class TestSingleApproval:
     def test_approved_submission_awards_correct_points(self, db):
         """Approving a submission credits the correct point value to the submitter."""
         submitter = _make_user(db, username="submitter1")
@@ -152,8 +176,8 @@ class TestSingleApproval:
 # Tests: cumulative / sequential approvals
 # ---------------------------------------------------------------------------
 
-class TestMultipleApprovals:
 
+class TestMultipleApprovals:
     def test_sequential_approvals_accumulate_correctly(self, db):
         """
         Approve multiple submissions for the same user one after another.
@@ -187,8 +211,8 @@ class TestMultipleApprovals:
 # Tests: concurrent approvals
 # ---------------------------------------------------------------------------
 
-class TestConcurrentApprovals:
 
+class TestConcurrentApprovals:
     def test_concurrent_approvals_do_not_lose_points(self, db, db_session_factory):
         """
         Approve two submissions for the same user in two concurrent threads.
@@ -250,10 +274,74 @@ class TestConcurrentApprovals:
         )
 
         txns = (
-            db.query(PointTransaction)
-            .filter(PointTransaction.user_id == user_id)
-            .all()
+            db.query(PointTransaction).filter(PointTransaction.user_id == user_id).all()
         )
-        assert len(txns) == 2, (
-            f"Expected 2 PointTransaction rows, got {len(txns)}"
+        assert len(txns) == 2, f"Expected 2 PointTransaction rows, got {len(txns)}"
+
+    def test_concurrent_approvals_respect_daily_cap(self, db, db_session_factory):
+        """
+        Concurrent approvals for the same user must never exceed the market's
+        daily_points_cap.
+
+        The daily-cap check reads earned_today (a SUM over today's point
+        transactions) and then awards points. That is a read-modify-write, so
+        two approvals racing for the same user could both read 0 and each award
+        the full amount. review_submission() locks the submitter row
+        (SELECT ... FOR UPDATE) before the read, serializing approvals for that
+        user. SQLite ignores FOR UPDATE, so the guarantee is Postgres-only
+        (matching the repo's convention for row-locking concurrency tests).
+        """
+        if db.get_bind().dialect.name != "postgresql":
+            pytest.skip(
+                "Requires PostgreSQL row locking; FOR UPDATE is a no-op on SQLite"
+            )
+
+        submitter = _make_user(db, username="cap_user")
+        admin = _make_user(db, username="cap_admin", role="admin")
+        db.query(Market).first().daily_points_cap = 60
+        sub1 = _make_submission(db, user_id=submitter.id)
+        sub2 = _make_submission(db, user_id=submitter.id)
+        db.commit()
+
+        sub1_id = sub1.id
+        sub2_id = sub2.id
+        admin_id = admin.id
+        user_id = submitter.id
+
+        errors: list[Exception] = []
+        barrier = threading.Barrier(2)
+
+        def approve(submission_id):
+            session = db_session_factory()
+            try:
+                admin_obj = session.query(User).filter(User.id == admin_id).first()
+                barrier.wait()
+                review_submission(
+                    submission_id, ReviewAction(status="approved"), admin_obj, session
+                )
+            except Exception as exc:
+                errors.append(exc)
+            finally:
+                session.close()
+
+        t1 = threading.Thread(target=approve, args=(sub1_id,))
+        t2 = threading.Thread(target=approve, args=(sub2_id,))
+        t1.start()
+        t2.start()
+        t1.join()
+        t2.join()
+
+        assert not errors, f"Thread(s) raised errors: {errors}"
+
+        db.expire_all()
+        final = db.query(User).filter(User.id == user_id).first()
+        txns = (
+            db.query(PointTransaction).filter(PointTransaction.user_id == user_id).all()
+        )
+        assert final.points_balance == 60, (
+            f"Expected balance capped at 60, got {final.points_balance}"
+        )
+        assert sum(t.points for t in txns) == 60, (
+            f"Expected total awarded points capped at 60, got "
+            f"{sum(t.points for t in txns)}"
         )

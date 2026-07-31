@@ -32,12 +32,18 @@ from app.services.geocoding import geocode
 
 def _points_earned_today(user_id, db: Session) -> int:
     """Sum points awarded to a user since midnight UTC today."""
-    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
-    total = db.query(sa_func.coalesce(sa_func.sum(PointTransaction.points), 0)).filter(
-        PointTransaction.user_id == user_id,
-        PointTransaction.created_at >= today_start,
-        PointTransaction.points > 0,
-    ).scalar()
+    today_start = datetime.now(timezone.utc).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+    total = (
+        db.query(sa_func.coalesce(sa_func.sum(PointTransaction.points), 0))
+        .filter(
+            PointTransaction.user_id == user_id,
+            PointTransaction.created_at >= today_start,
+            PointTransaction.points > 0,
+        )
+        .scalar()
+    )
     return total
 
 
@@ -101,8 +107,17 @@ def review_submission(
                 submission_id=str(sub.id), submission_type=sub.submission_type
             ).info("approving_submission")
 
-            submitter = db.query(User).filter(User.id == sub.user_id).first()
-            market = db.query(Market).filter(Market.id == submitter.market_id).first() if submitter else None
+            submitter = (
+                db.query(User).filter(User.id == sub.user_id).with_for_update().first()
+            )
+            # Locking the submitter row serializes concurrent approvals for the
+            # same user, so the daily-cap read (earned_today) below cannot race
+            # with another in-flight approval awarding points to that user.
+            market = (
+                db.query(Market).filter(Market.id == submitter.market_id).first()
+                if submitter
+                else None
+            )
 
             _apply_submission(sub, db, submitter)
             logger.bind(submission_id=str(sub.id)).info("submission_applied")
@@ -164,7 +179,9 @@ def review_submission(
         raise
 
 
-def _apply_submission(sub: Submission, db: Session, submitter: User | None = None) -> None:
+def _apply_submission(
+    sub: Submission, db: Session, submitter: User | None = None
+) -> None:
     """Auto-apply the change described by the approved submission.
 
     Only fields in the whitelists are accepted from submitted_data.
@@ -175,11 +192,17 @@ def _apply_submission(sub: Submission, db: Session, submitter: User | None = Non
 
     if sub.submission_type == "new_bar":
         venue_fields = _validated_venue(data)
-        if not venue_fields.get("latitude") and venue_fields.get("name") and venue_fields.get("address"):
+        if (
+            not venue_fields.get("latitude")
+            and venue_fields.get("name")
+            and venue_fields.get("address")
+        ):
             coords = geocode(venue_fields["name"], venue_fields["address"])
             if coords:
                 venue_fields["latitude"], venue_fields["longitude"] = coords
-                logger.bind(name=venue_fields["name"], lat=coords[0], lon=coords[1]).info("venue_geocoded")
+                logger.bind(
+                    name=venue_fields["name"], lat=coords[0], lon=coords[1]
+                ).info("venue_geocoded")
         if submitter:
             venue_fields["market_id"] = submitter.market_id
         venue = Venue(**venue_fields)
@@ -202,7 +225,10 @@ def _apply_submission(sub: Submission, db: Session, submitter: User | None = Non
             if raw_venue_id:
                 deal_fields["venue_id"] = str(raw_venue_id)
         if not deal_fields.get("venue_id"):
-            raise HTTPException(status_code=422, detail="venue_id or bar_id required for new_deal submission")
+            raise HTTPException(
+                status_code=422,
+                detail="venue_id or bar_id required for new_deal submission",
+            )
         deal = Deal(**deal_fields)
         db.add(deal)
         db.flush()  # populate deal.id before schedule rows reference it
@@ -225,28 +251,46 @@ def _apply_submission(sub: Submission, db: Session, submitter: User | None = Non
             raise HTTPException(status_code=422, detail=str(exc))
 
         if not event_data.bar_id:
-            raise HTTPException(status_code=422, detail="bar_id required for new_event submission")
+            raise HTTPException(
+                status_code=422, detail="bar_id required for new_event submission"
+            )
         if not event_data.event_name:
-            raise HTTPException(status_code=422, detail="event_name required for new_event submission")
+            raise HTTPException(
+                status_code=422, detail="event_name required for new_event submission"
+            )
         if not event_data.start_time:
-            raise HTTPException(status_code=422, detail="start_time required for new_event submission")
+            raise HTTPException(
+                status_code=422, detail="start_time required for new_event submission"
+            )
 
         venue = db.query(Venue).filter(Venue.id == event_data.bar_id).first()
         if not venue:
-            raise HTTPException(status_code=404, detail="Venue not found for new_event submission")
+            raise HTTPException(
+                status_code=404, detail="Venue not found for new_event submission"
+            )
 
         recurrence_type = (event_data.recurrence_type or "once").lower()
 
         if recurrence_type in ("weekly", "biweekly"):
-            valid_days = [d for d in (event_data.days or []) if d.lower() in _DAY_NAME_TO_INT]
+            valid_days = [
+                d for d in (event_data.days or []) if d.lower() in _DAY_NAME_TO_INT
+            ]
             if not valid_days:
-                raise HTTPException(status_code=422, detail="At least one valid day is required for weekly/biweekly events")
+                raise HTTPException(
+                    status_code=422,
+                    detail="At least one valid day is required for weekly/biweekly events",
+                )
         elif recurrence_type == "monthly":
             if event_data.day_of_month is None:
-                raise HTTPException(status_code=422, detail="day_of_month required for monthly events")
+                raise HTTPException(
+                    status_code=422, detail="day_of_month required for monthly events"
+                )
         else:
             if not event_data.event_date:
-                raise HTTPException(status_code=422, detail="event_date required for one-time/custom event submission")
+                raise HTTPException(
+                    status_code=422,
+                    detail="event_date required for one-time/custom event submission",
+                )
 
         try:
             if recurrence_type in ("weekly", "biweekly", "monthly"):
@@ -254,18 +298,30 @@ def _apply_submission(sub: Submission, db: Session, submitter: User | None = Non
             else:
                 _create_event_occurrence(event_data, venue, db)
         except ValueError as exc:
-            raise HTTPException(status_code=422, detail=f"Invalid date/time format: {exc}")
+            raise HTTPException(
+                status_code=422, detail=f"Invalid date/time format: {exc}"
+            )
 
-        logger.bind(venue_id=str(venue.id), event_name=event_data.event_name, recurrence=recurrence_type).info("event_created_from_submission")
+        logger.bind(
+            venue_id=str(venue.id),
+            event_name=event_data.event_name,
+            recurrence=recurrence_type,
+        ).info("event_created_from_submission")
 
 
 _DAY_NAME_TO_INT = {
-    "monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3,
-    "friday": 4, "saturday": 5, "sunday": 6,
+    "monday": 0,
+    "tuesday": 1,
+    "wednesday": 2,
+    "thursday": 3,
+    "friday": 4,
+    "saturday": 5,
+    "sunday": 6,
 }
 
 
 # ── Event occurrence helpers ──────────────────────────────────────────────────
+
 
 def _parse_event_date(date_str: str) -> dt_date:
     """Accept YYYY-MM-DD (ISO) or MM/DD/YYYY."""
@@ -283,6 +339,7 @@ def _parse_time_t(time_str: str) -> dt_time:
 def _eastern_today() -> dt_date:
     """Calendar date in the venues' local timezone, not the server's (Railway runs UTC)."""
     from zoneinfo import ZoneInfo
+
     return datetime.now(ZoneInfo("America/New_York")).date()
 
 
@@ -329,25 +386,38 @@ def _build_event(venue_id, event_data, start_dt, end_dt, series_id=None) -> Even
     )
 
 
-def _create_event_occurrence(event_data, venue: Venue, db: Session, occurrence_date=None, series_id=None):
+def _create_event_occurrence(
+    event_data, venue: Venue, db: Session, occurrence_date=None, series_id=None
+):
     from zoneinfo import ZoneInfo
+
     eastern = ZoneInfo("America/New_York")
 
     d = occurrence_date or _parse_event_date(event_data.event_date)
     start_t = _parse_time_t(event_data.start_time)
-    start_dt = datetime(d.year, d.month, d.day, start_t.hour, start_t.minute, tzinfo=eastern)
+    start_dt = datetime(
+        d.year, d.month, d.day, start_t.hour, start_t.minute, tzinfo=eastern
+    )
 
     end_dt = None
     if event_data.end_time:
         end_t = _parse_time_t(event_data.end_time)
-        end_dt = datetime(d.year, d.month, d.day, end_t.hour, end_t.minute, tzinfo=eastern)
+        end_dt = datetime(
+            d.year, d.month, d.day, end_t.hour, end_t.minute, tzinfo=eastern
+        )
 
     db.add(_build_event(venue.id, event_data, start_dt, end_dt, series_id))
 
 
-def _create_recurring_events(event_data, venue: Venue, recurrence_type: str, db: Session):
+def _create_recurring_events(
+    event_data, venue: Venue, recurrence_type: str, db: Session
+):
     series_id = uuid_module.uuid4()
-    start_t = _parse_time_t(event_data.start_time) if event_data.start_time else dt_time(19, 0)
+    start_t = (
+        _parse_time_t(event_data.start_time)
+        if event_data.start_time
+        else dt_time(19, 0)
+    )
     end_t = _parse_time_t(event_data.end_time) if event_data.end_time else None
 
     occurrence_dates: list[dt_date] = []
@@ -357,42 +427,65 @@ def _create_recurring_events(event_data, venue: Venue, recurrence_type: str, db:
             day_int = _DAY_NAME_TO_INT.get(day_name)
             if day_int is None:
                 continue
-            dates = _weekly_dates(day_int) if recurrence_type == "weekly" else _biweekly_dates(day_int)
+            dates = (
+                _weekly_dates(day_int)
+                if recurrence_type == "weekly"
+                else _biweekly_dates(day_int)
+            )
             occurrence_dates.extend(dates)
-            db.add(EventSchedule(
+            db.add(
+                EventSchedule(
+                    venue_id=venue.id,
+                    series_id=series_id,
+                    name=event_data.event_name,
+                    event_type=event_data.event_type,
+                    description=event_data.description or event_data.notes,
+                    recurrence_type=recurrence_type,
+                    day_of_week=day_int,
+                    start_time=start_t,
+                    end_time=end_t,
+                )
+            )
+
+    elif recurrence_type == "monthly":
+        day_of_month = event_data.day_of_month or 1
+        occurrence_dates = _monthly_dates(day_of_month)
+        db.add(
+            EventSchedule(
                 venue_id=venue.id,
                 series_id=series_id,
                 name=event_data.event_name,
                 event_type=event_data.event_type,
                 description=event_data.description or event_data.notes,
-                recurrence_type=recurrence_type,
-                day_of_week=day_int,
+                recurrence_type="monthly",
+                day_of_month=day_of_month,
                 start_time=start_t,
                 end_time=end_t,
-            ))
-
-    elif recurrence_type == "monthly":
-        day_of_month = event_data.day_of_month or 1
-        occurrence_dates = _monthly_dates(day_of_month)
-        db.add(EventSchedule(
-            venue_id=venue.id,
-            series_id=series_id,
-            name=event_data.event_name,
-            event_type=event_data.event_type,
-            description=event_data.description or event_data.notes,
-            recurrence_type="monthly",
-            day_of_month=day_of_month,
-            start_time=start_t,
-            end_time=end_t,
-        ))
+            )
+        )
 
     from zoneinfo import ZoneInfo
+
     eastern = ZoneInfo("America/New_York")
     for occ_date in sorted(set(occurrence_dates)):
-        start_dt = datetime(occ_date.year, occ_date.month, occ_date.day, start_t.hour, start_t.minute, tzinfo=eastern)
+        start_dt = datetime(
+            occ_date.year,
+            occ_date.month,
+            occ_date.day,
+            start_t.hour,
+            start_t.minute,
+            tzinfo=eastern,
+        )
         end_dt = None
         if end_t:
-            end_dt = datetime(occ_date.year, occ_date.month, occ_date.day, end_t.hour, end_t.minute, tzinfo=eastern)
+            end_dt = datetime(
+                occ_date.year,
+                occ_date.month,
+                occ_date.day,
+                end_t.hour,
+                end_t.minute,
+                tzinfo=eastern,
+            )
         db.add(_build_event(venue.id, event_data, start_dt, end_dt, series_id))
 
 
@@ -477,13 +570,15 @@ def _create_deal_schedules(deal: Deal, data: dict, db: Session) -> None:
             if deal.id not in current_ids:
                 existing.deal_ids = current_ids + [deal.id]
         else:
-            db.add(HappyHourSchedule(
-                venue_id=deal.venue_id,
-                day_of_week=day_int,
-                start_time=start_t,
-                end_time=end_t,
-                deal_ids=[deal.id],
-            ))
+            db.add(
+                HappyHourSchedule(
+                    venue_id=deal.venue_id,
+                    day_of_week=day_int,
+                    start_time=start_t,
+                    end_time=end_t,
+                    deal_ids=[deal.id],
+                )
+            )
 
     logger.bind(deal_id=str(deal.id), days=days).info("deal_schedules_created")
 

@@ -6,6 +6,7 @@ from datetime import datetime, timezone, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -19,7 +20,14 @@ from app.core.security import (
 from app.models.market import Market
 from app.models.user import User
 from app.models.submission import Submission
-from app.schemas.user import UserCreate, UserLogin, UserResponse, Token, ForgotPasswordRequest, ResetPasswordRequest
+from app.schemas.user import (
+    UserCreate,
+    UserLogin,
+    UserResponse,
+    Token,
+    ForgotPasswordRequest,
+    ResetPasswordRequest,
+)
 from app.services.email import send_password_reset_email
 
 
@@ -30,6 +38,7 @@ def _haversine_m(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
     dλ = math.radians(lng2 - lng1)
     a = math.sin(dφ / 2) ** 2 + math.cos(φ1) * math.cos(φ2) * math.sin(dλ / 2) ** 2
     return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -48,7 +57,9 @@ def register(request: Request, data: UserCreate, db: Session = Depends(get_db)):
     matched = None
     best_dist = float("inf")
     for m in markets:
-        dist = _haversine_m(data.latitude, data.longitude, m.region_center_lat, m.region_center_lng)
+        dist = _haversine_m(
+            data.latitude, data.longitude, m.region_center_lat, m.region_center_lng
+        )
         if dist <= m.region_radius_meters and dist < best_dist:
             matched = m
             best_dist = dist
@@ -68,7 +79,17 @@ def register(request: Request, data: UserCreate, db: Session = Depends(get_db)):
         role="user",
     )
     db.add(user)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        # Lost a race against a concurrent registration of the same email or
+        # username: the pre-check passed but the unique constraint fired at
+        # insert time. Roll back and report the conflict cleanly (409) rather
+        # than surfacing a raw IntegrityError (500).
+        db.rollback()
+        raise HTTPException(
+            status_code=409, detail="Email or username already registered"
+        )
     db.refresh(user)
 
     token = create_access_token({"sub": str(user.id)})
@@ -100,17 +121,24 @@ def refresh_token(current_user: User = Depends(get_current_user)):
 @router.get("/me", response_model=UserResponse)
 def me(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Return the currently authenticated user."""
-    approved_count = db.query(func.count(Submission.id)).filter(
-        Submission.user_id == current_user.id,
-        Submission.status == "approved",
-    ).scalar() or 0
+    approved_count = (
+        db.query(func.count(Submission.id))
+        .filter(
+            Submission.user_id == current_user.id,
+            Submission.status == "approved",
+        )
+        .scalar()
+        or 0
+    )
     data = UserResponse.model_validate(current_user).model_dump()
     data["approved_count"] = approved_count
     return data
 
 
 @router.delete("/me", status_code=204)
-def delete_account(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def delete_account(
+    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+):
     """Permanently anonymize the account.
 
     Personal data (email, username, password, location) is scrubbed.
@@ -131,15 +159,21 @@ def delete_account(current_user: User = Depends(get_current_user), db: Session =
 
 @router.post("/forgot-password", status_code=204)
 @limiter.limit("3/minute")
-def forgot_password(request: Request, data: ForgotPasswordRequest, db: Session = Depends(get_db)):
+def forgot_password(
+    request: Request, data: ForgotPasswordRequest, db: Session = Depends(get_db)
+):
     """Send a 6-digit OTP to the email if it belongs to an active account.
 
     Always returns 204 — never reveals whether the email is registered.
     """
-    user = db.query(User).filter(
-        func.lower(User.email) == data.email,
-        User.active == True,
-    ).first()
+    user = (
+        db.query(User)
+        .filter(
+            func.lower(User.email) == data.email,
+            User.active == True,
+        )
+        .first()
+    )
     if user is None:
         return
 
@@ -157,12 +191,18 @@ def forgot_password(request: Request, data: ForgotPasswordRequest, db: Session =
 
 @router.post("/reset-password", status_code=204)
 @limiter.limit("5/minute")
-def reset_password(request: Request, data: ResetPasswordRequest, db: Session = Depends(get_db)):
+def reset_password(
+    request: Request, data: ResetPasswordRequest, db: Session = Depends(get_db)
+):
     """Validate the OTP and set a new password."""
-    user = db.query(User).filter(
-        func.lower(User.email) == data.email,
-        User.active == True,
-    ).first()
+    user = (
+        db.query(User)
+        .filter(
+            func.lower(User.email) == data.email,
+            User.active == True,
+        )
+        .first()
+    )
     if user is None:
         raise HTTPException(status_code=400, detail="Invalid or expired code")
 

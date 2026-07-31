@@ -10,6 +10,7 @@ The fix:
 - Added max_length=128 to the Field — bcrypt silently truncates at 72 bytes, so
   hashing a 100 KB password is an intentional DoS vector against the server.
 """
+
 import pytest
 from pydantic import ValidationError
 
@@ -22,6 +23,8 @@ from app.schemas.user import UserCreate
 _VALID_BASE = {
     "username": "testuser",
     "email": "test@example.com",
+    "latitude": 40.79,
+    "longitude": -77.86,
 }
 
 
@@ -35,8 +38,7 @@ def _assert_fails(password: str, fragment: str = ""):
         _create(password=password)
     if fragment:
         assert fragment.lower() in str(exc_info.value).lower(), (
-            f"Expected error message to contain {fragment!r}, "
-            f"got: {exc_info.value}"
+            f"Expected error message to contain {fragment!r}, got: {exc_info.value}"
         )
 
 
@@ -44,8 +46,8 @@ def _assert_fails(password: str, fragment: str = ""):
 # Special character requirement (new in this fix)
 # ---------------------------------------------------------------------------
 
-class TestSpecialCharacterRequirement:
 
+class TestSpecialCharacterRequirement:
     def test_password_without_special_char_fails(self):
         """'Qwerty12' was the audit's example — must now be rejected."""
         _assert_fails("Qwerty12", "special character")
@@ -78,8 +80,8 @@ class TestSpecialCharacterRequirement:
 # Max length (DoS protection — new in this fix)
 # ---------------------------------------------------------------------------
 
-class TestMaxLength:
 
+class TestMaxLength:
     def test_password_at_max_length_passes(self):
         # 128 chars: satisfies all requirements
         pw = "A1!" + "a" * 125  # 3 + 125 = 128
@@ -97,8 +99,8 @@ class TestMaxLength:
 # Pre-existing requirements (regression guard)
 # ---------------------------------------------------------------------------
 
-class TestExistingRequirements:
 
+class TestExistingRequirements:
     def test_missing_uppercase_fails(self):
         _assert_fails("qwerty12!", "uppercase")
 

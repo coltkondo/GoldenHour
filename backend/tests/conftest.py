@@ -15,6 +15,9 @@ round-trips function normally on TEXT columns.
 Tests that require PostgreSQL-native behaviour (PostGIS, UNNEST) are excluded
 from this suite; they would need a real Postgres test database.
 """
+
+import uuid
+
 import pytest
 from sqlalchemy import create_engine, ARRAY
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID, JSONB
@@ -27,6 +30,7 @@ from sqlalchemy.orm import sessionmaker
 # @compiles only affects DDL generation; Python bind/result processors are
 # unaffected, so UUID↔str and JSON↔dict round-trips still work correctly.
 # ---------------------------------------------------------------------------
+
 
 @compiles(PG_UUID, "sqlite")
 def _uuid_sqlite(type_, compiler, **kw):
@@ -50,6 +54,8 @@ from app.models.submission import Submission  # noqa: E402
 from app.models.point_transaction import PointTransaction  # noqa: E402
 from app.models.venue import Venue  # noqa: E402
 from app.models.deal import Deal  # noqa: E402
+from app.models.market import Market  # noqa: E402
+from app.models.corroboration import Corroboration  # noqa: E402
 # HappyHourSchedule intentionally excluded — uses a PostgreSQL-specific
 # UNNEST subquery. Tests touching schedule data require a real Postgres DB.
 
@@ -57,6 +63,7 @@ from app.models.deal import Deal  # noqa: E402
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture(scope="function")
 def db_engine(tmp_path):
@@ -86,6 +93,49 @@ def db(db_engine):
         yield session
     finally:
         session.close()
+
+
+@pytest.fixture(scope="function")
+def market(db):
+    """
+    A default State College test market.
+
+    Center is 40.79, -77.86 with a 50 km radius, matching the signup
+    coordinates used by the test helpers (`signup_latitude=40.79`,
+    `signup_longitude=-77.86`), so `auth.register()` geo-matches it.
+
+    Committed so that secondary sessions created by `db_session_factory`
+    (concurrency tests) can see the row.
+    """
+    m = Market(
+        name="State College",
+        slug=f"state-college-{uuid.uuid4().hex[:8]}",
+        region_center_lat=40.79,
+        region_center_lng=-77.86,
+        region_radius_meters=50_000,
+        daily_points_cap=200,
+    )
+    db.add(m)
+    db.commit()
+    return m
+
+
+@pytest.fixture(scope="function", autouse=True)
+def _disable_rate_limiting():
+    """
+    Disable slowapi rate limiting for the duration of each test.
+
+    Tests call rate-limited functions (register, login, ...) directly rather
+    than through the ASGI app, so the limiter's wrapper would otherwise reject
+    the call for not receiving a starlette Request. Rate limiting itself is
+    covered by the API integration tests, not here.
+    """
+    from app.core.limiter import limiter
+
+    was_enabled = limiter.enabled
+    limiter.enabled = False
+    yield
+    limiter.enabled = was_enabled
 
 
 @pytest.fixture(scope="function")

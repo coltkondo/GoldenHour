@@ -10,3 +10,7 @@ POINTS_CONFIG: dict[str, int] = {
     "new_event": 50,
     "corroborate": 2,
 }
+
+# Maximum number of corroborations a single deal can receive per calendar day,
+# summed across all users. Enforced in app/services/corroboration_service.py.
+CORROBORATION_DAILY_CAP: int = 5
