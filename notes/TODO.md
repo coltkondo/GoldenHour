@@ -3,7 +3,7 @@
 _Economy spec: see [ECONOMY_SPEC.md](ECONOMY_SPEC.md). App Store gate detail: see [APP_STORE_COMPLIANCE.md](APP_STORE_COMPLIANCE.md)._
 
 
-**14 open items.**
+**6 open items.**
 
 ---
 
@@ -32,11 +32,11 @@ _Cofounder returns ~July 28. Do Railway + Vercel then. GitHub Pages also unblock
 - [x] **Vercel — deploy admin portal** — `goldenhour-smoky.vercel.app`, root directory `admin-web/`, `VITE_API_URL` set to Railway backend
 - [x] **Railway — update ALLOWED_ORIGINS** — set to `https://goldenhour-smoky.vercel.app`
 - [x] **Mobile — set production API URL** — `PRODUCTION_API` in `constants.ts` points to Railway; `app.json extra.apiUrl` override added for Expo Go dev testing
-- [ ] **GitHub Pages — enable** _(needs cofounder: Settings → Pages → Source: main, /docs)_ — unblocks privacy policy URL going live; also enter URL in App Store Connect
+- [x] **GitHub Pages — enable** _(needs cofounder: Settings → Pages → Source: main, /docs)_ — unblocks privacy policy URL going live; also enter URL in App Store Connect
 
 ### App Store submission gate — required for ANY TestFlight build to process
 - [x] **User-initiated account deletion** — `DELETE /auth/me` anonymizes in place (scrubs email/username/password/location, sets `active=False`, retains submissions for FK integrity). Delete Account button in ProfileScreen with destructive Alert confirmation.
-- [ ] **Privacy policy** — page written (`docs/privacy/index.html`, pushed to main). **Blocked: need cofounder to enable GitHub Pages** (Settings → Pages → Source: main, /docs → Save) or grant repo admin access. URL `https://coltkondo.github.io/GoldenHour/privacy/` is already hardcoded in the app. Once live, also enter that URL in App Store Connect under App Privacy Policy URL.
+- [x] **Privacy policy** — page written (`docs/privacy/index.html`, pushed to main). **Blocked: need cofounder to enable GitHub Pages** (Settings → Pages → Source: main, /docs → Save) or grant repo admin access. URL `https://coltkondo.github.io/GoldenHour/privacy/` is already hardcoded in the app. Once live, also enter that URL in App Store Connect under App Privacy Policy URL.
 - [x] **In-app contact/support path** — "LEGAL & SUPPORT" section in ProfileScreen: Privacy Policy row (opens GitHub Pages URL) and Contact Support row (`mailto:gldnhr.app@gmail.com`). Enter `gldnhr.app@gmail.com` in App Store Connect Support URL field.
 - [x] **App Review Notes draft** — see `docs/APP_REVIEW_NOTES.md`. Fill in `[INSERT PASSWORD]` for `gldnhr.app@gmail.com` before submitting to App Store Connect.
 
@@ -81,9 +81,9 @@ These aren't blockers for tomorrow's build, but they're the next thing to break 
 
 Not needed tomorrow. Needed before this leaves TestFlight for a real public listing.
 
-- [ ] Confirm 17+ age rating set honestly in App Store Connect (alcohol reference)
-- [ ] Confirm reviewer demo account (`reviewer@goldenhour.app`) is live and documented in App Review Notes
-- [ ] Re-check APP_STORE_COMPLIANCE.md against the live Feb 2026 guidelines before any non-TestFlight submission
+- [x] Confirm 17+ age rating set honestly in App Store Connect (alcohol reference)
+- [x] Confirm reviewer demo account (`reviewer@goldenhour.app`) is live and documented in App Review Notes
+- [x] Re-check APP_STORE_COMPLIANCE.md against the live Feb 2026 guidelines before any non-TestFlight submission
 
 ---
 
@@ -92,17 +92,13 @@ Not needed tomorrow. Needed before this leaves TestFlight for a real public list
 Required before opening to the student body — a TestFlight group of people you know personally doesn't need these yet, per the runbook's own operational-management principle for the July beta.
 
 ### `feature/email-verification`
-- [ ] Email verification — `is_verified` column exists, wire ORM + confirmation link + block point awards for unverified accounts. **Build first in this group** — it's the prerequisite for account-age gating below. Resend is now wired up (added for forgot-password), so the email-sending plumbing is already in place.
+- [ ] Email verification — **`is_verified` does NOT exist yet** (checked: no match anywhere in `backend/`, despite this doc previously claiming it does) — needs a new `User.is_verified` column + migration, then confirmation link + block point awards for unverified accounts. **Build first in this group** — it's the prerequisite for account-age gating below. Resend is now wired up (added for forgot-password), so the email-sending plumbing is already in place.
 
 ### `feature/account-age-gate`
-- [ ] Account-age corroboration gate (<7 days old → 0 pts) — depends on email verification existing first.
+- [ ] Account-age corroboration gate (<7 days old → 0 pts IF email not verified) — depends on email verification existing first.
 
 ### `infra/redis-rate-limiter`
 - [ ] Redis-backed rate limiter — replaces in-memory slowapi (resets on restart, multiplies per Gunicorn worker). Also required for the `/auth/register` rate limit (currently 5/min per IP in-memory) to mean anything — one branch, not two.
-
-### `feature/payout-queue`
-- [ ] Monthly burn cap / payout queue (`payouts` table)
-- [ ] Payout request flow in mobile app ("Redeem $20" button, appears at ≥1,000pts) — same branch, depends on the table existing first.
 
 ### `fix/submission-fk-ondelete`
 - [ ] `ON DELETE SET NULL` on `submissions.related_bar_id` / `related_deal_id` — small, bundle into whichever migration branch is already touching submissions.
@@ -115,7 +111,7 @@ Required before opening to the student body — a TestFlight group of people you
 - [x] New "+" bottom tab (Instagram-style, replaces Submit sub-tab in Explore)
 - [ ] Rewards progress bar (points balance toward 1,000pt/$20 threshold) (reconsidered)
 - [x] Submission forms relocated below progress bar
-- [ ] My Submissions history (accessible from "+" or Profile)
+- [x] My Submissions history (accessible from "+" or Profile)
 
 ### `feature/happy-hour-crud`
 - [ ] `api/v1/happy_hours.py` CRUD — needed before venue schedules can be viewed/edited via API. Sequence against your actual State College launch date (first home football weekend), not generic backlog — this is more urgent the closer that date gets.
@@ -135,6 +131,8 @@ Required before opening to the student body — a TestFlight group of people you
 - Redis cache for leaderboard / `GET /deals/active` — post-launch scaling
 - Cursor-based pagination — post-launch scaling
 - Bar reward redemption — needs partnership agreements that don't exist yet
+- Payout request flow in mobile app ("Redeem $20" button, appears at ≥1,000pts) — same branch, depends on the table existing first.
+- Monthly burn cap / payout queue (`payouts` table)
 
 ---
 

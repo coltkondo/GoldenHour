@@ -10,6 +10,12 @@ Assignees: bugs tagged _(Colt)_ are assigned to Colt. Untagged = Andes.
 
 ---
 
+## Splash Screen
+
+<!-- opening splash screen -->
+
+- [ ] [Remove-Rewards] - **P2** - Remove callout for rewards. Make more simplified ideally. Emphasize deals, events, and community
+
 ## Home Screen
 
 <!-- deals feed, city chip, "Happening Now" / "Coming Up" sections, filter bubbles -->
@@ -23,7 +29,7 @@ Assignees: bugs tagged _(Colt)_ are assigned to Colt. Untagged = Andes.
 <!-- logo, nickname, day selector, deals per day, directions/call/website, corroborate button -->
 
 - [x] [Corroborate-Vicinity-Gate] — **P1** — "Still Accurate" corroborate button should only appear when the user is physically within range of the bar. Currently shows regardless of location. Fixed: `checkProximity()` runs on mount using `getLastKnownPositionAsync` (instant); button only renders when `isNearby === true` (within 50m). No permission prompt on mount — if permission not yet granted, button stays hidden.
-- [x] [Corroborate-Daily-Cap] — **P1** — No limit on how many times a bar can be corroborated in a day. Should cap at 5 corroborations per bar per day across all users. Needs backend enforcement. _(Colt)_
+- [x] [Corroborate-Daily-Cap] — **P1** — No limit on how many times a bar can be corroborated in a day. Should cap at 5 corroborations per bar per day across all users. Needs backend enforcement. Fixed: logic extracted into `corroboration_service.py`, `CORROBORATION_DAILY_CAP = 5` in `points_config.py`. Race-safe — the deal row is locked (`SELECT ... FOR UPDATE`) before the day's corroboration count is checked, so concurrent requests can't both slip through past the cap; 409 once the 6th same-day corroboration on a deal is attempted. Covered by `test_corroboration_daily_cap.py`. Checkbox wasn't flipped in the commit that built it — confirmed by reading the code directly, not just the commit message. _(Colt)_
 
 ---
 
@@ -31,6 +37,7 @@ Assignees: bugs tagged _(Colt)_ are assigned to Colt. Untagged = Andes.
 
 <!-- venue pins, map loading, filter sheet -->
 
+- [ ] [Venue-Pins-Size] - **P2** - Venue pins are massive. Need to shrink in size to be more visually appealing. Kind of ass right now.
 - [x] [Map-Page-Scroll] — **P1** — Bottom sheet popup does not fully expand — gets stuck awkwardly mid-screen. _(see also [Accidental-Tabs] and [Map-Swipe-Logout] — likely same root cause)_ _(Colt)_
 - [x] [Map-Swipe-Logout] — **P1** — Swiping down on the map or bottom venue panel redirects to Login screen unexpectedly. _(duplicate of [Map-Page-Scroll] swipe behavior and [Accidental-Tabs])_ _(Colt)_
 - [x] [Map-Filtering] — **P1** — Shows Happy Hours in State College when in Arlington sometimes randomly. _(Colt)_
@@ -47,6 +54,7 @@ Assignees: bugs tagged _(Colt)_ are assigned to Colt. Untagged = Andes.
 
 <!-- week view, event blocks, day/venue filters -->
 
+- [ ] [Default-View-To-Week] - **P2** - Change the default View for Events to be "week". Keep Happy Hour calendar default to be "day".
 - [x] [Events-No-Calendar-View] — **P1** — The Events toggle shows a flat card list, not a calendar. The plan was two calendar grids: one for Events (events plotted by date/time) and one for Happy Hours (existing week/day/month grid). The toggle should flip between two proper calendars, not a list and a calendar. Fixed: built a full Day/Week/Month calendar for Events as a sibling to the existing HH calendar — `EventsCalendarContext`, `EventsCalendarHeader`, `EventsTimelineGrid`, `EventTimelineBlock`, `EventsWeekView`/`EventsDayView`/`EventsMonthView` — rather than modifying the working HH components. Key difference from HH: events place by real calendar date, not day-of-week. HH schedules are recurring rules where every week looks identical, so its `eventsForDay` just checks day-of-week; Events are dated occurrences (each a real `start_datetime`), so a copy-paste of that filter would've shown the same event every week forever — `eventsForDay` for Events filters on actual date instead. Reuses the HH grid's column-packing geometry (`layoutDay` in `dateGrid.ts`, genericized to accept either shape) rather than duplicating it. Fetches venues + events once per mount (2 months back, 7 months forward — covers the 13-week/3-month occurrence-generation windows from [Event-Submit-No-Recurring] with margin) and joins each event to its venue so tapping a block navigates correctly into `HappyHourScreen`. Recurring events show a ↻ badge. Old flat-list `EventsListView` and its helpers were deleted, not left dead. Skipped for v1 (documented gaps, not oversights): no ranked "N more" clustering like HH's dense grid (event density is much lower — plain chronological layout is enough for now); no venue/day filter bar yet.
 - [x] [Calendar-Tab-Rename] — **P2** — Calendar tab was titled "Explore" with a magnifying glass icon, misleading now that it's a real calendar rather than a search/browse surface. Fixed: tab bar icon changed to `CalendarDots` (already registered in the icon set and already grouped with the other tabs' duotone weight, so no extra styling needed), tab label and in-screen header both changed to "Calendar". Left the internal route name (`ExplorerTab`) and component name (`ExploreCalendarScreen`) untouched — invisible to users, and renaming risked missing a `navigation.navigate('ExplorerTab')` call elsewhere in the app.
 - [x] [Calendar-Default-View] — **P2** — Both calendars (Events and Happy Hours) opened on the Week tab by default. Fixed: `CalendarContext` and `EventsCalendarContext` both now initialize `view` state to `'day'` instead of `'week'`.
@@ -70,6 +78,7 @@ Assignees: bugs tagged _(Colt)_ are assigned to Colt. Untagged = Andes.
 
 <!-- points balance, submission history, delete account, privacy/support links -->
 
+- [ ] [Revert-Rejected] - **P2** - Submission history should show rejected submissions per user feedback. They want to know why their submissions were rejected. Traceability matters. Must leave note on all rejections explaining rejection.
 - [x] [My-Submissions] — **P2** — Does not specify what the submission is. Simply says "New Deal". Should be more descriptive. _(Colt)_
 - [x] [My-Submissions-Show-Rejected] — **P2** — Submission history shows rejected submissions. Rejected entries aren't useful to users and could feel discouraging. Should only show pending, approved, and corroborated submissions. _(Colt)_
 - [x] [Contact-Support] — **P1** — Only works if native Mail app is set up. Fixed: checks if mailto can open; if not, shows Alert with email + native Share sheet (includes Copy).
@@ -104,6 +113,7 @@ Assignees: bugs tagged _(Colt)_ are assigned to Colt. Untagged = Andes.
 
 <!-- performance, deep links, push notifications, onboarding -->
 
+- [x] [Privacy-Policy] - **P2** - Update Privacy Policy to not include Rewards. Fixed in `docs/privacy/index.html`: removed the "Cash Rewards and Payouts" section entirely (Venmo redemption language), trimmed "process point redemptions" from Section 2 and the redemption mention from the points-history bullet in Section 1 — points are still described as tracked/earned, just not redeemable, matching `ECONOMY_SPEC.md`'s "rewards not active yet" status. Sections renumbered 3→8 accordingly. While in there, also brought the rest of the policy up to date with the actual build (not part of the original ask, but asked for separately): added event submissions to "Content you submit" (wasn't mentioned at all despite being a major feature now), broadened the ongoing-location bullet to cover the corroboration proximity check, not just the map. Bumped "Last updated" to today.
 - [x] [Expired-Deal-Orphan-Schedule] — **P1** — Approving a "deal no longer active" submission set `Deal.active = False` but left the `HappyHourSchedule` row intact with the deal's UUID still in `deal_ids`. The dead time slot continued appearing in the calendar. Fixed: `deal_expired` approval now calls `_remove_deal_from_schedules` — removes the deal UUID from all matching schedule arrays, deactivates any schedule that becomes empty. Fixed in `c4882d9`.
 
 - [x] [Approved-Content-Not-Visible] — **P0** — Approved deal and event submissions do not appear in the app (home screen, calendar, venue detail). Points are awarded and the submission is marked approved, but the content is invisible to users. Two root causes identified — both now fixed.

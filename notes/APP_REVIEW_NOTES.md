@@ -11,8 +11,8 @@ Golden Hour is a community-driven happy hour discovery app. Users browse drink a
 
 --- DEMO ACCOUNT ---
 Email: gldnhr.app@gmail.com
-Password: Courtland123!
-This account is a standard user account with pre-existing point history and one approved submission, so the points/rewards flow is visible without needing to submit and wait for admin approval.
+Password: Courtland821!
+This account is an admin account with minimal usage.
 
 --- KEY FLOWS TO TEST ---
 1. Browse deals: Home tab → "Happening Now" and "Coming Up Tonight" sections show real deal data filtered to the reviewer's city. If location is outside our markets (Arlington, VA / State College, PA), use the city picker that appears on the home screen for guest users.
