@@ -31,7 +31,7 @@ const EventsCalendarContext = createContext<EventsCalendarContextValue | undefin
 export const EventsCalendarProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [view, setView] = useState<ViewMode>('day');
+  const [view, setView] = useState<ViewMode>('week');
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [items, setItems] = useState<EventCalItem[]>([]);
   const [loading, setLoading] = useState(true);

@@ -22,6 +22,7 @@ import { CaretUpIcon } from 'phosphor-react-native/src/icons/CaretUp';
 import { CaretRightIcon } from 'phosphor-react-native/src/icons/CaretRight';
 import { HouseIcon } from 'phosphor-react-native/src/icons/House';
 import { UserIcon } from 'phosphor-react-native/src/icons/User';
+import { UsersThreeIcon } from 'phosphor-react-native/src/icons/UsersThree';
 import { MagnifyingGlassIcon } from 'phosphor-react-native/src/icons/MagnifyingGlass';
 import { FunnelSimpleIcon } from 'phosphor-react-native/src/icons/FunnelSimple';
 import { HeartIcon } from 'phosphor-react-native/src/icons/Heart';
@@ -85,6 +86,7 @@ export const IconMap = {
   chevronRight: 'CaretRight',
   home: 'House',
   profile: 'User',
+  community: 'UsersThree',
   search: 'MagnifyingGlass',
   filter: 'FunnelSimple',
   heart: 'Heart',
@@ -144,6 +146,7 @@ const PHOSPHOR_ICONS: Record<string, React.FC<any>> = {
   CaretRight: CaretRightIcon,
   House: HouseIcon,
   User: UserIcon,
+  UsersThree: UsersThreeIcon,
   MagnifyingGlass: MagnifyingGlassIcon,
   FunnelSimple: FunnelSimpleIcon,
   Heart: HeartIcon,
@@ -209,7 +212,7 @@ export const AppIcon: React.FC<AppIconProps> = ({
   const iconColor = color ?? roleColors[role];
   const iconWeight =
     weight ??
-    (['deals', 'events', 'points', 'rewards', 'trophy', 'crown', 'home', 'profile'].includes(name)
+    (['deals', 'events', 'points', 'rewards', 'trophy', 'crown', 'home', 'profile', 'community'].includes(name)
       ? 'duotone'
       : 'regular');
   const IconComponent = PHOSPHOR_ICONS[IconMap[name]];

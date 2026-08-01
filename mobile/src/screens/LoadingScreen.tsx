@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import {
   View,
   Text,
+  Image,
   StyleSheet,
   Animated,
   Dimensions,
@@ -25,16 +26,15 @@ interface LoadingScreenProps {
 const FEATURES = [
   { icon: 'deals' as const, label: 'DEALS' },
   { icon: 'events' as const, label: 'EVENTS' },
-  { icon: 'points' as const, label: 'POINTS' },
-  { icon: 'rewards' as const, label: 'REWARDS' },
+  { icon: 'community' as const, label: 'COMMUNITY' },
 ] as const;
 
 export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onGetStarted, onLogin, onGuest, splash, onComplete }) => {
   const { theme } = useTheme();
   const d = theme.derived;
 
-  const wordmarkOpacity = useRef(new Animated.Value(0)).current;
-  const wordmarkTranslateY = useRef(new Animated.Value(-30)).current;
+  const logoOpacity = useRef(new Animated.Value(0)).current;
+  const logoSwing = useRef(new Animated.Value(1)).current;
   const taglineOpacity = useRef(new Animated.Value(0)).current;
   const taglineTranslateY = useRef(new Animated.Value(20)).current;
   const featuresOpacity = useRef(new Animated.Value(0)).current;
@@ -47,20 +47,16 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onGetStarted, onLo
     Animated.sequence([
       Animated.parallel([
         Animated.timing(glowOpacity, { toValue: 1, duration: 800, useNativeDriver: false }),
-        Animated.parallel([
-          Animated.spring(wordmarkOpacity, {
-            toValue: 1,
-            tension: 60,
-            friction: 8,
-            useNativeDriver: true,
-          }),
-          Animated.spring(wordmarkTranslateY, {
-            toValue: 0,
-            tension: 60,
-            friction: 8,
-            useNativeDriver: true,
-          }),
-        ]),
+        Animated.timing(logoOpacity, { toValue: 1, duration: 300, useNativeDriver: true }),
+        // Pendulum swing: spring overshoots past its 0 target and settles with
+        // decaying oscillation — low friction relative to tension is what
+        // produces the back-and-forth swing rather than a single ease-in.
+        Animated.spring(logoSwing, {
+          toValue: 0,
+          tension: 22,
+          friction: 4,
+          useNativeDriver: true,
+        }),
       ]),
       Animated.parallel([
         Animated.timing(taglineOpacity, { toValue: 1, duration: 500, useNativeDriver: true }),
@@ -111,17 +107,28 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onGetStarted, onLo
       </Animated.View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Wordmark */}
+        {/* Logo */}
         <Animated.View
           style={[
-            styles.wordmarkSection,
-            { opacity: wordmarkOpacity, transform: [{ translateY: wordmarkTranslateY }] },
+            styles.logoSection,
+            {
+              opacity: logoOpacity,
+              transform: [
+                {
+                  rotate: logoSwing.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: ['0deg', '-26deg'],
+                  }),
+                },
+              ],
+            },
           ]}
         >
-          <Text style={[styles.wordmark, { color: d.primary }]}>
-            GLDNHR
-            <Text style={[styles.degree, { color: d.primary }]}>°</Text>
-          </Text>
+          <Image
+            source={require('../../assets/gldnhr-logo.png')}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
         </Animated.View>
 
         {/* Tagline */}
@@ -140,8 +147,8 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onGetStarted, onLo
         {/* Subtext */}
         <Animated.View style={[styles.subtextSection, { opacity: taglineOpacity }]}>
           <Text style={[styles.subtext, { color: d.textMuted }]}>
-            Your guide to happy hours, live deals, and hidden gems. Earn points for sharing intel
-            and unlock rewards at venues near you.
+            Your guide to happy hours, live deals, and hidden gems — built by the community
+            that goes out with you.
           </Text>
         </Animated.View>
 
@@ -205,7 +212,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onGetStarted, onLo
         {/* Fine Print */}
         <View style={styles.finePrint}>
           <Text style={[styles.finePrintText, { color: d.textHint }]}>
-            v1.0.0 — STATE COLLEGE, PA
+            v1.0.0
           </Text>
         </View>
       </ScrollView>
@@ -225,10 +232,9 @@ const styles = StyleSheet.create({
   /* Glow */
   glowContainer: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
 
-  /* Wordmark */
-  wordmarkSection: { alignItems: 'center', marginBottom: 48 },
-  wordmark: { fontSize: 48, fontWeight: '900', letterSpacing: 6 },
-  degree: { fontSize: 24, fontWeight: '900', position: 'relative', top: -16 },
+  /* Logo */
+  logoSection: { alignItems: 'center', marginBottom: 48 },
+  logoImage: { width: 220, height: 90 },
 
   /* Tagline */
   taglineSection: { alignItems: 'center', marginBottom: 20 },

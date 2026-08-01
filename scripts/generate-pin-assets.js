@@ -9,16 +9,16 @@ const STYLES = {
   selected: { bg: '#F5A623', border: '#F5A623', icon: '#0D0D0D', arrow: '#F5A623' },
 };
 
-const BUBBLE_W = 90;
-const BUBBLE_H = 74;
-const ARROW_H = 20;
+const BUBBLE_W = 54;
+const BUBBLE_H = 44;
+const ARROW_H = 12;
 const TOTAL_H = BUBBLE_H + ARROW_H;
-const RADIUS = 40;
+const RADIUS = 22;
 const STROKE_W = 2;
 
 const ICON_VIEWBOX = 24;
-const ICON_W = 36;
-const ICON_H = 36;
+const ICON_W = 22;
+const ICON_H = 22;
 const ICON_X = Math.round((BUBBLE_W - ICON_W) / 2);
 const ICON_Y = Math.round((BUBBLE_H - ICON_H) / 2);
 const ICON_SCALE = ICON_W / ICON_VIEWBOX;
