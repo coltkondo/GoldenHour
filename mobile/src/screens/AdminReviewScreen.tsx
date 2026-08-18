@@ -207,6 +207,10 @@ export const AdminReviewScreen = () => {
 
   async function handleReview(sub: Submission, status: 'approved' | 'rejected') {
     const notes = adminNotes[sub.id];
+    if (status === 'rejected' && !(notes ?? '').trim()) {
+      Alert.alert('Notes required', 'Add a note explaining why before rejecting — the submitter sees this as their rejection reason.');
+      return;
+    }
     Alert.alert(
       status === 'approved' ? 'Approve Submission' : 'Reject Submission',
       `${status === 'approved' ? AUTO_APPLY[sub.submission_type] + '. ' : ''}Are you sure?`,
@@ -257,7 +261,7 @@ export const AdminReviewScreen = () => {
         </View>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow}>
-          {['pending', 'approved', ''].map((f) => (
+          {['pending', 'approved', 'rejected', ''].map((f) => (
             <TouchableOpacity
               key={f}
               style={[
@@ -366,7 +370,7 @@ export const AdminReviewScreen = () => {
                         >
                           <TextInput
                             style={[styles.notesInput, { color: d.text }]}
-                            placeholder="Admin notes (optional)"
+                            placeholder="Admin notes (required to reject)"
                             placeholderTextColor={d.textHint}
                             value={adminNotes[sub.id] ?? ''}
                             onChangeText={(v) =>

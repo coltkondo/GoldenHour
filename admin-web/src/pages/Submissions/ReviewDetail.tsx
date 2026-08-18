@@ -48,6 +48,11 @@ export default function ReviewDetail() {
   }, [id]);
 
   function requestReview(status: 'approved' | 'rejected') {
+    if (status === 'rejected' && !adminNotes.trim()) {
+      setResult('Error: Add a note explaining why before rejecting — the submitter sees this as their rejection reason.');
+      return;
+    }
+    setResult(null);
     setPendingAction(status);
   }
 
@@ -168,7 +173,7 @@ export default function ReviewDetail() {
       {isPending ? (
         <div className="review-actions">
           <div className="form-group">
-            <label htmlFor="notes">Admin Notes (optional)</label>
+            <label htmlFor="notes">Admin Notes (required to reject)</label>
             <textarea
               id="notes"
               value={adminNotes}

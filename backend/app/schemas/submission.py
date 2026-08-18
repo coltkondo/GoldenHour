@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from typing import Optional, Any, Literal
 from datetime import datetime
 from uuid import UUID
@@ -45,3 +45,9 @@ class SubmissionResponse(BaseModel):
 class ReviewAction(BaseModel):
     status: Literal["approved", "rejected"]
     admin_notes: Optional[str] = None
+
+    @model_validator(mode="after")
+    def require_notes_on_reject(self) -> "ReviewAction":
+        if self.status == "rejected" and not (self.admin_notes or "").strip():
+            raise ValueError("admin_notes is required when rejecting a submission — the submitter sees this as their rejection reason")
+        return self

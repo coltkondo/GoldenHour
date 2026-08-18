@@ -111,8 +111,6 @@ export const MySubmissionsScreen = () => {
     .filter((s) => s.status === 'approved')
     .reduce((sum, s) => sum + s.points_awarded, 0);
 
-  const visibleSubmissions = submissions.filter((s) => s.status !== 'rejected');
-
   return (
     <View style={[styles.container, { backgroundColor: d.background }]}>
       <ScrollView
@@ -156,10 +154,10 @@ export const MySubmissionsScreen = () => {
 
         {/* Stats Row */}
         <View style={styles.statsRow}>
-          {(['pending', 'approved'] as const).map((status) => (
+          {(['pending', 'approved', 'rejected'] as const).map((status) => (
             <View key={status} style={styles.statItem}>
               <Text style={[styles.statNum, { color: getStatusColor(status) }]}>
-                {visibleSubmissions.filter((s) => s.status === status).length}
+                {submissions.filter((s) => s.status === status).length}
               </Text>
               <Text style={[styles.statLabel, { color: d.textMuted }]}>
                 {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -170,7 +168,7 @@ export const MySubmissionsScreen = () => {
 
         {loading ? (
           <ActivityIndicator size="large" color={d.primary} style={{ marginTop: 40 }} />
-        ) : visibleSubmissions.length === 0 ? (
+        ) : submissions.length === 0 ? (
           <View
             style={[
               styles.emptyState,
@@ -183,7 +181,7 @@ export const MySubmissionsScreen = () => {
             </Text>
           </View>
         ) : (
-          visibleSubmissions.map((sub) => {
+          submissions.map((sub) => {
             const statusColor = getStatusColor(sub.status);
             const summary = submissionSummary(sub);
             return (
@@ -228,8 +226,14 @@ export const MySubmissionsScreen = () => {
                   </View>
                 )}
                 {sub.admin_notes && (
-                  <Text style={[styles.adminNotes, { color: d.textMuted }]}>
-                    Note: {sub.admin_notes}
+                  <Text
+                    style={[
+                      styles.adminNotes,
+                      { color: sub.status === 'rejected' ? statusColor : d.textMuted },
+                    ]}
+                  >
+                    {sub.status === 'rejected' ? 'Reason: ' : 'Note: '}
+                    {sub.admin_notes}
                   </Text>
                 )}
               </View>
