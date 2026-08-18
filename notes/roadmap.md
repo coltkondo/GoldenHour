@@ -148,6 +148,18 @@ Once bars are bought into the loyalty program, offer the premium version: a $1 N
 
 ---
 
+## Contributor Badges (Per-Bar Loyalty Status)
+
+Right now points are one global number — it says how much someone contributes, not where. This layers on a per-venue read: if someone puts 15 approved happy-hour edits into one bar, that's real standing at that specific bar, closer to airline status than a generic score. Tiers (bronze/silver/gold/platinum/diamond) based on points earned *at that venue*, not points overall — two users with the same global total could have completely different badge profiles depending on which bars they actually showed up for. No reward attached at launch, pure recognition — but it's the natural setup for a bar wanting to treat their Diamond-tier contributor differently than someone with a higher global score but zero history there. Feeds directly into whatever bar partnerships come out of Update 2 / B2B Bar Dashboard once those exist. Effectively supersedes the single global "badge for top contributors" line under Update 4 with a per-venue version.
+
+* Per-venue point subtotal — derive from the existing `PointTransaction` log (needs venue attribution per transaction, not a new table at first pass)
+* Tier thresholds per bar (bronze → diamond) — exact point cutoffs TBD
+* Profile shows one badge row per bar with earned status, not a single global badge
+* No reward attached at launch — status is the reward. Partnership-driven perks (a bar comping its Diamond member, feature in the B2B dashboard) are a later, separate conversation once bar partnerships exist
+* Sequencing: down the line, post-launch — flagged during App Store prep week, deliberately not designed further until there's room to do it right
+
+---
+
 ## Bar Crawl Builder
 
 Fun feature that makes sense once the data is mature across multiple markets and events are established. The app already has all the ingredients — venues, happy hour schedules, events, maps. This assembles them into a planned night out.
