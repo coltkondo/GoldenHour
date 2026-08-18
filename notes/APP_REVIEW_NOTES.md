@@ -7,7 +7,7 @@ _Paste the content below into the "Notes for App Review" field in App Store Conn
 ## Copy to paste into App Store Connect
 
 ```
-Golden Hour is a community-driven happy hour discovery app. Users browse drink and food deals at local bars, submit new deals or corrections, and earn points redeemable for cash rewards.
+Golden Hour is a community-driven happy hour discovery app. Users browse drink and food deals at local bars, and can submit new deals or corrections to help keep listings accurate.
 
 --- DEMO ACCOUNT ---
 Email: gldnhr.app@gmail.com
@@ -27,7 +27,7 @@ This account is an admin account with minimal usage.
 All user-submitted deals and venue suggestions route through an admin review queue before becoming visible to other users. Reviewers approve or reject each submission individually. There is no automated or instant content publishing.
 
 --- REWARDS ---
-Points are earned when submissions are approved. 1,000 points = $20, paid out manually via Venmo by the Golden Hour team. There is no in-app purchase or payment flow.
+Users earn points when their submissions are approved, shown as a running tally on their profile. Points are a display-only engagement mechanic — they are not redeemable for cash, goods, or anything else, and there is no in-app purchase or payment flow anywhere in the app.
 
 --- AGE RATING ---
 Content references alcohol (bar deals, drink specials). App is rated 17+.
@@ -39,4 +39,5 @@ Content references alcohol (bar deals, drink specials). App is rated 17+.
 
 - The demo account was created in-app and exists in the production DB. It is already in the Arlington, VA market.
 - If the reviewer's device location is outside Arlington or State College, the guest city picker will appear on the home screen — they can tap it and select Arlington to see real data.
-- The "Redeem" / payout flow is not yet built in-app (P3 item). If Apple asks about the cash reward claim, the current answer is: redemption is handled manually by the team; the in-app payout button is not yet shipped.
+- Points are currently non-redeemable by design (no payout flow exists in-app or out). A future update will layer on bar-specific loyalty badges / achievement tallies — not decided/built yet, so nothing about that goes in the App Review copy until it ships.
+- Before submitting: confirm `REWARDS_ENABLED` in Railway matches what this doc claims. If points are actively being awarded in production, that's consistent with the copy above (points still aren't redeemable either way) — just don't let this doc drift out of sync again as the rewards system evolves.
