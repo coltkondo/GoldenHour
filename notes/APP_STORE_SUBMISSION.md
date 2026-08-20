@@ -6,8 +6,8 @@ Everything needed to actually submit Golden Hour in App Store Connect. Metadata 
 
 ## 0. Before you start
 
-- [ ] Confirm the latest build (iPhone-only, `supportsTablet: false`, bigger splash logo) has finished processing in App Store Connect → TestFlight. Apple emails you when it's ready.
-- [ ] Confirm `REWARDS_ENABLED=false` is still set in Railway.
+- [x] Confirm the latest build (iPhone-only, `supportsTablet: false`, bigger splash logo) has finished processing in App Store Connect → TestFlight. Apple emails you when it's ready.
+- [x] Confirm `REWARDS_ENABLED=false` is still set in Railway.
 
 ---
 
@@ -95,15 +95,18 @@ mobile/store-assets/appstore-icon-1024.png
 
 ## 3. Screenshots
 
+Correction: the live Media Manager only shows **6.9"** and **6.5"** tabs, not 6.7" — the original 1290×2796 set (kept in `iphone-6.7/` for reference) doesn't fit either bucket. Two resized sets are ready instead:
+
 ```
-mobile/store-assets/screenshots/iphone-6.7/
+mobile/store-assets/screenshots/iphone-6.9/   (1320×2868 — upload to the "iPhone 6.9" Display" tab)
+mobile/store-assets/screenshots/iphone-6.5/   (1284×2778 — upload to the "iPhone 6.5" Display" tab)
   01-home.png
   02-venue-detail.png
   03-calendar.png
   04-profile.png
   05-splash.png
 ```
-All 1290×2796 (iPhone 6.7" class) — upload under that device-size tab in the Screenshots section. Upload in the numbered order above; that's the order they'll display. Since iPad support is now off, there should be no separate iPad screenshot requirement.
+Same 5 shots, same order, just resized to each tab's exact required dimensions (scaled down/up ~2% from the originals — visually identical, no meaningful distortion since it's UI, not photography). Upload the `iphone-6.9` set to the 6.9" tab and the `iphone-6.5` set to the 6.5" tab, in the numbered order above. Since iPad support is off, there should be no separate iPad screenshot requirement.
 
 ---
 
