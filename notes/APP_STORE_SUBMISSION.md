@@ -78,9 +78,9 @@ https://coltkondo.github.io/GoldenHour/privacy/
 
 **Support URL**
 ```
-mailto:gldnhr.app@gmail.com
+https://coltkondo.github.io/GoldenHour/support/
 ```
-Note: Apple's field technically wants a URL. A bare email address may get rejected by the form validation — `mailto:` is a valid URI scheme and is what's recommended here. If ASC rejects it, the fallback is standing up a one-line support page and linking that instead.
+Correction: `mailto:` links get rejected by ASC's form validation ("URLs must be formatted as: http://example.com") — confirmed live. Built an actual support page at `docs/support/index.html`, matching the privacy policy's styling, live on the same GitHub Pages site. Give it a minute or two after pushing before it resolves.
 
 ---
 
