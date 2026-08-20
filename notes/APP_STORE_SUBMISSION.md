@@ -23,6 +23,11 @@ GLDNHR
 Golden Hour
 ```
 
+**Promotional Text** (170-char limit, editable anytime without a new build)
+```
+Real-time happy hour deals, verified by the community — never overpay for a drink again.
+```
+
 **Description**
 ```
 Golden Hour helps you find real happy hour deals at bars near you — built by the community that uses it.
