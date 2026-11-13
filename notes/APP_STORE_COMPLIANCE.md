@@ -81,7 +81,7 @@ Apple requires apps with UGC to have a method for filtering objectionable materi
 | 1.2 — Report mechanism | Users can report accuracy issues | `FlagReportModal.tsx` — deal expired, bar closed, deal info wrong |
 | 1.4.3 — No encouragement of excess | All copy is utility-framed | Strings in `SubmitScreen.tsx`, `HomeScreen.tsx`: "find deals", "help build the map" — no binge/excess language |
 | 5.1.1(v) — Anonymous browse | Map and deals visible without login | Anonymous browse live in `RootNavigator.tsx` — auth gate removed from root, only gated at contribute actions |
-| 5.1.5 — Location purpose string | iOS purpose string present | `app.json:41` — `locationAlwaysAndWhenInUsePermission` set |
+| 5.1.1(ii) / 5.1.5 — Location purpose string | Specific `NSLocationWhenInUseUsageDescription` with a concrete example; no unused *Always* keys | `app.json` `expo-location` plugin: `locationWhenInUsePermission` set, `locationAlwaysAndWhenInUsePermission` / `locationAlwaysPermission` = `false`. **Rejected once (2026-11) for this:** only the *Always* key had been set, so the foreground prompt users actually see fell back to expo-location's generic "Allow $(PRODUCT_NAME) to access your location". The app only ever calls `requestForegroundPermissionsAsync`. |
 | 5.1.5 — Camera purpose string | N/A — app has no camera usage | No `expo-camera` or `ImagePicker` usage found in `mobile/src` |
 | 3.2.2(x) — No reward gating on store actions | Points not tied to rating/review/download | No rating prompts or social-share requirements found anywhere |
 | 2.2 — TestFlight compensation | Beta rewards not framed as testing compensation | `REWARDS_ENABLED=false` for Arts Fest beta — no points awarded during TestFlight phase |
