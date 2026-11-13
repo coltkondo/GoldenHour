@@ -134,6 +134,12 @@ describe('filterDealsByCategory', () => {
     const nullItems = makeDeal({ id: 'd-null', items: null as unknown as string[] });
     expect(() => filterDealsByCategory([nullItems], 'Bites')).not.toThrow();
   });
+
+  test('deals with null category (user submissions) do not throw and still match on title', () => {
+    const userDeal = makeDeal({ id: 'd-nc', title: 'Margarita Monday', category: null });
+    expect(filterDealsByCategory([userDeal], 'Cocktails')).toContain(userDeal);
+    expect(filterDealsByCategory([userDeal], 'Draft')).toHaveLength(0);
+  });
 });
 
 // ── filterDealsBySearch ───────────────────────────────────────
@@ -157,6 +163,12 @@ describe('filterDealsBySearch', () => {
 
   test('whitespace-only query returns all deals', () => {
     expect(filterDealsBySearch(allDeals, '   ', venueMap)).toEqual(allDeals);
+  });
+
+  test('deals with null category do not throw when the title does not match', () => {
+    const userDeal = makeDeal({ id: 'd-nc', venue_id: 'v2', title: 'Half-Price Apps', category: null, items: [] });
+    expect(filterDealsBySearch([userDeal], 'brewery', venueMap)).toContain(userDeal);
+    expect(filterDealsBySearch([userDeal], 'zzz', venueMap)).toHaveLength(0);
   });
 
   test('matches on deal title (case-insensitive)', () => {

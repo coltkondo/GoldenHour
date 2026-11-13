@@ -24,8 +24,8 @@ const CATEGORY_ICON_MAP: Record<string, IconName> = {
   drink: 'martini',
 };
 
-function getDealIconName(category: string): IconName {
-  const lower = category.toLowerCase();
+function getDealIconName(category: string | null): IconName {
+  const lower = (category ?? '').toLowerCase();
   for (const [key, icon] of Object.entries(CATEGORY_ICON_MAP)) {
     if (lower.includes(key)) return icon;
   }

@@ -31,7 +31,7 @@ export function filterDealsByCategory(deals: Deal[], category: FilterCategory): 
   return deals.filter((deal) =>
     keywords.some(
       (kw) =>
-        deal.category.toLowerCase().includes(kw) ||
+        (deal.category ?? '').toLowerCase().includes(kw) ||
         deal.title.toLowerCase().includes(kw) ||
         (deal.items ?? []).some((item) => item.toLowerCase().includes(kw)),
     ),
@@ -53,7 +53,7 @@ export function filterDealsBySearch(
     const venue = venueMap.get(deal.venue_id);
     return (
       deal.title.toLowerCase().includes(q) ||
-      deal.category.toLowerCase().includes(q) ||
+      (deal.category ?? '').toLowerCase().includes(q) ||
       (deal.items ?? []).some((item) => item.toLowerCase().includes(q)) ||
       (venue?.name.toLowerCase().includes(q) ?? false)
     );
