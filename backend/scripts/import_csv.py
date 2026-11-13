@@ -70,13 +70,12 @@ def parse_time(val: str, is_end: bool = False) -> time:
     parts = val.split(":")
     hour = int(parts[0])
     minute = int(parts[1]) if len(parts) > 1 else 0
+    # "24:00"/"25:30" style values mean past midnight: wrap onto the clock.
+    # Overnight windows (end <= start) are stored as-is; they run into the next
+    # day (see app/services/schedule_window.py). This used to clamp to 23:59.
     if hour >= 24:
-        hour, minute = 23, 59
-    # End times before 6 AM mean "past midnight / until close" — clamp to 23:59
-    # so they satisfy the DB constraint (end_time > start_time, same calendar day).
-    if is_end and hour < 6:
-        hour, minute = 23, 59
-    return time(hour, minute)
+        hour -= 24
+    return time(hour % 24, minute)
 
 
 def categorize_deal(is_food: str, is_drink: str, category_raw: str) -> tuple[str, str]:
@@ -255,11 +254,16 @@ def import_data(db: Session, market: Market, data_dir: Path) -> None:
             schedule_groups[key]["deal_ids"].append(deal_uuid)
 
     for group in schedule_groups.values():
+        _start = parse_time(group["start"])
+        _end = parse_time(group["end"], is_end=True)
+        if _end == _start:
+            # e.g. "0:00"-"24:00": a full day, which the DB rejects as ambiguous.
+            _end = time(23, 59)
         db.add(HappyHourSchedule(
             venue_id=group["venue_uuid"],
             day_of_week=group["day"],
-            start_time=parse_time(group["start"]),
-            end_time=parse_time(group["end"], is_end=True),
+            start_time=_start,
+            end_time=_end,
             deal_ids=group["deal_ids"],
             active=group["is_active"],
         ))

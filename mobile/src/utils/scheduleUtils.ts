@@ -77,6 +77,102 @@ export function isAlreadyEnded(
   }
 }
 
+// ── Day-aware helpers (overnight happy hours) ─────────────────────────────
+//
+// A schedule on day D whose end is at or before its start runs past midnight:
+// Fri 22:00–01:00 is live Fri 10pm → Sat 1am. Callers that only look at
+// *today's* rows miss the after-midnight half (it belongs to yesterday's row)
+// and wrongly mark today's row live before it starts. Use these, not the
+// time-only isCurrentlyLive/isAlreadyEnded above. Mirrors
+// backend/app/services/schedule_window.py.
+
+function minutesOf(t: string): number {
+  const { hour, minute } = parseTimeString(t);
+  return hour * 60 + minute;
+}
+
+function nowMinutes(now: Date): number {
+  return now.getHours() * 60 + now.getMinutes();
+}
+
+function yesterdayDbIndex(now: Date): number {
+  return (todayDbIndex(now) + 6) % 7;
+}
+
+/** True when the window runs past midnight into the next day. */
+export function isOvernight(schedule: HappyHourSchedule): boolean {
+  try {
+    return minutesOf(schedule.end_time) <= minutesOf(schedule.start_time);
+  } catch {
+    return false;
+  }
+}
+
+/** True when `schedule` belongs on today's list: today's row, or yesterday's
+ *  overnight row that hasn't ended yet this morning. */
+export function isRelevantToday(schedule: HappyHourSchedule, now: Date = new Date()): boolean {
+  try {
+    if (schedule.day_of_week === todayDbIndex(now)) return true;
+    return (
+      schedule.day_of_week === yesterdayDbIndex(now) &&
+      isOvernight(schedule) &&
+      nowMinutes(now) < minutesOf(schedule.end_time)
+    );
+  } catch {
+    return false;
+  }
+}
+
+/** True when `schedule`'s window contains `now` (end exclusive), across midnight. */
+export function isLiveAt(schedule: HappyHourSchedule | undefined, now: Date = new Date()): boolean {
+  if (!schedule) return false;
+  try {
+    const cur = nowMinutes(now);
+    const start = minutesOf(schedule.start_time);
+    const end = minutesOf(schedule.end_time);
+    const today = todayDbIndex(now);
+    if (end > start) return schedule.day_of_week === today && cur >= start && cur < end;
+    // Overnight: before midnight on its own day, or after midnight the next day.
+    if (schedule.day_of_week === today) return cur >= start;
+    return schedule.day_of_week === yesterdayDbIndex(now) && cur < end;
+  } catch {
+    return false;
+  }
+}
+
+/** True when today's occurrence of `schedule` is over. */
+export function hasEndedAt(
+  schedule: HappyHourSchedule | undefined,
+  now: Date = new Date(),
+): boolean {
+  if (!schedule) return false;
+  try {
+    const cur = nowMinutes(now);
+    const end = minutesOf(schedule.end_time);
+    if (schedule.day_of_week === todayDbIndex(now)) {
+      return isOvernight(schedule) ? false : cur >= end; // overnight ends tomorrow
+    }
+    // Yesterday's overnight row: over once we pass its end this morning.
+    return schedule.day_of_week === yesterdayDbIndex(now) && isOvernight(schedule) && cur >= end;
+  } catch {
+    return false;
+  }
+}
+
+/** Of one deal's schedules, the one that represents it right now: a live one
+ *  if any (including last night's still running), else today's. */
+export function scheduleForNow(
+  schedules: HappyHourSchedule[],
+  now: Date = new Date(),
+): HappyHourSchedule | undefined {
+  const relevant = schedules.filter((s) => isRelevantToday(s, now));
+  return (
+    relevant.find((s) => isLiveAt(s, now)) ??
+    relevant.find((s) => s.day_of_week === todayDbIndex(now)) ??
+    relevant[0]
+  );
+}
+
 function to12Hour(hour: number): number {
   if (hour === 0) return 12;
   if (hour > 12) return hour - 12;

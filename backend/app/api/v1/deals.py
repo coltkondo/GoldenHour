@@ -13,6 +13,7 @@ from app.models.market import Market
 from app.models.venue import Venue
 from app.models.happy_hour import HappyHourSchedule
 from app.schemas.deal import DealResponse
+from app.services.schedule_window import live_now_clause, relevant_today_clause
 from app.services.search import bounding_box, haversine_distance
 
 
@@ -65,8 +66,8 @@ async def get_todays_deals(
     market_slug: Optional[str] = None,
     db: Session = Depends(get_db),
 ):
-    today = _now_eastern().weekday()  # 0=Monday
-    today_date = _now_eastern().date()
+    now = _now_eastern()
+    today_date = now.date()
 
     query = (
         db.query(Deal)
@@ -77,7 +78,13 @@ async def get_todays_deals(
             or_(Deal.valid_through == None, Deal.valid_through >= today_date),
             Deal.id.in_(
                 db.query(func.unnest(HappyHourSchedule.deal_ids)).filter(
-                    HappyHourSchedule.day_of_week == today,
+                    # Today's schedules plus yesterday's overnight ones still running.
+                    relevant_today_clause(
+                        HappyHourSchedule.day_of_week,
+                        HappyHourSchedule.start_time,
+                        HappyHourSchedule.end_time,
+                        now,
+                    ),
                     HappyHourSchedule.active == True,
                 )
             ),
@@ -126,17 +133,18 @@ async def get_nearby_deals(
     if active_now:
         # Get current day and time in the app's local timezone
         now = _now_eastern()
-        current_day = now.weekday()  # 0=Monday
-        current_time = now.time()
 
         # Join with happy hour schedules
         query = query.join(
             HappyHourSchedule,
             and_(
                 HappyHourSchedule.venue_id == Venue.id,
-                HappyHourSchedule.day_of_week == current_day,
-                HappyHourSchedule.start_time <= current_time,
-                HappyHourSchedule.end_time >= current_time,
+                live_now_clause(
+                    HappyHourSchedule.day_of_week,
+                    HappyHourSchedule.start_time,
+                    HappyHourSchedule.end_time,
+                    now,
+                ),
                 HappyHourSchedule.active == True,
             ),
         )

@@ -528,7 +528,9 @@ def _create_deal_schedules(deal: Deal, data: dict, db: Session) -> None:
             )
             return
 
-    if start_t >= end_t:
+    # end < start is an overnight happy hour (e.g. 22:00-01:00), stored on the
+    # start day; only identical times are meaningless.
+    if start_t == end_t:
         logger.bind(deal_id=str(deal.id), start=str(start_t), end=str(end_t)).warning(
             "deal_schedule_invalid_window"
         )
