@@ -2,6 +2,7 @@ export interface Venue {
   id: string;
   name: string;
   nickname: string | null;
+  logo_url: string | null;
   address: string;
   latitude: number;
   longitude: number;
