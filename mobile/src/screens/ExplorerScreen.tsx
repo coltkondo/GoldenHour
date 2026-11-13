@@ -62,7 +62,9 @@ export const ExplorerScreen = () => {
   useEffect(() => {
     isMounted.current = true;
     loadData();
-    return () => { isMounted.current = false; };
+    return () => {
+      isMounted.current = false;
+    };
   }, []);
 
   const loadData = async () => {
@@ -124,7 +126,11 @@ export const ExplorerScreen = () => {
   }, [todayDeals]);
 
   const venueMap = useMemo(
-    () => venues.reduce<Record<string, Venue>>((acc, v) => { acc[v.id] = v; return acc; }, {}),
+    () =>
+      venues.reduce<Record<string, Venue>>((acc, v) => {
+        acc[v.id] = v;
+        return acc;
+      }, {}),
     [venues],
   );
 
@@ -163,7 +169,9 @@ export const ExplorerScreen = () => {
 
         {/* Load Error */}
         {loadError && (
-          <View style={[styles.errorCard, { backgroundColor: d.cardBackground, borderColor: d.error }]}>
+          <View
+            style={[styles.errorCard, { backgroundColor: d.cardBackground, borderColor: d.error }]}
+          >
             <AppIcon name="warning" size={20} role="urgent" />
             <View style={styles.errorContent}>
               <Text style={[styles.errorTitle, { color: d.error }]}>Couldn't load data</Text>
@@ -200,7 +208,9 @@ export const ExplorerScreen = () => {
               onPress={() => setSelectedTab(tab)}
               activeOpacity={0.8}
             >
-              <Text style={[styles.tabText, { color: selectedTab === tab ? d.primary : d.textMuted }]}>
+              <Text
+                style={[styles.tabText, { color: selectedTab === tab ? d.primary : d.textMuted }]}
+              >
                 {tab === 'browse' ? 'Browse' : 'Tonight'}
               </Text>
             </TouchableOpacity>
@@ -237,14 +247,20 @@ export const ExplorerScreen = () => {
                   style={[
                     styles.chip,
                     {
-                      backgroundColor: selectedTag === cat ? 'rgba(255,194,61,0.12)' : d.filterInactive,
+                      backgroundColor:
+                        selectedTag === cat ? 'rgba(255,194,61,0.12)' : d.filterInactive,
                       borderColor: selectedTag === cat ? d.primary : 'transparent',
                       borderWidth: 1,
                     },
                   ]}
                   onPress={() => setSelectedTag(selectedTag === cat ? null : cat)}
                 >
-                  <Text style={[styles.chipText, { color: selectedTag === cat ? d.primary : d.textMuted }]}>
+                  <Text
+                    style={[
+                      styles.chipText,
+                      { color: selectedTag === cat ? d.primary : d.textMuted },
+                    ]}
+                  >
                     {cat}
                   </Text>
                 </TouchableOpacity>
@@ -258,7 +274,10 @@ export const ExplorerScreen = () => {
             {filteredVenues.map((venue: any) => (
               <TouchableOpacity
                 key={venue.id}
-                style={[styles.venueCard, { backgroundColor: d.cardBackground, borderColor: d.border }]}
+                style={[
+                  styles.venueCard,
+                  { backgroundColor: d.cardBackground, borderColor: d.border },
+                ]}
                 activeOpacity={0.8}
                 onPress={() => navigation.navigate('HappyHour', { venue })}
               >
@@ -291,7 +310,10 @@ export const ExplorerScreen = () => {
                 return (
                   <TouchableOpacity
                     key={venueId}
-                    style={[styles.tonightCard, { backgroundColor: d.cardBackground, borderColor: d.border }]}
+                    style={[
+                      styles.tonightCard,
+                      { backgroundColor: d.cardBackground, borderColor: d.border },
+                    ]}
                     activeOpacity={0.8}
                     onPress={() => navigation.navigate('HappyHour', { venue })}
                   >
@@ -304,7 +326,11 @@ export const ExplorerScreen = () => {
                     {deals.map((deal, index) => {
                       const schedule = schedules.get(deal.id);
                       const live = isCurrentlyLive(schedule);
-                      const timeLabel = formatScheduleRange(schedule?.start_time, schedule?.end_time, '');
+                      const timeLabel = formatScheduleRange(
+                        schedule?.start_time,
+                        schedule?.end_time,
+                        '',
+                      );
                       return (
                         <React.Fragment key={deal.id}>
                           <View style={styles.dealRow}>
@@ -314,7 +340,9 @@ export const ExplorerScreen = () => {
                                 {deal.title}
                               </Text>
                               {timeLabel ? (
-                                <Text style={[styles.dealTime, { color: live ? d.live : d.textMuted }]}>
+                                <Text
+                                  style={[styles.dealTime, { color: live ? d.live : d.textMuted }]}
+                                >
                                   {live ? 'Live' : ''} {timeLabel}
                                 </Text>
                               ) : null}
@@ -339,7 +367,12 @@ export const ExplorerScreen = () => {
                 );
               })
             ) : (
-              <View style={[styles.emptyCard, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+              <View
+                style={[
+                  styles.emptyCard,
+                  { backgroundColor: d.cardBackground, borderColor: d.border },
+                ]}
+              >
                 <AppIcon name="clock" size={24} role="muted" />
                 <Text style={[styles.emptyText, { color: d.text }]}>No deals tonight</Text>
                 <Text style={[styles.emptySubtext, { color: d.textMuted }]}>

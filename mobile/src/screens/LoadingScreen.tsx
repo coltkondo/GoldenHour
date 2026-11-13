@@ -31,7 +31,13 @@ const FEATURES = [
   { icon: 'community' as const, label: 'COMMUNITY' },
 ] as const;
 
-export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onGetStarted, onLogin, onGuest, splash, onComplete }) => {
+export const LoadingScreen: React.FC<LoadingScreenProps> = ({
+  onGetStarted,
+  onLogin,
+  onGuest,
+  splash,
+  onComplete,
+}) => {
   const { theme } = useTheme();
   const d = theme.derived;
 
@@ -155,8 +161,8 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onGetStarted, onLo
         {/* Subtext */}
         <Animated.View style={[styles.subtextSection, { opacity: taglineOpacity }]}>
           <Text style={[styles.subtext, { color: d.textMuted }]}>
-            Your guide to happy hours, live deals, and hidden gems — built by the community
-            that goes out with you.
+            Your guide to happy hours, live deals, and hidden gems — built by the community that
+            goes out with you.
           </Text>
         </Animated.View>
 
@@ -206,11 +212,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onGetStarted, onLo
               <Text style={[styles.secondaryButtonText, { color: d.text }]}>I HAVE AN ACCOUNT</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.guestButton}
-              activeOpacity={0.6}
-              onPress={onGuest}
-            >
+            <TouchableOpacity style={styles.guestButton} activeOpacity={0.6} onPress={onGuest}>
               <Text style={[styles.guestButtonText, { color: d.textMuted }]}>
                 Continue as guest
               </Text>
@@ -220,9 +222,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onGetStarted, onLo
 
         {/* Fine Print */}
         <View style={styles.finePrint}>
-          <Text style={[styles.finePrintText, { color: d.textHint }]}>
-            v1.0.0
-          </Text>
+          <Text style={[styles.finePrintText, { color: d.textHint }]}>v1.0.0</Text>
         </View>
       </ScrollView>
     </View>

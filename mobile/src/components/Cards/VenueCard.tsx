@@ -100,15 +100,8 @@ export const VenueCard: React.FC<VenueCardProps> = ({
 
           <View style={styles.metaRow}>
             {venue.venue_type && (
-              <View
-                style={[
-                  styles.typeBadge,
-                  { backgroundColor: d.filterInactive },
-                ]}
-              >
-                <Text style={[styles.typeText, { color: d.textMuted }]}>
-                  {venue.venue_type}
-                </Text>
+              <View style={[styles.typeBadge, { backgroundColor: d.filterInactive }]}>
+                <Text style={[styles.typeText, { color: d.textMuted }]}>{venue.venue_type}</Text>
               </View>
             )}
             {venue.neighborhood && (
@@ -122,12 +115,7 @@ export const VenueCard: React.FC<VenueCardProps> = ({
           </View>
         </View>
 
-        <View
-          style={[
-            styles.distanceContainer,
-            { backgroundColor: d.filterInactive },
-          ]}
-        >
+        <View style={[styles.distanceContainer, { backgroundColor: d.filterInactive }]}>
           <Text style={[styles.distanceValue, { color: d.primary }]}>{distance.toFixed(1)}</Text>
           <Text style={[styles.distanceUnit, { color: d.textMuted }]}>mi</Text>
         </View>
@@ -141,20 +129,13 @@ export const VenueCard: React.FC<VenueCardProps> = ({
         </View>
       )}
 
-      <View
-        style={[styles.actionBar, { borderTopColor: d.border }]}
-      >
+      <View style={[styles.actionBar, { borderTopColor: d.border }]}>
         <TouchableOpacity style={styles.actionButton} onPress={handleViewDetailsPress}>
           <AppIcon name="arrowRight" size={14} role="brand" />
           <Text style={[styles.actionText, { color: d.primary }]}>View Details</Text>
         </TouchableOpacity>
 
-        <View
-          style={[
-            styles.actionDivider,
-            { backgroundColor: d.border },
-          ]}
-        />
+        <View style={[styles.actionDivider, { backgroundColor: d.border }]} />
         <TouchableOpacity style={styles.actionButton} onPress={handleDirectionsPress}>
           <AppIcon name="directions" size={14} role="brand" />
           <Text style={[styles.actionText, { color: d.primary }]}>Directions</Text>
@@ -162,12 +143,7 @@ export const VenueCard: React.FC<VenueCardProps> = ({
 
         {venue.phone && (
           <>
-            <View
-              style={[
-                styles.actionDivider,
-                { backgroundColor: d.border },
-              ]}
-            />
+            <View style={[styles.actionDivider, { backgroundColor: d.border }]} />
             <TouchableOpacity style={styles.actionButton} onPress={handlePhonePress}>
               <AppIcon name="phone" size={14} role="brand" />
               <Text style={[styles.actionText, { color: d.primary }]}>Call</Text>
@@ -177,12 +153,7 @@ export const VenueCard: React.FC<VenueCardProps> = ({
 
         {venue.website && (
           <>
-            <View
-              style={[
-                styles.actionDivider,
-                { backgroundColor: d.border },
-              ]}
-            />
+            <View style={[styles.actionDivider, { backgroundColor: d.border }]} />
             <TouchableOpacity style={styles.actionButton} onPress={handleWebsitePress}>
               <AppIcon name="globe" size={14} role="brand" />
               <Text style={[styles.actionText, { color: d.primary }]}>Website</Text>
@@ -192,12 +163,7 @@ export const VenueCard: React.FC<VenueCardProps> = ({
       </View>
 
       {isLiveNow && (
-        <View
-          style={[
-            styles.statusBar,
-            { backgroundColor: d.cardBackgroundAlt },
-          ]}
-        >
+        <View style={[styles.statusBar, { backgroundColor: d.cardBackgroundAlt }]}>
           <StatusDot status="live" size={8} pulse={false} />
           <Text style={[styles.statusText, { color: d.live }]}>Currently serving happy hour</Text>
         </View>

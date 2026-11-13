@@ -1,9 +1,4 @@
-import {
-  BODY_FONTS,
-  DISPLAY_FONT,
-  normalizeWeight,
-  resolveFont,
-} from '../theme/fonts';
+import { BODY_FONTS, DISPLAY_FONT, normalizeWeight, resolveFont } from '../theme/fonts';
 
 describe('normalizeWeight', () => {
   test('maps keywords and numeric strings', () => {
@@ -54,7 +49,11 @@ describe('resolveFont', () => {
   });
 
   test('display face drops negative tracking but keeps positive', () => {
-    expect(resolveFont({ fontSize: 40, fontWeight: '900', letterSpacing: -1.5 }).letterSpacing).toBe(0);
-    expect(resolveFont({ fontSize: 40, fontWeight: '900', letterSpacing: 1 }).letterSpacing).toBe(1);
+    expect(
+      resolveFont({ fontSize: 40, fontWeight: '900', letterSpacing: -1.5 }).letterSpacing,
+    ).toBe(0);
+    expect(resolveFont({ fontSize: 40, fontWeight: '900', letterSpacing: 1 }).letterSpacing).toBe(
+      1,
+    );
   });
 });

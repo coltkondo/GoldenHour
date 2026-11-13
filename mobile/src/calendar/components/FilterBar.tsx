@@ -37,7 +37,11 @@ export const FilterBar: React.FC = () => {
         ]}
         onPress={() => setFilters((f) => ({ ...f, happeningNow: !f.happeningNow }))}
       >
-        <AppIcon name="fire" size={16} color={filters.happeningNow ? d.buttonPrimaryText : d.text} />
+        <AppIcon
+          name="fire"
+          size={16}
+          color={filters.happeningNow ? d.buttonPrimaryText : d.text}
+        />
         <Text
           style={[
             styles.nowText,

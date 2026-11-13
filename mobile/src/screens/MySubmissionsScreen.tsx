@@ -61,11 +61,9 @@ const submissionSummary = (sub: Submission) => {
     case 'new_event':
       return {
         title: data.event_name || 'New event',
-        subtitle: [
-          data.bar_name,
-          RECURRENCE_LABELS[data.recurrence_type] ?? '',
-          data.event_date,
-        ].filter(Boolean).join(' · '),
+        subtitle: [data.bar_name, RECURRENCE_LABELS[data.recurrence_type] ?? '', data.event_date]
+          .filter(Boolean)
+          .join(' · '),
       };
     default:
       return { title: '', subtitle: '' };
@@ -212,7 +210,9 @@ export const MySubmissionsScreen = () => {
                   <Text style={[styles.subTitle, { color: d.text }]}>{summary.title}</Text>
                 ) : null}
                 {summary.subtitle ? (
-                  <Text style={[styles.subSubtitle, { color: d.textMuted }]}>{summary.subtitle}</Text>
+                  <Text style={[styles.subSubtitle, { color: d.textMuted }]}>
+                    {summary.subtitle}
+                  </Text>
                 ) : null}
                 <Text style={[styles.subDate, { color: d.textMuted }]}>
                   {new Date(sub.created_at).toLocaleDateString()}

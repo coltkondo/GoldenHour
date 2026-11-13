@@ -32,9 +32,7 @@ export const ClusterBlock: React.FC<ClusterBlockProps> = ({
   const { theme } = useTheme();
   const d = theme.derived;
   const period = periodForStartHour(startMinutes / 60);
-  const topRated = [...events].sort(
-    (a, b) => (b.venue.rating ?? 0) - (a.venue.rating ?? 0),
-  )[0];
+  const topRated = [...events].sort((a, b) => (b.venue.rating ?? 0) - (a.venue.rating ?? 0))[0];
 
   return (
     <TouchableOpacity

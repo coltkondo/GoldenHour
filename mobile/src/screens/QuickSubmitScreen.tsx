@@ -80,10 +80,25 @@ export const QuickSubmitScreen = () => {
         </View>
         <View style={[{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 }]}>
           <AppIcon name="plus" size={48} role="muted" />
-          <Text style={[styles.headerTitle, { color: d.text, textAlign: 'center', marginTop: 20, marginBottom: 8 }]}>
+          <Text
+            style={[
+              styles.headerTitle,
+              { color: d.text, textAlign: 'center', marginTop: 20, marginBottom: 8 },
+            ]}
+          >
             Sign In to Contribute
           </Text>
-          <Text style={[{ color: d.textMuted, textAlign: 'center', fontSize: 13, marginBottom: 32, lineHeight: 20 }]}>
+          <Text
+            style={[
+              {
+                color: d.textMuted,
+                textAlign: 'center',
+                fontSize: 13,
+                marginBottom: 32,
+                lineHeight: 20,
+              },
+            ]}
+          >
             Create a free account to submit happy hour deals and earn points.
           </Text>
           <TouchableOpacity

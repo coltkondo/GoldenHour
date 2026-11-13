@@ -132,10 +132,11 @@ export const LoginScreen = () => {
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.guestBtn} onPress={() => navigation.navigate('Main', { screen: 'HomeTab' })}>
-            <Text style={[styles.guestText, { color: d.textMuted }]}>
-              Continue as guest
-            </Text>
+          <TouchableOpacity
+            style={styles.guestBtn}
+            onPress={() => navigation.navigate('Main', { screen: 'HomeTab' })}
+          >
+            <Text style={[styles.guestText, { color: d.textMuted }]}>Continue as guest</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -155,7 +156,12 @@ const styles = StyleSheet.create({
   errorBox: { borderWidth: 0.5, borderRadius: 12, padding: 12, marginBottom: 16 },
   errorText: { fontSize: 13, textAlign: 'center', fontWeight: '500' },
   form: { gap: 12 },
-  inputContainer: { borderRadius: 14, borderWidth: 0.5, flexDirection: 'row', alignItems: 'center' },
+  inputContainer: {
+    borderRadius: 14,
+    borderWidth: 0.5,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   input: { flex: 1, padding: 16, fontSize: 15 },
   eyeBtn: { paddingHorizontal: 14, paddingVertical: 12 },
   loginBtn: {

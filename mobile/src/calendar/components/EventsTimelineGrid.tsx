@@ -49,7 +49,10 @@ export const EventsTimelineGrid: React.FC<EventsTimelineGridProps> = ({ dates, o
             {hours.map((h) => (
               <View
                 key={h}
-                style={[styles.line, { top: (h - HOUR_OFFSET) * HOUR_HEIGHT, backgroundColor: d.border }]}
+                style={[
+                  styles.line,
+                  { top: (h - HOUR_OFFSET) * HOUR_HEIGHT, backgroundColor: d.border },
+                ]}
               />
             ))}
             {laid.map((item) => {
@@ -58,7 +61,12 @@ export const EventsTimelineGrid: React.FC<EventsTimelineGridProps> = ({ dates, o
               const col = item.column ?? 0;
               const cols = item.columns ?? 1;
               const widthPct = 100 / cols;
-              const wrap: ViewStyle = { top, height, left: `${col * widthPct}%`, width: `${widthPct}%` };
+              const wrap: ViewStyle = {
+                top,
+                height,
+                left: `${col * widthPct}%`,
+                width: `${widthPct}%`,
+              };
               return (
                 <View key={item.id} style={[styles.eventWrap, wrap]}>
                   <EventTimelineBlock item={item} onPress={() => onEventPress(item)} />

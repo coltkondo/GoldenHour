@@ -52,7 +52,10 @@ export const TimelineGrid: React.FC<TimelineGridProps> = ({
             {hours.map((h) => (
               <View
                 key={h}
-                style={[styles.line, { top: (h - HOUR_OFFSET) * HOUR_HEIGHT, backgroundColor: d.border }]}
+                style={[
+                  styles.line,
+                  { top: (h - HOUR_OFFSET) * HOUR_HEIGHT, backgroundColor: d.border },
+                ]}
               />
             ))}
             {items.map((it, i) => {

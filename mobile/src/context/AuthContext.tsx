@@ -30,10 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const sub = DeviceEventEmitter.addListener('auth:logout', async () => {
-      await Promise.all([
-        AsyncStorage.removeItem(TOKEN_KEY),
-        AsyncStorage.removeItem(USER_KEY),
-      ]);
+      await Promise.all([AsyncStorage.removeItem(TOKEN_KEY), AsyncStorage.removeItem(USER_KEY)]);
       setToken(null);
       setUser(null);
     });

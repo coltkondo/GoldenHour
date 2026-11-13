@@ -72,8 +72,18 @@ function makeDeal(overrides: Partial<Deal> & { id: string }): Deal {
 describe('filterDealsByCategory', () => {
   const cocktailDeal = makeDeal({ id: 'd-c', title: 'Martini Special', category: 'cocktail' });
   const draftDeal = makeDeal({ id: 'd-d', title: '$3 Draft Beers', category: 'Draft Beer' });
-  const wineDeal = makeDeal({ id: 'd-w', title: 'House Wine', category: 'Wine & Spirits', items: ['red', 'white'] });
-  const bitesDeal = makeDeal({ id: 'd-b', title: 'Wing Night', category: 'Food', items: ['wings', 'tacos'] });
+  const wineDeal = makeDeal({
+    id: 'd-w',
+    title: 'House Wine',
+    category: 'Wine & Spirits',
+    items: ['red', 'white'],
+  });
+  const bitesDeal = makeDeal({
+    id: 'd-b',
+    title: 'Wing Night',
+    category: 'Food',
+    items: ['wings', 'tacos'],
+  });
   const all = [cocktailDeal, draftDeal, wineDeal, bitesDeal];
 
   test('All returns every deal unchanged', () => {
@@ -112,7 +122,12 @@ describe('filterDealsByCategory', () => {
   });
 
   test('Bites matches on items keyword', () => {
-    const itemMatch = makeDeal({ id: 'd-im', title: 'Happy Hour', category: 'Specials', items: ['appetizer', 'beer'] });
+    const itemMatch = makeDeal({
+      id: 'd-im',
+      title: 'Happy Hour',
+      category: 'Specials',
+      items: ['appetizer', 'beer'],
+    });
     const result = filterDealsByCategory([itemMatch], 'Bites');
     expect(result).toContain(itemMatch);
   });
@@ -153,9 +168,27 @@ describe('filterDealsBySearch', () => {
     ['v2', venue2],
   ]);
 
-  const deal1 = makeDeal({ id: 'd1', venue_id: 'v1', title: '$3 Draft Beers', category: 'Draft Beer', items: ['Yuengling'] });
-  const deal2 = makeDeal({ id: 'd2', venue_id: 'v2', title: 'House Martini', category: 'Cocktail', items: ['gin', 'vermouth'] });
-  const deal3 = makeDeal({ id: 'd3', venue_id: 'v1', title: 'Wing Night', category: 'Food', items: ['wings', 'ranch'] });
+  const deal1 = makeDeal({
+    id: 'd1',
+    venue_id: 'v1',
+    title: '$3 Draft Beers',
+    category: 'Draft Beer',
+    items: ['Yuengling'],
+  });
+  const deal2 = makeDeal({
+    id: 'd2',
+    venue_id: 'v2',
+    title: 'House Martini',
+    category: 'Cocktail',
+    items: ['gin', 'vermouth'],
+  });
+  const deal3 = makeDeal({
+    id: 'd3',
+    venue_id: 'v1',
+    title: 'Wing Night',
+    category: 'Food',
+    items: ['wings', 'ranch'],
+  });
   const allDeals = [deal1, deal2, deal3];
 
   test('blank query returns all deals', () => {
@@ -167,7 +200,13 @@ describe('filterDealsBySearch', () => {
   });
 
   test('deals with null category do not throw when the title does not match', () => {
-    const userDeal = makeDeal({ id: 'd-nc', venue_id: 'v2', title: 'Half-Price Apps', category: null, items: [] });
+    const userDeal = makeDeal({
+      id: 'd-nc',
+      venue_id: 'v2',
+      title: 'Half-Price Apps',
+      category: null,
+      items: [],
+    });
     expect(filterDealsBySearch([userDeal], 'brewery', venueMap)).toContain(userDeal);
     expect(filterDealsBySearch([userDeal], 'zzz', venueMap)).toHaveLength(0);
   });
@@ -214,7 +253,12 @@ describe('filterDealsBySearch', () => {
   });
 
   test('deals whose venue is not in the map are still matched on title/category', () => {
-    const orphanDeal = makeDeal({ id: 'd-orphan', venue_id: 'v-missing', title: 'Orphan Deal', category: 'Special' });
+    const orphanDeal = makeDeal({
+      id: 'd-orphan',
+      venue_id: 'v-missing',
+      title: 'Orphan Deal',
+      category: 'Special',
+    });
     const result = filterDealsBySearch([orphanDeal], 'orphan', venueMap);
     expect(result).toContain(orphanDeal);
   });
@@ -233,9 +277,18 @@ describe('filterDealsBySearch', () => {
 // ── filterVenuesBySearch ──────────────────────────────────────
 
 describe('filterVenuesBySearch', () => {
-  const pub = makeVenueWithDistance({ id: 'v1', name: "O'Malley's Irish Pub", venue_type: 'Bar', address: '100 College Ave' }, 0.1);
-  const brewery = makeVenueWithDistance({ id: 'v2', name: 'The Brewery on Allen', venue_type: 'Brewery', address: '200 Allen St' }, 0.5);
-  const winery = makeVenueWithDistance({ id: 'v3', name: 'Allen Winery', venue_type: 'Wine Bar', address: '300 Beaver Ave' }, 1.0);
+  const pub = makeVenueWithDistance(
+    { id: 'v1', name: "O'Malley's Irish Pub", venue_type: 'Bar', address: '100 College Ave' },
+    0.1,
+  );
+  const brewery = makeVenueWithDistance(
+    { id: 'v2', name: 'The Brewery on Allen', venue_type: 'Brewery', address: '200 Allen St' },
+    0.5,
+  );
+  const winery = makeVenueWithDistance(
+    { id: 'v3', name: 'Allen Winery', venue_type: 'Wine Bar', address: '300 Beaver Ave' },
+    1.0,
+  );
   const allVenues = [pub, brewery, winery];
 
   test('blank query returns all venues', () => {
@@ -263,7 +316,7 @@ describe('filterVenuesBySearch', () => {
   test('multiple venues match partial name', () => {
     const result = filterVenuesBySearch(allVenues, 'allen');
     expect(result).toContain(brewery); // name contains Allen
-    expect(result).toContain(winery);  // name contains Allen
+    expect(result).toContain(winery); // name contains Allen
     expect(result).not.toContain(pub);
   });
 
@@ -277,7 +330,10 @@ describe('filterVenuesBySearch', () => {
   });
 
   test('venue with null venue_type does not throw', () => {
-    const noType = makeVenueWithDistance({ id: 'v-nt', name: 'Mystery Bar', venue_type: null }, 0.2);
+    const noType = makeVenueWithDistance(
+      { id: 'v-nt', name: 'Mystery Bar', venue_type: null },
+      0.2,
+    );
     expect(() => filterVenuesBySearch([noType], 'bar')).not.toThrow();
     // Should still match on name
     expect(filterVenuesBySearch([noType], 'mystery')).toContain(noType);
@@ -335,9 +391,24 @@ describe('applyDealFilters', () => {
   const venue = makeVenue({ id: 'v1', name: 'Sports Bar' });
   const venueMap = new Map([['v1', venue]]);
 
-  const beerDeal = makeDeal({ id: 'd-beer', title: '$3 Draft', category: 'Draft Beer', items: ['Bud'] });
-  const wineDeal = makeDeal({ id: 'd-wine', title: 'House Merlot', category: 'Wine', items: ['Merlot'] });
-  const foodDeal = makeDeal({ id: 'd-food', title: 'Nacho Platter', category: 'Food', items: ['nachos'] });
+  const beerDeal = makeDeal({
+    id: 'd-beer',
+    title: '$3 Draft',
+    category: 'Draft Beer',
+    items: ['Bud'],
+  });
+  const wineDeal = makeDeal({
+    id: 'd-wine',
+    title: 'House Merlot',
+    category: 'Wine',
+    items: ['Merlot'],
+  });
+  const foodDeal = makeDeal({
+    id: 'd-food',
+    title: 'Nacho Platter',
+    category: 'Food',
+    items: ['nachos'],
+  });
   const allDeals = [beerDeal, wineDeal, foodDeal];
 
   test('All category + blank search returns everything', () => {
@@ -374,9 +445,18 @@ describe('applyDealFilters', () => {
 // ── applyVenueFilters (combined pipeline) ─────────────────────
 
 describe('applyVenueFilters', () => {
-  const pub = makeVenueWithDistance({ id: 'v1', name: "O'Malley's", venue_type: 'Bar', address: '100 College Ave' }, 0.5);
-  const brewery = makeVenueWithDistance({ id: 'v2', name: 'Brewery', venue_type: 'Brewery', address: '200 Allen St' }, 0.2);
-  const winery = makeVenueWithDistance({ id: 'v3', name: 'Winery', venue_type: 'Wine Bar', address: '300 Beaver Ave' }, 1.5);
+  const pub = makeVenueWithDistance(
+    { id: 'v1', name: "O'Malley's", venue_type: 'Bar', address: '100 College Ave' },
+    0.5,
+  );
+  const brewery = makeVenueWithDistance(
+    { id: 'v2', name: 'Brewery', venue_type: 'Brewery', address: '200 Allen St' },
+    0.2,
+  );
+  const winery = makeVenueWithDistance(
+    { id: 'v3', name: 'Winery', venue_type: 'Wine Bar', address: '300 Beaver Ave' },
+    1.5,
+  );
   const allVenues = [pub, brewery, winery];
 
   const dealAtPub = makeDeal({ id: 'd1', venue_id: 'v1' });

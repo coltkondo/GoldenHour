@@ -24,7 +24,10 @@ jest.mock('axios', () => {
       response: { use: jest.fn() },
     },
   };
-  return { default: { create: jest.fn().mockReturnValue(mockInstance) }, create: jest.fn().mockReturnValue(mockInstance) };
+  return {
+    default: { create: jest.fn().mockReturnValue(mockInstance) },
+    create: jest.fn().mockReturnValue(mockInstance),
+  };
 });
 
 describe('apiClient — __DEV__ console.log guard (Fix 2)', () => {

@@ -63,11 +63,7 @@ const ThemedTabBar = ({ state, descriptors, navigation }: any) => {
 
         return (
           <Pressable key={route.key} onPress={onPress} style={styles.tabItem}>
-            <AppIcon
-              name={iconName as any}
-              size={22}
-              role={isFocused ? 'brand' : 'muted'}
-            />
+            <AppIcon name={iconName as any} size={22} role={isFocused ? 'brand' : 'muted'} />
             <Text
               style={[styles.tabLabel, { color: isFocused ? d.primary : d.textMuted }]}
               numberOfLines={1}
