@@ -331,6 +331,9 @@ export const MapScreen = () => {
             setMapRegion(location);
           }
         }}
+        // iOS uses Apple Maps, which ignores customMapStyle (Google only) and
+        // otherwise follows the phone's light/dark setting, not the app's.
+        userInterfaceStyle={mode}
         customMapStyle={mode === 'dark' ? darkMapStyle : undefined}
         mapType="standard"
       >
