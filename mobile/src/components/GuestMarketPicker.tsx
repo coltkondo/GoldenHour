@@ -33,7 +33,7 @@ export const MARKETS = [
   },
 ] as const;
 
-export type MarketSlug = typeof MARKETS[number]['slug'];
+export type MarketSlug = (typeof MARKETS)[number]['slug'];
 
 function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371;
@@ -50,7 +50,10 @@ function nearestMarket(lat: number, lng: number): MarketSlug {
   let bestDist = Infinity;
   for (const m of MARKETS) {
     const d = haversineKm(lat, lng, m.lat, m.lng);
-    if (d < bestDist) { bestDist = d; best = m; }
+    if (d < bestDist) {
+      bestDist = d;
+      best = m;
+    }
   }
   return best.slug;
 }
@@ -102,11 +105,7 @@ export const GuestMarketPicker: React.FC<MarketPickerProps> = ({
 
   return (
     <Modal visible={visible} transparent animationType="none" statusBarTranslucent>
-      <TouchableOpacity
-        style={styles.overlay}
-        activeOpacity={1}
-        onPress={onDismiss}
-      >
+      <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={onDismiss}>
         <Animated.View
           style={[styles.sheet, { backgroundColor: d.cardBackground, transform: [{ translateY }] }]}
         >
@@ -116,7 +115,10 @@ export const GuestMarketPicker: React.FC<MarketPickerProps> = ({
             <View style={styles.titleRow}>
               <Text style={[styles.title, { color: d.text }]}>Choose a city</Text>
               {onDismiss && (
-                <TouchableOpacity onPress={onDismiss} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                <TouchableOpacity
+                  onPress={onDismiss}
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                >
                   <AppIcon name="close" size={18} role="muted" />
                 </TouchableOpacity>
               )}
@@ -128,14 +130,19 @@ export const GuestMarketPicker: React.FC<MarketPickerProps> = ({
             <View style={styles.options}>
               {/* Current Location */}
               <TouchableOpacity
-                style={[styles.option, { backgroundColor: d.filterInactive, borderColor: d.border }]}
+                style={[
+                  styles.option,
+                  { backgroundColor: d.filterInactive, borderColor: d.border },
+                ]}
                 activeOpacity={0.75}
                 onPress={handleUseLocation}
                 disabled={locLoading}
               >
-                {locLoading
-                  ? <ActivityIndicator size="small" color={d.primary} />
-                  : <AppIcon name="location" size={18} role="brand" />}
+                {locLoading ? (
+                  <ActivityIndicator size="small" color={d.primary} />
+                ) : (
+                  <AppIcon name="location" size={18} role="brand" />
+                )}
                 <View style={styles.optionText}>
                   <Text style={[styles.optionLabel, { color: d.primary }]}>
                     {locLoading ? 'Detecting location...' : 'Use Current Location'}
@@ -171,9 +178,11 @@ export const GuestMarketPicker: React.FC<MarketPickerProps> = ({
                       </Text>
                       <Text style={[styles.optionSub, { color: d.textMuted }]}>{market.sub}</Text>
                     </View>
-                    {active
-                      ? <AppIcon name="correct" size={16} role="brand" />
-                      : <AppIcon name="chevronRight" size={16} role="muted" />}
+                    {active ? (
+                      <AppIcon name="correct" size={16} role="brand" />
+                    ) : (
+                      <AppIcon name="chevronRight" size={16} role="muted" />
+                    )}
                   </TouchableOpacity>
                 );
               })}
