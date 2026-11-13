@@ -65,6 +65,11 @@ interface MarketPickerProps {
   onSelect: (slug: string) => void;
   onDismiss?: () => void;
   currentSlug?: string | null;
+  /** Override the header copy (e.g. when used from sign-up). */
+  title?: string;
+  subtitle?: string;
+  /** Hide "Use Current Location", e.g. when the caller already tried it. */
+  showUseLocation?: boolean;
 }
 
 export const GuestMarketPicker: React.FC<MarketPickerProps> = ({
@@ -72,6 +77,9 @@ export const GuestMarketPicker: React.FC<MarketPickerProps> = ({
   onSelect,
   onDismiss,
   currentSlug,
+  title = 'Choose a city',
+  subtitle = 'Browse happy hours and events in any market.',
+  showUseLocation = true,
 }) => {
   const { theme } = useTheme();
   const d = theme.derived;
@@ -141,7 +149,7 @@ export const GuestMarketPicker: React.FC<MarketPickerProps> = ({
             ) : (
               <>
                 <View style={styles.titleRow}>
-                  <Text style={[styles.title, { color: d.text }]}>Choose a city</Text>
+                  <Text style={[styles.title, { color: d.text }]}>{title}</Text>
                   {onDismiss && (
                     <TouchableOpacity
                       onPress={onDismiss}
@@ -151,36 +159,36 @@ export const GuestMarketPicker: React.FC<MarketPickerProps> = ({
                     </TouchableOpacity>
                   )}
                 </View>
-                <Text style={[styles.sub, { color: d.textMuted }]}>
-                  Browse happy hours and events in any market.
-                </Text>
+                <Text style={[styles.sub, { color: d.textMuted }]}>{subtitle}</Text>
 
                 <View style={styles.options}>
                   {/* Current Location */}
-                  <TouchableOpacity
-                    style={[
-                      styles.option,
-                      { backgroundColor: d.filterInactive, borderColor: d.border },
-                    ]}
-                    activeOpacity={0.75}
-                    onPress={handleUseLocation}
-                    disabled={locLoading}
-                  >
-                    {locLoading ? (
-                      <ActivityIndicator size="small" color={d.primary} />
-                    ) : (
-                      <AppIcon name="location" size={18} role="brand" />
-                    )}
-                    <View style={styles.optionText}>
-                      <Text style={[styles.optionLabel, { color: d.primary }]}>
-                        {locLoading ? 'Detecting location...' : 'Use Current Location'}
-                      </Text>
-                      <Text style={[styles.optionSub, { color: d.textMuted }]}>
-                        Find the nearest market automatically
-                      </Text>
-                    </View>
-                    {!locLoading && <AppIcon name="chevronRight" size={16} role="muted" />}
-                  </TouchableOpacity>
+                  {showUseLocation && (
+                    <TouchableOpacity
+                      style={[
+                        styles.option,
+                        { backgroundColor: d.filterInactive, borderColor: d.border },
+                      ]}
+                      activeOpacity={0.75}
+                      onPress={handleUseLocation}
+                      disabled={locLoading}
+                    >
+                      {locLoading ? (
+                        <ActivityIndicator size="small" color={d.primary} />
+                      ) : (
+                        <AppIcon name="location" size={18} role="brand" />
+                      )}
+                      <View style={styles.optionText}>
+                        <Text style={[styles.optionLabel, { color: d.primary }]}>
+                          {locLoading ? 'Detecting location...' : 'Use Current Location'}
+                        </Text>
+                        <Text style={[styles.optionSub, { color: d.textMuted }]}>
+                          Find the nearest market automatically
+                        </Text>
+                      </View>
+                      {!locLoading && <AppIcon name="chevronRight" size={16} role="muted" />}
+                    </TouchableOpacity>
+                  )}
 
                   {/* Market list */}
                   {MARKETS.map((market) => {

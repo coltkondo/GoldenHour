@@ -3,7 +3,12 @@ import { Venue, Deal, HappyHourSchedule, Event } from '../types/api';
 import type { AuthUser, Submission, LeaderboardEntry } from '../types/api';
 
 export const venuesAPI = {
-  getAll: async (params?: { skip?: number; limit?: number; neighborhood?: string; market_slug?: string | null }) => {
+  getAll: async (params?: {
+    skip?: number;
+    limit?: number;
+    neighborhood?: string;
+    market_slug?: string | null;
+  }) => {
     const response = await apiClient.get<Venue[]>('/venues', { params });
     return response.data;
   },
@@ -75,7 +80,14 @@ export const dealsAPI = {
 };
 
 export const eventsAPI = {
-  getUpcoming: async (params?: { market_slug?: string | null; venue_id?: string; from_dt?: string; to_dt?: string; upcoming_only?: boolean; limit?: number }) => {
+  getUpcoming: async (params?: {
+    market_slug?: string | null;
+    venue_id?: string;
+    from_dt?: string;
+    to_dt?: string;
+    upcoming_only?: boolean;
+    limit?: number;
+  }) => {
     const response = await apiClient.get<Event[]>('/events/', {
       params: { upcoming_only: true, limit: 50, ...params },
     });
@@ -89,7 +101,15 @@ export const eventsAPI = {
 };
 
 export const authAPI = {
-  register: async (data: { username: string; email: string; password: string; latitude: number; longitude: number }) => {
+  // Send device coordinates, or a market_slug chosen in the city picker (or both).
+  register: async (data: {
+    username: string;
+    email: string;
+    password: string;
+    latitude?: number;
+    longitude?: number;
+    market_slug?: string;
+  }) => {
     const response = await apiClient.post<{ access_token: string; user: AuthUser }>(
       '/auth/register',
       data,
