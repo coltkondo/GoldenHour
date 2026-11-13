@@ -1,4 +1,5 @@
 import hashlib
+import hmac
 import math
 import secrets
 from datetime import datetime, timezone, timedelta
@@ -47,6 +48,9 @@ def _generate_reset_code() -> str:
     """
     return f"{secrets.randbelow(10**6):06d}"
 
+
+# Wrong-code guesses allowed per reset code, per account (not per IP).
+RESET_MAX_ATTEMPTS = 5
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -197,6 +201,7 @@ def forgot_password(
     code = _generate_reset_code()
     user.reset_token_hash = hashlib.sha256(code.encode()).hexdigest()
     user.reset_token_expires = datetime.now(timezone.utc) + timedelta(minutes=15)
+    user.reset_attempts = 0
     db.commit()
 
     try:
@@ -228,13 +233,29 @@ def reset_password(
 
     if (
         not user.reset_token_hash
-        or user.reset_token_hash != code_hash
         or user.reset_token_expires is None
         or user.reset_token_expires.replace(tzinfo=timezone.utc) < now
     ):
         raise HTTPException(status_code=400, detail="Invalid or expired code")
 
+    if not hmac.compare_digest(user.reset_token_hash, code_hash):
+        # Per-account brute-force limit: a 6-digit code gets RESET_MAX_ATTEMPTS
+        # guesses total, no matter how many IPs they come from. At the limit the
+        # code is burned and the user must request a new one.
+        user.reset_attempts = (user.reset_attempts or 0) + 1
+        if user.reset_attempts >= RESET_MAX_ATTEMPTS:
+            user.reset_token_hash = None
+            user.reset_token_expires = None
+            db.commit()
+            raise HTTPException(
+                status_code=400,
+                detail="Too many incorrect codes. Request a new code and try again.",
+            )
+        db.commit()
+        raise HTTPException(status_code=400, detail="Invalid or expired code")
+
     user.password_hash = hash_password(data.new_password)
     user.reset_token_hash = None
     user.reset_token_expires = None
+    user.reset_attempts = 0
     db.commit()
