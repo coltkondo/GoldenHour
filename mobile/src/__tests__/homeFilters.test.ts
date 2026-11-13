@@ -25,6 +25,7 @@ const BASE_VENUE: Venue = {
   website: null,
   cash_only: false,
   google_place_id: null,
+  logo_url: null,
   price_level: 2,
   rating: 4.2,
   verified: true,
