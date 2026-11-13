@@ -58,7 +58,8 @@ def register(request: Request, data: UserCreate, db: Session = Depends(get_db)):
     # func.lower() guards against any pre-existing mixed-case rows in the DB
     if db.query(User).filter(func.lower(User.email) == data.email).first():
         raise HTTPException(status_code=409, detail="Email already registered")
-    if db.query(User).filter(User.username == data.username).first():
+    # Case-insensitive, so "Andes" can't impersonate an existing "andes".
+    if db.query(User).filter(func.lower(User.username) == data.username.lower()).first():
         raise HTTPException(status_code=409, detail="Username already taken")
 
     markets = db.query(Market).filter(Market.active == True).all()

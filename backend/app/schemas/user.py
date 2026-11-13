@@ -4,6 +4,8 @@ from datetime import datetime
 from uuid import UUID
 import re
 
+from app.core.username_rules import username_problem
+
 
 class UserCreate(BaseModel):
     username: str = Field(..., min_length=3, max_length=50)
@@ -13,6 +15,15 @@ class UserCreate(BaseModel):
     password: str = Field(..., min_length=8, max_length=128)
     latitude: float = Field(..., ge=-90, le=90)
     longitude: float = Field(..., ge=-180, le=180)
+
+    @field_validator("username")
+    @classmethod
+    def validate_username(cls, v: str) -> str:
+        v = v.strip()
+        problem = username_problem(v)
+        if problem:
+            raise ValueError(problem)
+        return v
 
     @field_validator("email")
     @classmethod
