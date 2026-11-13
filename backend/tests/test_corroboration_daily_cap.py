@@ -15,6 +15,7 @@ import pytest
 from fastapi import HTTPException
 from datetime import date, timedelta
 
+from app.core.local_time import local_today
 from app.core.points_config import CORROBORATION_DAILY_CAP, POINTS_CONFIG
 from app.models.corroboration import Corroboration
 from app.models.deal import Deal
@@ -138,7 +139,7 @@ class TestDailyCapSequential:
             _make_user(db, market, f"user{i}")
             for i in range(CORROBORATION_DAILY_CAP + 1)
         ]
-        yesterday = date.today() - timedelta(days=1)
+        yesterday = local_today() - timedelta(days=1)
         for user in users[:CORROBORATION_DAILY_CAP]:
             db.add(
                 Corroboration(
@@ -152,7 +153,7 @@ class TestDailyCapSequential:
 
         points = corroborate_deal(db, users[CORROBORATION_DAILY_CAP], deal.id)
         assert points == POINTS_CONFIG["corroborate"]
-        assert _count_for_deal(db, deal.id, day=date.today()) == 1
+        assert _count_for_deal(db, deal.id, day=local_today()) == 1
 
     def test_cap_scoped_per_deal_not_per_bar(self, db):
         """A deal at cap does not block corroborating a different deal at the same bar."""
