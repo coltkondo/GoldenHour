@@ -1,7 +1,6 @@
 import hashlib
 import math
-import random
-import string
+import secrets
 from datetime import datetime, timezone, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -38,6 +37,15 @@ def _haversine_m(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
     dλ = math.radians(lng2 - lng1)
     a = math.sin(dφ / 2) ** 2 + math.cos(φ1) * math.cos(φ2) * math.sin(dλ / 2) ** 2
     return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+
+def _generate_reset_code() -> str:
+    """6-digit password-reset code from a CSPRNG.
+
+    `random` is a predictable Mersenne Twister and must not be used for
+    secrets; `secrets` draws from the OS CSPRNG.
+    """
+    return f"{secrets.randbelow(10**6):06d}"
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -177,7 +185,7 @@ def forgot_password(
     if user is None:
         return
 
-    code = "".join(random.choices(string.digits, k=6))
+    code = _generate_reset_code()
     user.reset_token_hash = hashlib.sha256(code.encode()).hexdigest()
     user.reset_token_expires = datetime.now(timezone.utc) + timedelta(minutes=15)
     db.commit()
