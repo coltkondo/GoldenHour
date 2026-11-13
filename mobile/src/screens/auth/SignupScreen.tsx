@@ -14,6 +14,7 @@ import * as Location from 'expo-location';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../theme';
 import { useAuth } from '../../context/AuthContext';
+import { useLocationPermission } from '../../context/LocationPermissionContext';
 import { authAPI } from '../../api/endpoints';
 import { AppIcon } from '../../components/icons';
 
@@ -21,6 +22,7 @@ export const SignupScreen = () => {
   const { theme } = useTheme();
   const d = theme.derived;
   const { login } = useAuth();
+  const { ensureLocationPermission } = useLocationPermission();
   const navigation = useNavigation<any>();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -63,7 +65,7 @@ export const SignupScreen = () => {
     }
     setLoading(true);
     try {
-      const { status: permStatus } = await Location.requestForegroundPermissionsAsync();
+      const { status: permStatus } = await ensureLocationPermission();
       if (permStatus !== 'granted') {
         setError(
           'Location access is required to find your local market. Please allow it and try again.',

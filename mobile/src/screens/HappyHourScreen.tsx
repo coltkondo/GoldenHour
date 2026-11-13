@@ -11,6 +11,7 @@ import {
   Platform,
 } from 'react-native';
 import * as Location from 'expo-location';
+import { useLocationPermission } from '../context/LocationPermissionContext';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { dealsAPI, venuesAPI, submissionsAPI } from '../api/endpoints';
@@ -55,6 +56,7 @@ const ALL_DAYS = DAY_NAMES.map((name, i) => ({ db: i, label: name.slice(0, 3).to
 export const HappyHourScreen = () => {
   const navigation = useNavigation();
   const route = useRoute<RouteProp<HappyHourRouteParams, 'HappyHour'>>();
+  const { ensureLocationPermission } = useLocationPermission();
   const { theme } = useTheme();
   const d = theme.derived;
   const venue = route.params?.venue;
@@ -142,7 +144,7 @@ export const HappyHourScreen = () => {
     if (!user) return;
     setCorrState((s) => ({ ...s, [dealId]: 'loading' }));
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
+      const { status } = await ensureLocationPermission();
       if (status !== 'granted') {
         Alert.alert('Location required', "Enable location access to confirm you're at this bar.");
         setCorrState((s) => ({ ...s, [dealId]: 'idle' }));

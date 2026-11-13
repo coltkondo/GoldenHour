@@ -12,6 +12,7 @@ import {
   Alert,
 } from 'react-native';
 import * as Location from 'expo-location';
+import { useLocationPermission } from '../context/LocationPermissionContext';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useNavigation } from '@react-navigation/native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -1213,6 +1214,7 @@ const BarIssueForm: React.FC<VenueFormProps> = ({
 /* ── New Bar ── */
 
 const NewBarForm: React.FC<VenueFormProps> = ({ d, onSubmit, submitting, submitError }) => {
+  const { ensureLocationPermission } = useLocationPermission();
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
@@ -1223,7 +1225,7 @@ const NewBarForm: React.FC<VenueFormProps> = ({ d, onSubmit, submitting, submitE
   const useMyLocation = async () => {
     setLocLoading(true);
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
+      const { status } = await ensureLocationPermission();
       if (status !== 'granted') {
         Alert.alert('Location needed', 'Enable location to use your current position.');
         return;
