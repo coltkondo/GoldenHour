@@ -342,6 +342,25 @@ def _eastern_today() -> dt_date:
     return datetime.now(ZoneInfo("America/New_York")).date()
 
 
+def _occurrence_window(
+    d: dt_date, start_t: dt_time, end_t: dt_time | None
+) -> tuple[datetime, datetime | None]:
+    """Aware Eastern start/end datetimes for one occurrence on date `d`.
+
+    An end time at or before the start time means the event runs past
+    midnight (e.g. 10pm-2am), so the end lands on the next calendar day.
+    """
+    from zoneinfo import ZoneInfo
+
+    eastern = ZoneInfo("America/New_York")
+    start_dt = datetime(d.year, d.month, d.day, start_t.hour, start_t.minute, tzinfo=eastern)
+    if end_t is None:
+        return start_dt, None
+    end_d = d + timedelta(days=1) if end_t <= start_t else d
+    end_dt = datetime(end_d.year, end_d.month, end_d.day, end_t.hour, end_t.minute, tzinfo=eastern)
+    return start_dt, end_dt
+
+
 def _weekly_dates(day_of_week: int, count: int = 13) -> list[dt_date]:
     today = _eastern_today()
     diff = (day_of_week - today.weekday()) % 7
@@ -388,22 +407,10 @@ def _build_event(venue_id, event_data, start_dt, end_dt, series_id=None) -> Even
 def _create_event_occurrence(
     event_data, venue: Venue, db: Session, occurrence_date=None, series_id=None
 ):
-    from zoneinfo import ZoneInfo
-
-    eastern = ZoneInfo("America/New_York")
-
     d = occurrence_date or _parse_event_date(event_data.event_date)
     start_t = _parse_time_t(event_data.start_time)
-    start_dt = datetime(
-        d.year, d.month, d.day, start_t.hour, start_t.minute, tzinfo=eastern
-    )
-
-    end_dt = None
-    if event_data.end_time:
-        end_t = _parse_time_t(event_data.end_time)
-        end_dt = datetime(
-            d.year, d.month, d.day, end_t.hour, end_t.minute, tzinfo=eastern
-        )
+    end_t = _parse_time_t(event_data.end_time) if event_data.end_time else None
+    start_dt, end_dt = _occurrence_window(d, start_t, end_t)
 
     db.add(_build_event(venue.id, event_data, start_dt, end_dt, series_id))
 
@@ -463,28 +470,8 @@ def _create_recurring_events(
             )
         )
 
-    from zoneinfo import ZoneInfo
-
-    eastern = ZoneInfo("America/New_York")
     for occ_date in sorted(set(occurrence_dates)):
-        start_dt = datetime(
-            occ_date.year,
-            occ_date.month,
-            occ_date.day,
-            start_t.hour,
-            start_t.minute,
-            tzinfo=eastern,
-        )
-        end_dt = None
-        if end_t:
-            end_dt = datetime(
-                occ_date.year,
-                occ_date.month,
-                occ_date.day,
-                end_t.hour,
-                end_t.minute,
-                tzinfo=eastern,
-            )
+        start_dt, end_dt = _occurrence_window(occ_date, start_t, end_t)
         db.add(_build_event(venue.id, event_data, start_dt, end_dt, series_id))
 
 
