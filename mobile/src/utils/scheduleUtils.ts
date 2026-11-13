@@ -159,6 +159,23 @@ export function hasEndedAt(
   }
 }
 
+/** What a venue's map pin shows: a happy hour on now, one still to come
+ *  today, or nothing left today. */
+export type VenueDealStatus = 'live' | 'later' | 'none';
+
+/** Status of a venue at `now`, from its weekly happy-hour schedules. */
+export function venueDealStatusAt(
+  schedules: HappyHourSchedule[],
+  now: Date = new Date(),
+): VenueDealStatus {
+  const active = schedules.filter((s) => s.active);
+  if (active.some((s) => isLiveAt(s, now))) return 'live';
+  const later = active.some(
+    (s) => isRelevantToday(s, now) && !isLiveAt(s, now) && !hasEndedAt(s, now),
+  );
+  return later ? 'later' : 'none';
+}
+
 /** Of one deal's schedules, the one that represents it right now: a live one
  *  if any (including last night's still running), else today's. */
 export function scheduleForNow(
