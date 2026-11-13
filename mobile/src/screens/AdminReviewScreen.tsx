@@ -15,6 +15,7 @@ import { submissionsAPI } from '../api/endpoints';
 import type { Submission } from '../types/api';
 import { AppIcon } from '../components/icons';
 import { StatusDot } from '../components/ui/StatusDot';
+import { apiErrorMessage } from '../utils/apiError';
 
 const TYPE_LABELS: Record<string, string> = {
   new_deal: 'New Deal',
@@ -236,7 +237,7 @@ export const AdminReviewScreen = () => {
               setSubmissions((prev) => prev.filter((s) => s.id !== sub.id));
               setExpandedId(null);
             } catch (err: any) {
-              Alert.alert('Error', err.response?.data?.detail || 'Review failed');
+              Alert.alert('Error', apiErrorMessage(err, 'Review failed'));
             } finally {
               setReviewing(null);
             }

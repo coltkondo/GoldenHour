@@ -22,6 +22,7 @@ import { POINTS_CONFIG, REWARDS_THRESHOLD, REWARDS_ENABLED } from '../config/con
 import { AppIcon } from '../components/icons';
 import { formatScheduleRange } from '../utils/scheduleUtils';
 import type { Venue, Deal, HappyHourSchedule } from '../types/api';
+import { apiErrorMessage } from '../utils/apiError';
 
 /* ── Types ── */
 
@@ -148,7 +149,7 @@ export const SubmitScreen = () => {
       if (err.response?.status === 401) {
         setSubmitError('Session expired — please log out and log back in.');
       } else {
-        setSubmitError(err.response?.data?.detail || 'Submission failed — please try again.');
+        setSubmitError(apiErrorMessage(err, 'Submission failed — please try again.'));
       }
     } finally {
       setSubmitting(false);
