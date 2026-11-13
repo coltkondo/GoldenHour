@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
@@ -10,6 +9,7 @@ import {
   Pressable,
   Platform,
 } from 'react-native';
+import { Text } from '../components/ui/AppText';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme';
@@ -320,7 +320,7 @@ export const HomeScreen = () => {
               style={[
                 styles.filterPill,
                 {
-                  backgroundColor: activeFilter === filter ? 'rgba(245,166,35,0.12)' : d.filterInactive,
+                  backgroundColor: activeFilter === filter ? 'rgba(255,194,61,0.12)' : d.filterInactive,
                   borderColor: activeFilter === filter ? d.primary : 'transparent',
                   borderWidth: 1,
                 },

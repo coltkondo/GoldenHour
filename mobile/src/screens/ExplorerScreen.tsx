@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
   Platform,
 } from 'react-native';
+import { Text } from '../components/ui/AppText';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { venuesAPI, dealsAPI } from '../api/endpoints';
@@ -176,7 +176,7 @@ export const ExplorerScreen = () => {
 
         {/* Deals tonight count */}
         {todayDeals.length > 0 && (
-          <View style={[styles.dealCountBanner, { backgroundColor: 'rgba(45,212,160,0.08)' }]}>
+          <View style={[styles.dealCountBanner, { backgroundColor: 'rgba(61,214,140,0.08)' }]}>
             <StatusDot status="live" size={6} pulse={false} />
             <Text style={[styles.dealCountText, { color: d.live }]}>
               {todayDeals.length} {todayDeals.length === 1 ? 'deal' : 'deals'} tonight
@@ -192,7 +192,7 @@ export const ExplorerScreen = () => {
               style={[
                 styles.tab,
                 selectedTab === tab && {
-                  backgroundColor: 'rgba(245,166,35,0.12)',
+                  backgroundColor: 'rgba(255,194,61,0.12)',
                   borderColor: d.primary,
                   borderWidth: 1,
                 },
@@ -220,7 +220,7 @@ export const ExplorerScreen = () => {
                 style={[
                   styles.chip,
                   {
-                    backgroundColor: !selectedTag ? 'rgba(245,166,35,0.12)' : d.filterInactive,
+                    backgroundColor: !selectedTag ? 'rgba(255,194,61,0.12)' : d.filterInactive,
                     borderColor: !selectedTag ? d.primary : 'transparent',
                     borderWidth: 1,
                   },
@@ -237,7 +237,7 @@ export const ExplorerScreen = () => {
                   style={[
                     styles.chip,
                     {
-                      backgroundColor: selectedTag === cat ? 'rgba(245,166,35,0.12)' : d.filterInactive,
+                      backgroundColor: selectedTag === cat ? 'rgba(255,194,61,0.12)' : d.filterInactive,
                       borderColor: selectedTag === cat ? d.primary : 'transparent',
                       borderWidth: 1,
                     },

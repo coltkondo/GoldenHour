@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Linking } from 'react-native';
+import { Text } from '../ui/AppText';
 import { useTheme } from '../../theme';
 import { Venue } from '../../types/api';
 import { AppIcon } from '../icons';
@@ -89,7 +90,7 @@ export const VenueCard: React.FC<VenueCardProps> = ({
               <View
                 style={[
                   styles.verifiedBadge,
-                  { backgroundColor: 'rgba(45,212,160,0.12)', borderColor: d.live },
+                  { backgroundColor: 'rgba(61,214,140,0.12)', borderColor: d.live },
                 ]}
               >
                 <AppIcon name="check" size={12} role="positive" />

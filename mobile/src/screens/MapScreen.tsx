@@ -3,11 +3,11 @@ import {
   View,
   StyleSheet,
   ActivityIndicator,
-  Text,
   TouchableOpacity,
   Platform,
   Dimensions,
 } from 'react-native';
+import { Text } from '../components/ui/AppText';
 import MapView, { Region } from 'react-native-maps';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme';
@@ -21,7 +21,7 @@ import { AppIcon } from '../components/icons';
 
 const darkMapStyle = [
   { elementType: 'geometry', stylers: [{ color: '#1a1a1a' }] },
-  { elementType: 'labels.text.stroke', stylers: [{ color: '#0d0d0d' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#1A1020' }] },
   { elementType: 'labels.text.fill', stylers: [{ color: '#6b6b6b' }] },
   { featureType: 'administrative', elementType: 'geometry.stroke', stylers: [{ color: '#2a2a2a' }] },
   { featureType: 'administrative.land_parcel', elementType: 'labels.text.fill', stylers: [{ color: '#555555' }] },

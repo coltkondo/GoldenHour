@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
@@ -10,6 +9,7 @@ import {
   Alert,
   Platform,
 } from 'react-native';
+import { Text } from '../components/ui/AppText';
 import * as Location from 'expo-location';
 import { useLocationPermission } from '../context/LocationPermissionContext';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -394,7 +394,7 @@ export const HappyHourScreen = () => {
                           style={[
                             styles.corrButton,
                             confirmed
-                              ? { backgroundColor: 'rgba(45,212,160,0.10)', borderColor: d.live }
+                              ? { backgroundColor: 'rgba(61,214,140,0.10)', borderColor: d.live }
                               : { backgroundColor: d.filterInactive, borderColor: 'transparent' },
                           ]}
                           onPress={() => handleCorroborate(deal.id)}

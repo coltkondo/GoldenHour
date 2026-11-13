@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import {
   View,
-  Text,
   Image,
   StyleSheet,
   Animated,
@@ -9,8 +8,11 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
+import { Text } from '../components/ui/AppText';
 import Svg, { Defs, RadialGradient, Stop, Rect as SvgRect } from 'react-native-svg';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme';
+import { sunsetGradient } from '../theme/colors';
 import { AppIcon } from '../components/icons';
 
 const { width, height } = Dimensions.get('window');
@@ -97,11 +99,17 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onGetStarted, onLo
         <Svg width={width} height={height} style={StyleSheet.absoluteFill}>
           <Defs>
             <RadialGradient id="glow" cx="50%" cy="35%" rx="50%" ry="40%">
-              <Stop offset="0%" stopColor="#F5A623" stopOpacity="0.12" />
-              <Stop offset="50%" stopColor="#F5A623" stopOpacity="0.04" />
-              <Stop offset="100%" stopColor="#0D0D0D" stopOpacity="0" />
+              <Stop offset="0%" stopColor="#FFC23D" stopOpacity="0.16" />
+              <Stop offset="50%" stopColor="#FF8A3D" stopOpacity="0.05" />
+              <Stop offset="100%" stopColor="#1A1020" stopOpacity="0" />
+            </RadialGradient>
+            {/* Second, lower glow: the pink end of the sunset. */}
+            <RadialGradient id="dusk" cx="50%" cy="95%" rx="80%" ry="45%">
+              <Stop offset="0%" stopColor="#FF4F81" stopOpacity="0.14" />
+              <Stop offset="100%" stopColor="#1A1020" stopOpacity="0" />
             </RadialGradient>
           </Defs>
+          <SvgRect x="0" y="0" width={width} height={height} fill="url(#dusk)" />
           <SvgRect x="0" y="0" width={width} height={height} fill="url(#glow)" />
         </Svg>
       </Animated.View>
@@ -179,14 +187,15 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onGetStarted, onLo
               { opacity: ctaOpacity, transform: [{ translateY: ctaTranslateY }] },
             ]}
           >
-            <TouchableOpacity
-              style={[styles.primaryButton, { backgroundColor: d.primary }]}
-              activeOpacity={0.85}
-              onPress={onGetStarted}
-            >
-              <Text style={[styles.primaryButtonText, { color: d.buttonPrimaryText }]}>
-                GET STARTED
-              </Text>
+            <TouchableOpacity activeOpacity={0.85} onPress={onGetStarted}>
+              <LinearGradient
+                colors={sunsetGradient}
+                start={{ x: 0, y: 0.5 }}
+                end={{ x: 1, y: 0.5 }}
+                style={styles.primaryButton}
+              >
+                <Text style={[styles.primaryButtonText, { color: '#1A1020' }]}>GET STARTED</Text>
+              </LinearGradient>
             </TouchableOpacity>
 
             <TouchableOpacity

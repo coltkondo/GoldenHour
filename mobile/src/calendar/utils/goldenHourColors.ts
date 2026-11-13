@@ -8,16 +8,15 @@ export interface GoldenPeriod {
   color: string;
 }
 
-// Six "golden hour" periods mapped onto the existing brand palette so event
-// blocks are tinted by when they happen (not by deal type), while still
-// adhering to the current light/dark color system.
+// Six "golden hour" periods tinted as the day's light: sky → green → gold →
+// tangerine → pink → violet, so event blocks read like a sunset by start time.
 export const GOLDEN_PERIODS: GoldenPeriod[] = [
-  { key: 'morning', label: 'Morning', startHour: 6, endHour: 12, color: brand.blue },
+  { key: 'morning', label: 'Morning', startHour: 6, endHour: 12, color: brand.sky },
   { key: 'afternoon', label: 'Afternoon', startHour: 12, endHour: 17, color: brand.green },
   { key: 'golden', label: 'Golden Hour', startHour: 17, endHour: 19, color: brand.gold },
-  { key: 'dusk', label: 'Dusk', startHour: 19, endHour: 21, color: brand.amber },
-  { key: 'prime', label: 'Prime', startHour: 21, endHour: 23, color: brand.orange },
-  { key: 'late', label: 'Late Night', startHour: 23, endHour: 30, color: brand.error }, // 23:00 - 06:00
+  { key: 'dusk', label: 'Dusk', startHour: 19, endHour: 21, color: brand.tangerine },
+  { key: 'prime', label: 'Prime', startHour: 21, endHour: 23, color: brand.pink },
+  { key: 'late', label: 'Late Night', startHour: 23, endHour: 30, color: brand.violet }, // 23:00 - 06:00
 ];
 
 export function periodForStartHour(hour: number): GoldenPeriod {

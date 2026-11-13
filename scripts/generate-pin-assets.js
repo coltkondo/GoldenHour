@@ -5,8 +5,8 @@ const fs = require('fs');
 const OUTPUT_DIR = path.join(__dirname, '..', 'mobile', 'src', 'components', 'assets', 'pins');
 
 const STYLES = {
-  default: { bg: '#2A2A2A', border: '#2A2A2A', icon: '#F5A623', arrow: '#2A2A2A' },
-  selected: { bg: '#F5A623', border: '#F5A623', icon: '#0D0D0D', arrow: '#F5A623' },
+  default: { bg: '#26182E', border: '#46304F', icon: '#FFC23D', arrow: '#26182E' },
+  selected: { bg: '#FFC23D', border: '#FFC23D', icon: '#1A1020', arrow: '#FFC23D' },
 };
 
 const BUBBLE_W = 54;

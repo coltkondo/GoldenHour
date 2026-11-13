@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
+import { Text } from '../components/ui/AppText';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { useAuth } from '../context/AuthContext';
@@ -73,9 +73,9 @@ const submissionSummary = (sub: Submission) => {
 };
 
 const getStatusColor = (status: string) => {
-  if (status === 'approved') return '#2DD4A0';
-  if (status === 'rejected') return '#FF6B35';
-  return '#F5A623';
+  if (status === 'approved') return '#3DD68C';
+  if (status === 'rejected') return '#FF5A5F';
+  return '#FFC23D';
 };
 
 const getStatusIconName = (status: string): 'clock' | 'correct' | 'x' => {

@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, StyleSheet, Pressable, Platform, Text } from 'react-native';
+import { View, StyleSheet, Pressable, Platform } from 'react-native';
+import { Text } from '../components/ui/AppText';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useTheme } from '../theme';
 import { AppIcon } from '../components/icons';

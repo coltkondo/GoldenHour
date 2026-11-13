@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Linking, Alert, Share } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Switch, Linking, Alert, Share } from 'react-native';
+import { Text } from '../components/ui/AppText';
 import { useNavigation } from '@react-navigation/native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../theme';
@@ -149,7 +150,7 @@ export const ProfileScreen = () => {
             <View
               style={[
                 styles.adminBadge,
-                { backgroundColor: 'rgba(45,212,160,0.12)', borderColor: d.live },
+                { backgroundColor: 'rgba(61,214,140,0.12)', borderColor: d.live },
               ]}
             >
               <Text style={[styles.adminBadgeText, { color: d.live }]}>Admin</Text>
@@ -262,7 +263,7 @@ export const ProfileScreen = () => {
 
             <TouchableOpacity style={styles.row} activeOpacity={0.7} onPress={logout}>
               <View style={styles.rowLeft}>
-                <View style={[styles.rowIcon, { backgroundColor: 'rgba(255,107,53,0.12)' }]}>
+                <View style={[styles.rowIcon, { backgroundColor: 'rgba(255,90,95,0.12)' }]}>
                   <AppIcon name="logout" size={18} role="urgent" />
                 </View>
                 <Text style={[styles.logoutLabel, { color: d.error }]}>Sign Out</Text>

@@ -1,13 +1,13 @@
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   Animated,
   PanResponder,
   Dimensions,
   ScrollView,
 } from 'react-native';
+import { Text } from './ui/AppText';
 import { useTheme } from '../theme';
 import { Venue } from '../types/api';
 import { VenueCard } from './Cards/VenueCard';

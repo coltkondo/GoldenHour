@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import {
   View,
-  Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   KeyboardAvoidingView,
@@ -10,6 +8,7 @@ import {
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
+import { Text, TextInput } from '../../components/ui/AppText';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../theme';
 import { useAuth } from '../../context/AuthContext';
@@ -144,7 +143,7 @@ export const LoginScreen = () => {
   );
 };
 
-const brand = { error: '#FF6B35' };
+const brand = { error: '#FF5A5F' };
 
 const styles = StyleSheet.create({
   container: { flex: 1 },

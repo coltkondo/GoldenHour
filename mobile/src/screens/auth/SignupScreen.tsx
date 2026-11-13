@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import {
   View,
-  Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   KeyboardAvoidingView,
@@ -10,6 +8,7 @@ import {
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
+import { Text, TextInput } from '../../components/ui/AppText';
 import * as Location from 'expo-location';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../theme';
@@ -222,7 +221,7 @@ export const SignupScreen = () => {
   );
 };
 
-const brand = { error: '#FF6B35' };
+const brand = { error: '#FF5A5F' };
 
 const styles = StyleSheet.create({
   container: { flex: 1 },

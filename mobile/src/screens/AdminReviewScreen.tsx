@@ -1,15 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  TextInput,
   RefreshControl,
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { Text, TextInput } from '../components/ui/AppText';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { submissionsAPI } from '../api/endpoints';
@@ -174,9 +173,9 @@ const SubmissionDataBlock: React.FC<{ type: string; data: Record<string, any>; d
 };
 
 const getStatusColor = (status: string) => {
-  if (status === 'approved') return '#2DD4A0';
-  if (status === 'rejected') return '#FF6B35';
-  return '#F5A623';
+  if (status === 'approved') return '#3DD68C';
+  if (status === 'rejected') return '#FF5A5F';
+  return '#FFC23D';
 };
 
 export const AdminReviewScreen = () => {
@@ -397,7 +396,7 @@ export const AdminReviewScreen = () => {
                           <TouchableOpacity
                             style={[
                               styles.rejectBtn,
-                              { backgroundColor: 'rgba(255,107,53,0.12)', borderColor: d.error },
+                              { backgroundColor: 'rgba(255,90,95,0.12)', borderColor: d.error },
                             ]}
                             onPress={() => handleReview(sub, 'rejected')}
                             disabled={reviewing === sub.id}

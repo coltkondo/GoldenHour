@@ -1,8 +1,6 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   View,
-  Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
@@ -11,6 +9,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { Text, TextInput } from '../components/ui/AppText';
 import * as Location from 'expo-location';
 import { useLocationPermission } from '../context/LocationPermissionContext';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
@@ -215,7 +214,7 @@ export const SubmitScreen = () => {
             <View
               style={[
                 styles.ptsBadge,
-                { backgroundColor: 'rgba(245,166,35,0.12)', borderColor: d.primary },
+                { backgroundColor: 'rgba(255,194,61,0.12)', borderColor: d.primary },
               ]}
             >
               <AppIcon name="points" size={14} role="brand" />
@@ -306,7 +305,7 @@ export const SubmitScreen = () => {
                   <View
                     style={[
                       styles.ptsPill,
-                      { backgroundColor: 'rgba(245,166,35,0.10)', borderColor: d.primary },
+                      { backgroundColor: 'rgba(255,194,61,0.10)', borderColor: d.primary },
                     ]}
                   >
                     <Text style={[styles.ptsPillText, { color: d.primary }]}>+{opt.pts}</Text>
@@ -455,7 +454,7 @@ const VenueSelector: React.FC<{
                 style={[
                   styles.selectorItem,
                   i < venues.length - 1 && { borderBottomWidth: 0.5, borderBottomColor: d.divider },
-                  selected?.id === v.id && { backgroundColor: 'rgba(245,166,35,0.08)' },
+                  selected?.id === v.id && { backgroundColor: 'rgba(255,194,61,0.08)' },
                 ]}
                 onPress={() => {
                   onSelect(v);
@@ -500,7 +499,7 @@ const DayPicker: React.FC<{ selected: number[]; onToggle: (i: number) => void; d
           style={[
             styles.dayPill,
             {
-              backgroundColor: active ? 'rgba(245,166,35,0.12)' : d.filterInactive,
+              backgroundColor: active ? 'rgba(255,194,61,0.12)' : d.filterInactive,
               borderColor: active ? d.primary : 'transparent',
               borderWidth: 1,
             },
@@ -532,7 +531,7 @@ const SingleDayPicker: React.FC<{
           style={[
             styles.dayPill,
             {
-              backgroundColor: active ? 'rgba(245,166,35,0.12)' : d.filterInactive,
+              backgroundColor: active ? 'rgba(255,194,61,0.12)' : d.filterInactive,
               borderColor: active ? d.primary : 'transparent',
               borderWidth: 1,
             },
@@ -618,7 +617,7 @@ const IssueOption: React.FC<{
           backgroundColor: active
             ? danger
               ? 'rgba(239,68,68,0.08)'
-              : 'rgba(245,166,35,0.10)'
+              : 'rgba(255,194,61,0.10)'
             : d.cardBackground,
           borderColor: active ? activeColor : d.border,
         },
@@ -738,7 +737,7 @@ const NewHHDealForm: React.FC<VenueFormProps> = ({
             style={[
               styles.boolBtn,
               {
-                backgroundColor: isAllDay === val ? 'rgba(245,166,35,0.12)' : d.filterInactive,
+                backgroundColor: isAllDay === val ? 'rgba(255,194,61,0.12)' : d.filterInactive,
                 borderColor: isAllDay === val ? d.primary : 'transparent',
                 borderWidth: 1,
               },
@@ -966,7 +965,7 @@ const DealIssueForm: React.FC<VenueFormProps> = ({
                       borderBottomWidth: 0.5,
                       borderBottomColor: d.divider,
                     },
-                    selectedDeal?.id === deal.id && { backgroundColor: 'rgba(245,166,35,0.08)' },
+                    selectedDeal?.id === deal.id && { backgroundColor: 'rgba(255,194,61,0.08)' },
                   ]}
                   onPress={() => {
                     setSelectedDeal(deal);

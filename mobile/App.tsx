@@ -1,5 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import { View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { useFonts } from 'expo-font';
+import { Shrikhand_400Regular } from '@expo-google-fonts/shrikhand';
+import {
+  DMSans_300Light,
+  DMSans_400Regular,
+  DMSans_500Medium,
+  DMSans_600SemiBold,
+  DMSans_700Bold,
+  DMSans_800ExtraBold,
+  DMSans_900Black,
+} from '@expo-google-fonts/dm-sans';
 import { ThemeProvider, useTheme } from './src/theme';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { LocationPermissionProvider } from './src/context/LocationPermissionContext';
@@ -58,6 +70,23 @@ function AppContent() {
 }
 
 export default function App() {
+  // Font files are bundled, so this resolves almost instantly. If loading
+  // fails we still boot; text just falls back to the system font.
+  const [fontsLoaded, fontError] = useFonts({
+    Shrikhand_400Regular,
+    DMSans_300Light,
+    DMSans_400Regular,
+    DMSans_500Medium,
+    DMSans_600SemiBold,
+    DMSans_700Bold,
+    DMSans_800ExtraBold,
+    DMSans_900Black,
+  });
+
+  if (!fontsLoaded && !fontError) {
+    return <View style={{ flex: 1, backgroundColor: '#1A1020' }} />;
+  }
+
   return (
     <ErrorBoundary>
       <ThemeProvider>
