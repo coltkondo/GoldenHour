@@ -12,7 +12,6 @@ from app.core.database import get_db
 from app.core.security import require_admin
 from app.models.deal import Deal
 from app.models.venue import Venue
-from app.models.user import User
 from app.schemas.deal import DealResponse, DealCreate, DealUpdate, DealWithVenue
 
 router = APIRouter(

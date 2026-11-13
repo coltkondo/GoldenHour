@@ -1,6 +1,6 @@
 from difflib import SequenceMatcher
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy.orm import Session, joinedload
 from typing import List
 from uuid import UUID

@@ -20,7 +20,6 @@ requiring a Docker daemon or a built image.
 """
 import pathlib
 import re
-import pytest
 
 BACKEND_DIR = pathlib.Path(__file__).parent.parent
 DOCKERFILE = BACKEND_DIR / "Dockerfile"

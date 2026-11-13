@@ -4,7 +4,7 @@ Admin Venue management — full CRUD with soft delete, search, and filtering.
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import func, or_, select
+from sqlalchemy import func, or_
 from typing import List, Optional
 from uuid import UUID
 
@@ -12,7 +12,6 @@ from app.core.database import get_db
 from app.core.security import require_admin
 from app.models.venue import Venue
 from app.models.deal import Deal
-from app.models.user import User
 from app.schemas.venue import VenueResponse, VenueCreate, VenueUpdate, VenueWithDeals
 
 router = APIRouter(

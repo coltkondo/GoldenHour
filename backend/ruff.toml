@@ -1,0 +1,15 @@
+# Ruff lint config for the backend. Run: `ruff check .` from backend/.
+# Deliberately minimal: syntax errors (E9) + Pyflakes (F) catch real bugs
+# (undefined names, unused imports/variables, redefinitions) with almost no
+# style noise. Widen the rule set later if wanted.
+target-version = "py311"
+
+# Alembic migrations are generated, append-only history; don't lint-edit them.
+extend-exclude = ["alembic/versions"]
+
+[lint]
+select = ["E9", "F"]
+
+[lint.per-file-ignores]
+# Model imports register tables on Base.metadata before create_all().
+"tests/conftest.py" = ["F401"]

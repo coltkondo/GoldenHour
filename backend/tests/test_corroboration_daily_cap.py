@@ -13,7 +13,7 @@ import threading
 
 import pytest
 from fastapi import HTTPException
-from datetime import date, timedelta
+from datetime import timedelta
 
 from app.core.local_time import local_today
 from app.core.points_config import CORROBORATION_DAILY_CAP, POINTS_CONFIG
