@@ -1,0 +1,129 @@
+# CI: gates every PR into main (and re-checks main after merge).
+# Deploys are NOT done here — Railway (backend) and Vercel (admin-web) deploy
+# from main through their own GitHub integrations. See notes/CI.md.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# A newer push to the same PR/branch cancels the run in progress.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend-test:
+    name: Backend · pytest
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      # Settings() requires these at import time. Tests use their own SQLite
+      # DB from conftest.py, so DATABASE_URL is never actually connected to.
+      DATABASE_URL: sqlite:///./ci-unused.db
+      SECRET_KEY: ci-only-not-a-real-secret-0123456789abcdef0123456789
+      ENVIRONMENT: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11' # matches backend/Dockerfile
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-test.txt
+      - run: pip install -r requirements.txt -r requirements-test.txt
+      - run: pytest tests/ -q
+
+  backend-lint:
+    name: Backend · ruff
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install ruff==0.17.5
+      - run: ruff check --output-format=github .
+
+  mobile:
+    name: Mobile · tsc + jest
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npx tsc --noEmit
+      - run: npx jest --ci
+
+  admin-web:
+    name: Admin web · build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: admin-web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: admin-web/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      # Same command Vercel runs: `tsc && vite build`.
+      - run: npm run build
+
+  prettier:
+    name: Prettier · changed files
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # Checks only files this PR (or push) touches, using the same globs as
+      # each app's `npm run format`. Untouched legacy files aren't failed, so
+      # formatting converges as files get edited, without a repo-wide reformat
+      # that would conflict with in-flight branches.
+      - name: Check formatting of changed files
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [ -z "$BASE_SHA" ] || ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+            BASE_SHA=$(git rev-parse HEAD~1)
+          fi
+          git diff --name-only --diff-filter=ACMR "$BASE_SHA" HEAD \
+            | grep -E '^(mobile/src/.*\.(ts|tsx)|admin-web/src/.*\.(ts|tsx|css|json))$' \
+            > changed.txt || true
+          if [ ! -s changed.txt ]; then
+            echo "No formattable files changed."
+            exit 0
+          fi
+          echo "Checking:"; cat changed.txt
+          xargs npx --yes prettier@3.8.1 --check < changed.txt \
+            || { echo "::error::Run 'npm run format' in mobile/ or admin-web/ and commit."; exit 1; }
