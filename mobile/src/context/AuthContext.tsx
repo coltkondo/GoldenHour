@@ -2,18 +2,14 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DeviceEventEmitter } from 'react-native';
 import { parseStoredUser } from '../utils/authUtils';
+import type { AuthUser } from '../types/api';
 
 const TOKEN_KEY = 'gh_token';
 const USER_KEY = 'gh_user';
 
-export interface AuthUser {
-  id: string;
-  username: string;
-  email: string;
-  role: string;
-  points_balance: number;
-  market_slug: string | null;
-}
+// Single source of truth for the user shape lives in types/api (matches the
+// backend's UserResponse). Re-exported so existing imports keep working.
+export type { AuthUser };
 
 interface AuthContextValue {
   user: AuthUser | null;
