@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text } from '../../components/ui/AppText';
 import { useTheme } from '../../theme';
 import { AppIcon } from '../../components/icons';
 import { useCalendar } from '../CalendarContext';
@@ -25,8 +26,7 @@ export const CalendarHeader: React.FC = () => {
   const shift = (dir: number) => {
     if (view === 'day') setSelectedDate(addDays(selectedDate, dir));
     else if (view === 'week') setSelectedDate(addDays(selectedDate, dir * 7));
-    else
-      setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() + dir, 1));
+    else setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() + dir, 1));
   };
 
   let label: string;
@@ -57,10 +57,7 @@ export const CalendarHeader: React.FC = () => {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[
-            styles.todayBtn,
-            { borderColor: d.border, backgroundColor: d.surfaceAlt },
-          ]}
+          style={[styles.todayBtn, { borderColor: d.border, backgroundColor: d.surfaceAlt }]}
           onPress={() => setSelectedDate(new Date())}
         >
           <Text style={[styles.todayText, { color: isToday ? d.primary : d.text }]}>
@@ -86,10 +83,7 @@ export const CalendarHeader: React.FC = () => {
               <TouchableOpacity
                 key={v.key}
                 onPress={() => setView(v.key)}
-                style={[
-                  styles.tab,
-                  active && { backgroundColor: d.primary },
-                ]}
+                style={[styles.tab, active && { backgroundColor: d.primary }]}
               >
                 <Text
                   style={[

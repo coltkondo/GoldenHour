@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import {
   View,
-  Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   Modal,
@@ -11,6 +9,7 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
+import { Text, TextInput } from './ui/AppText';
 import Svg, { Path, Circle, Rect as SvgRect } from 'react-native-svg';
 import { useTheme } from '../theme';
 import { submissionsAPI } from '../api/endpoints';
@@ -157,7 +156,7 @@ export const FlagReportModal = ({ visible, onClose, venue, deal }: FlagReportMod
                         styles.optionRow,
                         { borderColor: d.border },
                         selectedType === opt.type && {
-                          backgroundColor: 'rgba(255,107,53,0.12)',
+                          backgroundColor: 'rgba(255,90,95,0.12)',
                           borderColor: d.error,
                         },
                       ]}
@@ -203,7 +202,7 @@ export const FlagReportModal = ({ visible, onClose, venue, deal }: FlagReportMod
                 <View
                   style={[
                     styles.errorBanner,
-                    { backgroundColor: 'rgba(255,107,53,0.12)', borderColor: d.error },
+                    { backgroundColor: 'rgba(255,90,95,0.12)', borderColor: d.error },
                   ]}
                 >
                   <AppIcon name="warning" size={16} color={d.error} />

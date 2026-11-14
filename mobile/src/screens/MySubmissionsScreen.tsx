@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
+import { Text } from '../components/ui/AppText';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { useAuth } from '../context/AuthContext';
@@ -61,11 +61,9 @@ const submissionSummary = (sub: Submission) => {
     case 'new_event':
       return {
         title: data.event_name || 'New event',
-        subtitle: [
-          data.bar_name,
-          RECURRENCE_LABELS[data.recurrence_type] ?? '',
-          data.event_date,
-        ].filter(Boolean).join(' · '),
+        subtitle: [data.bar_name, RECURRENCE_LABELS[data.recurrence_type] ?? '', data.event_date]
+          .filter(Boolean)
+          .join(' · '),
       };
     default:
       return { title: '', subtitle: '' };
@@ -73,9 +71,9 @@ const submissionSummary = (sub: Submission) => {
 };
 
 const getStatusColor = (status: string) => {
-  if (status === 'approved') return '#2DD4A0';
-  if (status === 'rejected') return '#FF6B35';
-  return '#F5A623';
+  if (status === 'approved') return '#3DD68C';
+  if (status === 'rejected') return '#FF5A5F';
+  return '#FFC23D';
 };
 
 const getStatusIconName = (status: string): 'clock' | 'correct' | 'x' => {
@@ -212,7 +210,9 @@ export const MySubmissionsScreen = () => {
                   <Text style={[styles.subTitle, { color: d.text }]}>{summary.title}</Text>
                 ) : null}
                 {summary.subtitle ? (
-                  <Text style={[styles.subSubtitle, { color: d.textMuted }]}>{summary.subtitle}</Text>
+                  <Text style={[styles.subSubtitle, { color: d.textMuted }]}>
+                    {summary.subtitle}
+                  </Text>
                 ) : null}
                 <Text style={[styles.subDate, { color: d.textMuted }]}>
                   {new Date(sub.created_at).toLocaleDateString()}

@@ -1,13 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Animated,
-  PanResponder,
-  Dimensions,
-  ScrollView,
-} from 'react-native';
+import { View, StyleSheet, Animated, PanResponder, Dimensions, ScrollView } from 'react-native';
+import { Text } from './ui/AppText';
 import { useTheme } from '../theme';
 import { Venue } from '../types/api';
 import { VenueCard } from './Cards/VenueCard';
@@ -131,12 +124,9 @@ export const VenueBottomSheet: React.FC<VenueBottomSheetProps> = ({
     [onVenuePress],
   );
 
-  const handleCardLayout = useCallback(
-    (venueId: string, y: number, height: number) => {
-      venueRefs.current[venueId] = { y, height };
-    },
-    [],
-  );
+  const handleCardLayout = useCallback((venueId: string, y: number, height: number) => {
+    venueRefs.current[venueId] = { y, height };
+  }, []);
 
   return (
     <Animated.View

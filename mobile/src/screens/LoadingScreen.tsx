@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import {
   View,
-  Text,
   Image,
   StyleSheet,
   Animated,
@@ -9,8 +8,11 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
+import { Text } from '../components/ui/AppText';
 import Svg, { Defs, RadialGradient, Stop, Rect as SvgRect } from 'react-native-svg';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme';
+import { sunsetGradient } from '../theme/colors';
 import { AppIcon } from '../components/icons';
 
 const { width, height } = Dimensions.get('window');
@@ -29,7 +31,13 @@ const FEATURES = [
   { icon: 'community' as const, label: 'COMMUNITY' },
 ] as const;
 
-export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onGetStarted, onLogin, onGuest, splash, onComplete }) => {
+export const LoadingScreen: React.FC<LoadingScreenProps> = ({
+  onGetStarted,
+  onLogin,
+  onGuest,
+  splash,
+  onComplete,
+}) => {
   const { theme } = useTheme();
   const d = theme.derived;
 
@@ -97,11 +105,17 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onGetStarted, onLo
         <Svg width={width} height={height} style={StyleSheet.absoluteFill}>
           <Defs>
             <RadialGradient id="glow" cx="50%" cy="35%" rx="50%" ry="40%">
-              <Stop offset="0%" stopColor="#F5A623" stopOpacity="0.12" />
-              <Stop offset="50%" stopColor="#F5A623" stopOpacity="0.04" />
-              <Stop offset="100%" stopColor="#0D0D0D" stopOpacity="0" />
+              <Stop offset="0%" stopColor="#FFC23D" stopOpacity="0.16" />
+              <Stop offset="50%" stopColor="#FF8A3D" stopOpacity="0.05" />
+              <Stop offset="100%" stopColor="#1A1020" stopOpacity="0" />
+            </RadialGradient>
+            {/* Second, lower glow: the pink end of the sunset. */}
+            <RadialGradient id="dusk" cx="50%" cy="95%" rx="80%" ry="45%">
+              <Stop offset="0%" stopColor="#FF4F81" stopOpacity="0.14" />
+              <Stop offset="100%" stopColor="#1A1020" stopOpacity="0" />
             </RadialGradient>
           </Defs>
+          <SvgRect x="0" y="0" width={width} height={height} fill="url(#dusk)" />
           <SvgRect x="0" y="0" width={width} height={height} fill="url(#glow)" />
         </Svg>
       </Animated.View>
@@ -147,8 +161,8 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onGetStarted, onLo
         {/* Subtext */}
         <Animated.View style={[styles.subtextSection, { opacity: taglineOpacity }]}>
           <Text style={[styles.subtext, { color: d.textMuted }]}>
-            Your guide to happy hours, live deals, and hidden gems — built by the community
-            that goes out with you.
+            Your guide to happy hours, live deals, and hidden gems — built by the community that
+            goes out with you.
           </Text>
         </Animated.View>
 
@@ -179,14 +193,15 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onGetStarted, onLo
               { opacity: ctaOpacity, transform: [{ translateY: ctaTranslateY }] },
             ]}
           >
-            <TouchableOpacity
-              style={[styles.primaryButton, { backgroundColor: d.primary }]}
-              activeOpacity={0.85}
-              onPress={onGetStarted}
-            >
-              <Text style={[styles.primaryButtonText, { color: d.buttonPrimaryText }]}>
-                GET STARTED
-              </Text>
+            <TouchableOpacity activeOpacity={0.85} onPress={onGetStarted}>
+              <LinearGradient
+                colors={sunsetGradient}
+                start={{ x: 0, y: 0.5 }}
+                end={{ x: 1, y: 0.5 }}
+                style={styles.primaryButton}
+              >
+                <Text style={[styles.primaryButtonText, { color: '#1A1020' }]}>GET STARTED</Text>
+              </LinearGradient>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -197,11 +212,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onGetStarted, onLo
               <Text style={[styles.secondaryButtonText, { color: d.text }]}>I HAVE AN ACCOUNT</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.guestButton}
-              activeOpacity={0.6}
-              onPress={onGuest}
-            >
+            <TouchableOpacity style={styles.guestButton} activeOpacity={0.6} onPress={onGuest}>
               <Text style={[styles.guestButtonText, { color: d.textMuted }]}>
                 Continue as guest
               </Text>
@@ -211,9 +222,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onGetStarted, onLo
 
         {/* Fine Print */}
         <View style={styles.finePrint}>
-          <Text style={[styles.finePrintText, { color: d.textHint }]}>
-            v1.0.0
-          </Text>
+          <Text style={[styles.finePrintText, { color: d.textHint }]}>v1.0.0</Text>
         </View>
       </ScrollView>
     </View>

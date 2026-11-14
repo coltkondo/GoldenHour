@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { Text } from '../ui/AppText';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import { useTheme } from '../../theme';
 import { Venue } from '../../types/api';
@@ -41,8 +42,8 @@ export const MiniMap: React.FC<MiniMapProps> = ({ userLocation, venues, onPress 
         <Circle
           center={userLocation}
           radius={1500}
-          fillColor="rgba(245,166,35,0.08)"
-          strokeColor="rgba(245,166,35,0.3)"
+          fillColor="rgba(255,194,61,0.08)"
+          strokeColor="rgba(255,194,61,0.3)"
           strokeWidth={1}
         />
         {venues.slice(0, 20).map((venue) => (
@@ -105,25 +106,25 @@ const styles = StyleSheet.create({
     height: MAP_SIZE - 6,
     borderRadius: (MAP_SIZE - 6) / 2,
     borderWidth: 1,
-    borderColor: 'rgba(245,166,35,0.4)',
+    borderColor: 'rgba(255,194,61,0.4)',
   },
   crosshairH: {
     position: 'absolute',
     width: 16,
     height: 1,
-    backgroundColor: 'rgba(245,166,35,0.5)',
+    backgroundColor: 'rgba(255,194,61,0.5)',
   },
   crosshairV: {
     position: 'absolute',
     width: 1,
     height: 16,
-    backgroundColor: 'rgba(245,166,35,0.5)',
+    backgroundColor: 'rgba(255,194,61,0.5)',
   },
   miniDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#F5A623',
+    backgroundColor: '#FFC23D',
     borderWidth: 1,
     borderColor: '#FFFFFF',
   },
@@ -140,7 +141,7 @@ const styles = StyleSheet.create({
     borderColor: '#FFFFFF',
   },
   badgeText: {
-    color: '#0D0D0D',
+    color: '#1A1020',
     fontSize: 10,
     fontWeight: '900',
   },
@@ -153,7 +154,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   expandText: {
-    color: '#0D0D0D',
+    color: '#1A1020',
     fontSize: 8,
     fontWeight: '800',
     letterSpacing: 1.5,

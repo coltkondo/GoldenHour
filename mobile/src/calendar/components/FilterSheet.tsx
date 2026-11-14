@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { Text } from '../../components/ui/AppText';
 import { useTheme } from '../../theme';
 import { useCalendar } from '../CalendarContext';
 import { CalendarSheet } from './CalendarSheet';
@@ -98,7 +99,14 @@ export const FilterSheet: React.FC<FilterSheetProps> = ({ visible, onClose }) =>
 const styles = StyleSheet.create({
   content: { padding: 16, gap: 8 },
   heading: { fontSize: 20, fontWeight: '800', marginBottom: 4 },
-  section: { fontSize: 13, fontWeight: '700', marginTop: 16, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
+  section: {
+    fontSize: 13,
+    fontWeight: '700',
+    marginTop: 16,
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
   dayRow: { flexDirection: 'row', gap: 8 },
   dayChip: {
     width: 40,

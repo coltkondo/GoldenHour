@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text } from '../../components/ui/AppText';
 import { useTheme } from '../../theme';
 import { AppIcon } from '../../components/icons';
 import { useCalendar } from '../CalendarContext';
@@ -36,7 +37,11 @@ export const FilterBar: React.FC = () => {
         ]}
         onPress={() => setFilters((f) => ({ ...f, happeningNow: !f.happeningNow }))}
       >
-        <AppIcon name="fire" size={16} color={filters.happeningNow ? d.buttonPrimaryText : d.text} />
+        <AppIcon
+          name="fire"
+          size={16}
+          color={filters.happeningNow ? d.buttonPrimaryText : d.text}
+        />
         <Text
           style={[
             styles.nowText,

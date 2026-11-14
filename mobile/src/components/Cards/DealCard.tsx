@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { Text } from '../ui/AppText';
 import { useTheme } from '../../theme';
 import { Deal } from '../../types/api';
 import { AppIcon, IconName } from '../icons';
@@ -193,7 +194,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   priceText: {
-    color: '#0D0D0D',
+    color: '#1A1020',
     fontSize: 16,
     fontWeight: '800',
   },
@@ -235,13 +236,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     right: -28,
-    backgroundColor: '#2DD4A0',
+    backgroundColor: '#FF4F81',
     paddingHorizontal: 28,
     paddingVertical: 4,
     transform: [{ rotate: '45deg' }],
   },
   discountText: {
-    color: '#0D0D0D',
+    color: '#1A1020',
     fontSize: 10,
     fontWeight: '800',
     letterSpacing: 0.5,

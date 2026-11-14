@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   StyleSheet,
   Modal,
@@ -10,6 +9,7 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
+import { Text } from './ui/AppText';
 import * as Location from 'expo-location';
 import { useTheme } from '../theme';
 import { AppIcon } from './icons';
@@ -191,7 +191,7 @@ export const GuestMarketPicker: React.FC<MarketPickerProps> = ({
                         style={[
                           styles.option,
                           {
-                            backgroundColor: active ? 'rgba(245,166,35,0.10)' : d.filterInactive,
+                            backgroundColor: active ? 'rgba(255,194,61,0.10)' : d.filterInactive,
                             borderColor: active ? d.primary : d.border,
                             borderWidth: active ? 1.5 : 1,
                           },

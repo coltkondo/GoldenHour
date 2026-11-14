@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import {
   View,
-  Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   KeyboardAvoidingView,
@@ -10,6 +8,7 @@ import {
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
+import { Text, TextInput } from '../../components/ui/AppText';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../theme';
 import { useAuth } from '../../context/AuthContext';
@@ -133,10 +132,11 @@ export const LoginScreen = () => {
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.guestBtn} onPress={() => navigation.navigate('Main', { screen: 'HomeTab' })}>
-            <Text style={[styles.guestText, { color: d.textMuted }]}>
-              Continue as guest
-            </Text>
+          <TouchableOpacity
+            style={styles.guestBtn}
+            onPress={() => navigation.navigate('Main', { screen: 'HomeTab' })}
+          >
+            <Text style={[styles.guestText, { color: d.textMuted }]}>Continue as guest</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -144,7 +144,7 @@ export const LoginScreen = () => {
   );
 };
 
-const brand = { error: '#FF6B35' };
+const brand = { error: '#FF5A5F' };
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
@@ -156,7 +156,12 @@ const styles = StyleSheet.create({
   errorBox: { borderWidth: 0.5, borderRadius: 12, padding: 12, marginBottom: 16 },
   errorText: { fontSize: 13, textAlign: 'center', fontWeight: '500' },
   form: { gap: 12 },
-  inputContainer: { borderRadius: 14, borderWidth: 0.5, flexDirection: 'row', alignItems: 'center' },
+  inputContainer: {
+    borderRadius: 14,
+    borderWidth: 0.5,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   input: { flex: 1, padding: 16, fontSize: 15 },
   eyeBtn: { paddingHorizontal: 14, paddingVertical: 12 },
   loginBtn: {

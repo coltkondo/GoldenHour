@@ -7,7 +7,8 @@
 // the system dialog, where the user makes the real choice.
 
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text } from './ui/AppText';
 import { useTheme } from '../theme';
 import { AppIcon } from './icons';
 import type { IconName } from './icons/AppIcon';

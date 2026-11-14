@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import {
   View,
-  Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   KeyboardAvoidingView,
@@ -10,6 +8,7 @@ import {
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
+import { Text, TextInput } from '../../components/ui/AppText';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../theme';
 import { authAPI } from '../../api/endpoints';
@@ -123,13 +122,23 @@ export const ForgotPasswordScreen = () => {
             </Text>
 
             {error ? (
-              <View style={[styles.errorBox, { backgroundColor: `${brand.error}15`, borderColor: `${brand.error}40` }]}>
+              <View
+                style={[
+                  styles.errorBox,
+                  { backgroundColor: `${brand.error}15`, borderColor: `${brand.error}40` },
+                ]}
+              >
                 <Text style={[styles.errorText, { color: brand.error }]}>{error}</Text>
               </View>
             ) : null}
 
             <View style={styles.form}>
-              <View style={[styles.inputContainer, { backgroundColor: d.surface, borderColor: d.border }]}>
+              <View
+                style={[
+                  styles.inputContainer,
+                  { backgroundColor: d.surface, borderColor: d.border },
+                ]}
+              >
                 <TextInput
                   style={[styles.input, { color: d.text }]}
                   placeholder="Email"
@@ -174,13 +183,23 @@ export const ForgotPasswordScreen = () => {
             </Text>
 
             {error ? (
-              <View style={[styles.errorBox, { backgroundColor: `${brand.error}15`, borderColor: `${brand.error}40` }]}>
+              <View
+                style={[
+                  styles.errorBox,
+                  { backgroundColor: `${brand.error}15`, borderColor: `${brand.error}40` },
+                ]}
+              >
                 <Text style={[styles.errorText, { color: brand.error }]}>{error}</Text>
               </View>
             ) : null}
 
             <View style={styles.form}>
-              <View style={[styles.inputContainer, { backgroundColor: d.surface, borderColor: d.border }]}>
+              <View
+                style={[
+                  styles.inputContainer,
+                  { backgroundColor: d.surface, borderColor: d.border },
+                ]}
+              >
                 <TextInput
                   style={[styles.input, styles.codeInput, { color: d.text }]}
                   placeholder="6-digit code"
@@ -193,7 +212,12 @@ export const ForgotPasswordScreen = () => {
                 />
               </View>
 
-              <View style={[styles.inputContainer, { backgroundColor: d.surface, borderColor: d.border }]}>
+              <View
+                style={[
+                  styles.inputContainer,
+                  { backgroundColor: d.surface, borderColor: d.border },
+                ]}
+              >
                 <TextInput
                   style={[styles.input, { color: d.text }]}
                   placeholder="New password (8+ chars, upper, lower, digit, special)"
@@ -206,7 +230,12 @@ export const ForgotPasswordScreen = () => {
                 />
               </View>
 
-              <View style={[styles.inputContainer, { backgroundColor: d.surface, borderColor: d.border }]}>
+              <View
+                style={[
+                  styles.inputContainer,
+                  { backgroundColor: d.surface, borderColor: d.border },
+                ]}
+              >
                 <TextInput
                   style={[styles.input, { color: d.text }]}
                   placeholder="Confirm new password"
@@ -228,12 +257,20 @@ export const ForgotPasswordScreen = () => {
                 {loading ? (
                   <ActivityIndicator color={d.background} />
                 ) : (
-                  <Text style={[styles.primaryBtnText, { color: d.background }]}>Reset Password</Text>
+                  <Text style={[styles.primaryBtnText, { color: d.background }]}>
+                    Reset Password
+                  </Text>
                 )}
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.backBtn} onPress={handleResendCode} disabled={loading}>
-                <Text style={[styles.backText, { color: d.textMuted }]}>Didn't get it? Resend code</Text>
+              <TouchableOpacity
+                style={styles.backBtn}
+                onPress={handleResendCode}
+                disabled={loading}
+              >
+                <Text style={[styles.backText, { color: d.textMuted }]}>
+                  Didn't get it? Resend code
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.backBtn} onPress={() => setStage('email')}>
@@ -266,7 +303,7 @@ export const ForgotPasswordScreen = () => {
   );
 };
 
-const brand = { error: '#FF6B35' };
+const brand = { error: '#FF5A5F' };
 
 const styles = StyleSheet.create({
   container: { flex: 1 },

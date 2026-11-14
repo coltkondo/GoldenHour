@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
@@ -10,13 +9,20 @@ import {
   Pressable,
   Platform,
 } from 'react-native';
+import { Text } from '../components/ui/AppText';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { useAuth } from '../context/AuthContext';
 import { venuesAPI, dealsAPI, eventsAPI } from '../api/endpoints';
 import { Venue, Deal, HappyHourSchedule, Event, DAY_NAMES } from '../types/api';
-import { formatScheduleRange, parseTimeString, isCurrentlyLive, isAlreadyEnded, todayDbIndex } from '../utils/scheduleUtils';
+import {
+  formatScheduleRange,
+  parseTimeString,
+  isCurrentlyLive,
+  isAlreadyEnded,
+  todayDbIndex,
+} from '../utils/scheduleUtils';
 import { AppIcon } from '../components/icons';
 import { REWARDS_ENABLED } from '../config/constants';
 import { LiveBadge } from '../components/ui/LiveBadge';
@@ -61,11 +67,15 @@ interface VenueGroup {
 function matchesFilter(deal: Deal, filter: FilterCategory): boolean {
   if (filter === 'All') return true;
   const keywords = FILTER_KEYWORDS[filter] ?? [];
-  const searchText = `${deal.title} ${deal.category} ${deal.description ?? ''} ${(deal.items ?? []).join(' ')}`.toLowerCase();
+  const searchText =
+    `${deal.title} ${deal.category} ${deal.description ?? ''} ${(deal.items ?? []).join(' ')}`.toLowerCase();
   return keywords.some((kw) => searchText.includes(kw));
 }
 
-function groupDealsByVenue(deals: DealWithSchedule[], venueEvents: Map<string, Event[]>): VenueGroup[] {
+function groupDealsByVenue(
+  deals: DealWithSchedule[],
+  venueEvents: Map<string, Event[]>,
+): VenueGroup[] {
   const venueMap = new Map<string, VenueGroup>();
   for (const deal of deals) {
     if (!venueMap.has(deal.venue_id)) {
@@ -78,7 +88,9 @@ function groupDealsByVenue(deals: DealWithSchedule[], venueEvents: Map<string, E
       });
     }
     const group = venueMap.get(deal.venue_id)!;
-    const timeKey = deal.schedule ? `${deal.schedule.start_time}-${deal.schedule.end_time}` : 'all-day';
+    const timeKey = deal.schedule
+      ? `${deal.schedule.start_time}-${deal.schedule.end_time}`
+      : 'all-day';
     let tg = group.timeGroups.find((t) => t.key === timeKey);
     if (!tg) {
       const label = deal.schedule
@@ -129,20 +141,25 @@ export const HomeScreen = () => {
       }
     };
     init();
-    return () => { isMounted.current = false; };
+    return () => {
+      isMounted.current = false;
+    };
   }, [user?.market_slug]);
 
-  const handleCitySelect = useCallback(async (slug: string) => {
-    setShowMarketPicker(false);
-    if (user) {
-      setMarketOverride(slug);
-      await AsyncStorage.setItem(MARKET_OVERRIDE_KEY, slug);
-    } else {
-      setGuestMarketSlug(slug);
-      await AsyncStorage.setItem(GUEST_MARKET_KEY, slug);
-    }
-    await loadData(slug);
-  }, [user?.id]);
+  const handleCitySelect = useCallback(
+    async (slug: string) => {
+      setShowMarketPicker(false);
+      if (user) {
+        setMarketOverride(slug);
+        await AsyncStorage.setItem(MARKET_OVERRIDE_KEY, slug);
+      } else {
+        setGuestMarketSlug(slug);
+        await AsyncStorage.setItem(GUEST_MARKET_KEY, slug);
+      }
+      await loadData(slug);
+    },
+    [user?.id],
+  );
 
   const loadData = async (marketSlug: string | null) => {
     try {
@@ -152,7 +169,13 @@ export const HomeScreen = () => {
       const [venueData, dealData, eventData] = await Promise.all([
         venuesAPI.getAll({ limit: 100, market_slug: marketSlug }),
         dealsAPI.getToday(marketSlug),
-        eventsAPI.getUpcoming({ market_slug: marketSlug, from_dt: now.toISOString(), to_dt: endOfToday.toISOString() }).catch(() => [] as Event[]),
+        eventsAPI
+          .getUpcoming({
+            market_slug: marketSlug,
+            from_dt: now.toISOString(),
+            to_dt: endOfToday.toISOString(),
+          })
+          .catch(() => [] as Event[]),
       ]);
       if (!isMounted.current) return;
       setVenues(venueData);
@@ -218,16 +241,19 @@ export const HomeScreen = () => {
     [enrichedDeals, activeFilter],
   );
 
-  const happeningNow = useMemo(
-    () => filteredDeals.filter((d) => d.isLiveNow),
-    [filteredDeals],
-  );
+  const happeningNow = useMemo(() => filteredDeals.filter((d) => d.isLiveNow), [filteredDeals]);
 
   const comingUp = useMemo(() => {
     const upcoming = filteredDeals.filter((d) => !d.isLiveNow && !isAlreadyEnded(d.schedule));
     return upcoming.sort((a, b) => {
-      const aStart = a.schedule ? parseTimeString(a.schedule.start_time).hour * 60 + parseTimeString(a.schedule.start_time).minute : 9999;
-      const bStart = b.schedule ? parseTimeString(b.schedule.start_time).hour * 60 + parseTimeString(b.schedule.start_time).minute : 9999;
+      const aStart = a.schedule
+        ? parseTimeString(a.schedule.start_time).hour * 60 +
+          parseTimeString(a.schedule.start_time).minute
+        : 9999;
+      const bStart = b.schedule
+        ? parseTimeString(b.schedule.start_time).hour * 60 +
+          parseTimeString(b.schedule.start_time).minute
+        : 9999;
       return aStart - bStart;
     });
   }, [filteredDeals]);
@@ -238,8 +264,14 @@ export const HomeScreen = () => {
     return enrichedDeals.every((d) => !d.isLiveNow && isAlreadyEnded(d.schedule));
   }, [enrichedDeals]);
 
-  const happeningNowGroups = useMemo(() => groupDealsByVenue(happeningNow, venueEvents), [happeningNow, venueEvents]);
-  const comingUpGroups = useMemo(() => groupDealsByVenue(comingUp, venueEvents), [comingUp, venueEvents]);
+  const happeningNowGroups = useMemo(
+    () => groupDealsByVenue(happeningNow, venueEvents),
+    [happeningNow, venueEvents],
+  );
+  const comingUpGroups = useMemo(
+    () => groupDealsByVenue(comingUp, venueEvents),
+    [comingUp, venueEvents],
+  );
 
   const navigateToVenue = (venueId: string) => {
     const venue = venueMap.get(venueId);
@@ -272,11 +304,7 @@ export const HomeScreen = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={d.primary}
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={d.primary} />
         }
       >
         {/* Header */}
@@ -284,14 +312,15 @@ export const HomeScreen = () => {
           <Text style={[styles.wordmark, { color: d.primary }]}>GLDNHR</Text>
           {REWARDS_ENABLED && user && (
             <TouchableOpacity
-              style={[styles.pointsPill, { borderColor: d.border, backgroundColor: d.cardBackground }]}
+              style={[
+                styles.pointsPill,
+                { borderColor: d.border, backgroundColor: d.cardBackground },
+              ]}
               activeOpacity={0.7}
               onPress={() => navigation.navigate('ProfileTab')}
             >
               <AppIcon name="points" size={12} role="brand" />
-              <Text style={[styles.pointsText, { color: d.primary }]}>
-                {user.points_balance}
-              </Text>
+              <Text style={[styles.pointsText, { color: d.primary }]}>{user.points_balance}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -320,7 +349,8 @@ export const HomeScreen = () => {
               style={[
                 styles.filterPill,
                 {
-                  backgroundColor: activeFilter === filter ? 'rgba(245,166,35,0.12)' : d.filterInactive,
+                  backgroundColor:
+                    activeFilter === filter ? 'rgba(255,194,61,0.12)' : d.filterInactive,
                   borderColor: activeFilter === filter ? d.primary : 'transparent',
                   borderWidth: 1,
                 },
@@ -355,7 +385,12 @@ export const HomeScreen = () => {
           </View>
 
           {happeningNowGroups.length > 0 ? (
-            <View style={[styles.dealList, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+            <View
+              style={[
+                styles.dealList,
+                { backgroundColor: d.cardBackground, borderColor: d.border },
+              ]}
+            >
               {happeningNowGroups.map((group, index) => (
                 <React.Fragment key={group.venueId}>
                   <VenueGroupCard
@@ -371,15 +406,20 @@ export const HomeScreen = () => {
               ))}
             </View>
           ) : (
-            <View style={[styles.emptyCard, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+            <View
+              style={[
+                styles.emptyCard,
+                { backgroundColor: d.cardBackground, borderColor: d.border },
+              ]}
+            >
               <AppIcon name="clock" size={24} role="muted" />
               <Text style={[styles.emptyTitle, { color: d.text }]}>Nothing live right now</Text>
               <Text style={[styles.emptySubtext, { color: d.textMuted }]}>
                 {comingUp.length > 0
-                  ? 'Check below for what\'s coming up later'
+                  ? "Check below for what's coming up later"
                   : allDealsEndedToday
-                  ? 'All happy hours have wrapped up for today'
-                  : 'No happy hours happening right now'}
+                    ? 'All happy hours have wrapped up for today'
+                    : 'No happy hours happening right now'}
               </Text>
             </View>
           )}
@@ -395,7 +435,12 @@ export const HomeScreen = () => {
               </Text>
             </View>
 
-            <View style={[styles.dealList, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+            <View
+              style={[
+                styles.dealList,
+                { backgroundColor: d.cardBackground, borderColor: d.border },
+              ]}
+            >
               {comingUpGroups.map((group, index) => (
                 <React.Fragment key={group.venueId}>
                   <VenueGroupCard
@@ -414,10 +459,18 @@ export const HomeScreen = () => {
         )}
 
         {/* ── Bottom state when nothing is live or upcoming ── */}
-        {happeningNow.length === 0 && comingUp.length === 0 && (
-          allDealsEndedToday ? (
-            <View style={[styles.passedCard, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
-              <Text style={[styles.passedTitle, { color: d.text }]}>Golden Hour Has Passed Today</Text>
+        {happeningNow.length === 0 &&
+          comingUp.length === 0 &&
+          (allDealsEndedToday ? (
+            <View
+              style={[
+                styles.passedCard,
+                { backgroundColor: d.cardBackground, borderColor: d.border },
+              ]}
+            >
+              <Text style={[styles.passedTitle, { color: d.text }]}>
+                Golden Hour Has Passed Today
+              </Text>
               <Text style={[styles.passedSubtext, { color: d.textMuted }]}>
                 No more deals tonight — check back tomorrow
               </Text>
@@ -426,11 +479,18 @@ export const HomeScreen = () => {
                 onPress={() => navigation.navigate('ExplorerTab')}
                 activeOpacity={0.85}
               >
-                <Text style={[styles.browseBtnText, { color: d.buttonPrimaryText }]}>Browse Venues</Text>
+                <Text style={[styles.browseBtnText, { color: d.buttonPrimaryText }]}>
+                  Browse Venues
+                </Text>
               </TouchableOpacity>
             </View>
           ) : (
-            <View style={[styles.emptyCard, { backgroundColor: d.cardBackground, borderColor: d.border, marginTop: 12 }]}>
+            <View
+              style={[
+                styles.emptyCard,
+                { backgroundColor: d.cardBackground, borderColor: d.border, marginTop: 12 },
+              ]}
+            >
               <AppIcon name="deals" size={32} role="muted" />
               <Text style={[styles.emptyTitle, { color: d.text }]}>No deals today</Text>
               <Text style={[styles.emptySubtext, { color: d.textMuted }]}>
@@ -441,11 +501,12 @@ export const HomeScreen = () => {
                 onPress={() => navigation.navigate('ExplorerTab')}
                 activeOpacity={0.85}
               >
-                <Text style={[styles.browseBtnText, { color: d.buttonPrimaryText }]}>Browse Venues</Text>
+                <Text style={[styles.browseBtnText, { color: d.buttonPrimaryText }]}>
+                  Browse Venues
+                </Text>
               </TouchableOpacity>
             </View>
-          )
-        )}
+          ))}
 
         <View style={{ height: 120 }} />
       </ScrollView>
@@ -473,7 +534,10 @@ const EVENT_COLOR = '#a78bfa';
 
 const VenueGroupCard: React.FC<VenueGroupCardProps> = ({ group, d, onPress, labelColor }) => (
   <Pressable
-    style={({ pressed }) => [styles.venueGroupRow, pressed && { backgroundColor: d.filterInactive }]}
+    style={({ pressed }) => [
+      styles.venueGroupRow,
+      pressed && { backgroundColor: d.filterInactive },
+    ]}
     onPress={onPress}
   >
     <View style={styles.venueNameCol}>
@@ -570,7 +634,12 @@ const styles = StyleSheet.create({
   verticalDivider: { width: 1, alignSelf: 'stretch', marginVertical: 2 },
   timeGroupsCol: { flex: 1, gap: 10 },
   timeGroup: { gap: 2 },
-  timeGroupLabel: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.6 },
+  timeGroupLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
   timeGroupDeals: { fontSize: 14, fontWeight: '500', lineHeight: 20 },
 
   emptyCard: {

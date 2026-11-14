@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { Text } from '../../components/ui/AppText';
 import { Animated } from 'react-native';
 import { useTheme } from '../../theme';
 import { AppIcon } from '../../components/icons';

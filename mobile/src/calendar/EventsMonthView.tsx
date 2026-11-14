@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { Text } from '../components/ui/AppText';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { useEventsCalendar } from './EventsCalendarContext';
@@ -53,7 +54,9 @@ export const EventsMonthView: React.FC = () => {
     <View style={styles.flex}>
       <View style={[styles.dowRow, { borderBottomColor: d.border }]}>
         {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((c, i) => (
-          <Text key={i} style={[styles.dowCell, { color: d.textMuted }]}>{c}</Text>
+          <Text key={i} style={[styles.dowCell, { color: d.textMuted }]}>
+            {c}
+          </Text>
         ))}
       </View>
 
@@ -90,7 +93,12 @@ export const EventsMonthView: React.FC = () => {
                     {date.getDate()}
                   </Text>
                   {evs.map((item: EventCalItem) => (
-                    <EventTimelineBlock key={item.id} item={item} onPress={() => onEventPress(item)} compact />
+                    <EventTimelineBlock
+                      key={item.id}
+                      item={item}
+                      onPress={() => onEventPress(item)}
+                      compact
+                    />
                   ))}
                   {overflow > 0 ? (
                     <Text style={[styles.more, { color: d.textMuted }]}>+{overflow} more</Text>
@@ -107,7 +115,11 @@ export const EventsMonthView: React.FC = () => {
         <ScrollView contentContainerStyle={[styles.sheet, { paddingBottom: 32 }]}>
           {sheetDate ? (
             <Text style={[styles.sheetTitle, { color: d.text }]}>
-              {sheetDate.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+              {sheetDate.toLocaleDateString(undefined, {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+              })}
             </Text>
           ) : null}
           {sheetEvents.map((item: EventCalItem) => (
@@ -125,8 +137,11 @@ const styles = StyleSheet.create({
   dowCell: { flex: 1, textAlign: 'center', fontSize: 11, fontWeight: '700' },
   weekRow: { flexDirection: 'row', flex: 1, borderBottomWidth: StyleSheet.hairlineWidth },
   cell: {
-    flex: 1, borderLeftWidth: StyleSheet.hairlineWidth, borderTopWidth: StyleSheet.hairlineWidth,
-    padding: 4, minHeight: 78,
+    flex: 1,
+    borderLeftWidth: StyleSheet.hairlineWidth,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    padding: 4,
+    minHeight: 78,
   },
   cellDate: { fontSize: 13, fontWeight: '700', marginBottom: 2 },
   more: { fontSize: 10, fontWeight: '600', marginTop: 2 },

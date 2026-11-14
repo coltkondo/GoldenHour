@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, ScrollView, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { View, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { Text } from '../components/ui/AppText';
 import { useNavigation } from '@react-navigation/native';
 
 type Nav = any;
@@ -53,7 +54,10 @@ export const EventsWeekView: React.FC = () => {
       {total === 0 ? (
         <EmptyState message="No events this week." />
       ) : (
-        <ScrollView showsVerticalScrollIndicator={false} contentOffset={{ x: 0, y: scrollOffsetForEvents(allEvents) }}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentOffset={{ x: 0, y: scrollOffsetForEvents(allEvents) }}
+        >
           <EventsTimelineGrid dates={dates} onEventPress={onEventPress} />
           <View style={{ height: 24 }} />
         </ScrollView>
@@ -66,7 +70,11 @@ const GUTTER = 38;
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  headerRow: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth, paddingVertical: 6 },
+  headerRow: {
+    flexDirection: 'row',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingVertical: 6,
+  },
   headerGutter: { width: GUTTER },
   headerCell: { flex: 1, alignItems: 'center', borderLeftWidth: StyleSheet.hairlineWidth, gap: 2 },
   headerDow: { fontSize: 11, fontWeight: '700', textTransform: 'uppercase' },

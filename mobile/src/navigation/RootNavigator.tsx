@@ -30,7 +30,7 @@ function AppNavigator({ initialRoute }: { initialRoute: InitialRoute }) {
           alignItems: 'center',
         }}
       >
-        <ActivityIndicator size="large" color="#F5A623" />
+        <ActivityIndicator size="large" color="#FFC23D" />
       </View>
     );
   }

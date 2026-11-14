@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
+import { View, StyleSheet, Animated } from 'react-native';
+import { Text } from './AppText';
 import { useTheme } from '../../theme';
 
 interface LiveBadgeProps {
@@ -33,7 +34,7 @@ export const LiveBadge: React.FC<LiveBadgeProps> = ({ label = 'LIVE', size = 'sm
       style={[
         styles.badge,
         {
-          backgroundColor: 'rgba(45,212,160,0.12)',
+          backgroundColor: 'rgba(61,214,140,0.12)',
           borderColor: d.live,
           paddingHorizontal: paddingH,
           paddingVertical: paddingV,

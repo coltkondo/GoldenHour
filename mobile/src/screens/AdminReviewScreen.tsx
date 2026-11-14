@@ -1,15 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  TextInput,
   RefreshControl,
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { Text, TextInput } from '../components/ui/AppText';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { submissionsAPI } from '../api/endpoints';
@@ -59,55 +58,59 @@ const RECURRENCE_LABELS: Record<string, string> = {
   custom: 'Custom',
 };
 
-const SUBMISSION_FIELDS: Record<string, { label: string; key: string; type?: 'bool' | 'array' }[]> = {
-  new_deal: [
-    { label: 'Bar', key: 'bar_name' },
-    { label: 'Deal', key: 'title' },
-    { label: 'Days', key: 'days', type: 'array' },
-    { label: 'All day', key: 'is_all_day', type: 'bool' },
-    { label: 'Start time', key: 'start_time' },
-    { label: 'End time', key: 'end_time' },
-    { label: 'Price note', key: 'price_note' },
-  ],
-  deal_update: [
-    { label: 'Bar', key: 'bar_name' },
-    { label: 'Deal', key: 'deal_title' },
-    { label: "What's wrong", key: 'issue_type' },
-    { label: 'Correction', key: 'correction' },
-  ],
-  deal_expired: [
-    { label: 'Bar', key: 'bar_name' },
-    { label: 'Deal', key: 'deal_title' },
-  ],
-  new_bar: [
-    { label: 'Bar name', key: 'name' },
-    { label: 'Address', key: 'address' },
-    { label: 'Neighborhood', key: 'neighborhood' },
-    { label: 'Latitude', key: 'latitude' },
-    { label: 'Longitude', key: 'longitude' },
-    { label: 'Description', key: 'description' },
-  ],
-  bar_update: [
-    { label: 'Bar', key: 'bar_name' },
-    { label: 'Correction', key: 'correction' },
-  ],
-  bar_closed: [{ label: 'Bar', key: 'bar_name' }],
-  new_event: [
-    { label: 'Bar', key: 'bar_name' },
-    { label: 'Event name', key: 'event_name' },
-    { label: 'Event type', key: 'event_type' },
-    { label: 'Repeats', key: 'recurrence_type' },
-    { label: 'Date', key: 'event_date' },
-    { label: 'Start time', key: 'start_time' },
-    { label: 'End time', key: 'end_time' },
-    { label: 'Days', key: 'days', type: 'array' },
-    { label: 'Day of month', key: 'day_of_month' },
-    { label: 'Notes', key: 'notes' },
-    { label: 'Description', key: 'description' },
-  ],
-};
+const SUBMISSION_FIELDS: Record<string, { label: string; key: string; type?: 'bool' | 'array' }[]> =
+  {
+    new_deal: [
+      { label: 'Bar', key: 'bar_name' },
+      { label: 'Deal', key: 'title' },
+      { label: 'Days', key: 'days', type: 'array' },
+      { label: 'All day', key: 'is_all_day', type: 'bool' },
+      { label: 'Start time', key: 'start_time' },
+      { label: 'End time', key: 'end_time' },
+      { label: 'Price note', key: 'price_note' },
+    ],
+    deal_update: [
+      { label: 'Bar', key: 'bar_name' },
+      { label: 'Deal', key: 'deal_title' },
+      { label: "What's wrong", key: 'issue_type' },
+      { label: 'Correction', key: 'correction' },
+    ],
+    deal_expired: [
+      { label: 'Bar', key: 'bar_name' },
+      { label: 'Deal', key: 'deal_title' },
+    ],
+    new_bar: [
+      { label: 'Bar name', key: 'name' },
+      { label: 'Address', key: 'address' },
+      { label: 'Neighborhood', key: 'neighborhood' },
+      { label: 'Latitude', key: 'latitude' },
+      { label: 'Longitude', key: 'longitude' },
+      { label: 'Description', key: 'description' },
+    ],
+    bar_update: [
+      { label: 'Bar', key: 'bar_name' },
+      { label: 'Correction', key: 'correction' },
+    ],
+    bar_closed: [{ label: 'Bar', key: 'bar_name' }],
+    new_event: [
+      { label: 'Bar', key: 'bar_name' },
+      { label: 'Event name', key: 'event_name' },
+      { label: 'Event type', key: 'event_type' },
+      { label: 'Repeats', key: 'recurrence_type' },
+      { label: 'Date', key: 'event_date' },
+      { label: 'Start time', key: 'start_time' },
+      { label: 'End time', key: 'end_time' },
+      { label: 'Days', key: 'days', type: 'array' },
+      { label: 'Day of month', key: 'day_of_month' },
+      { label: 'Notes', key: 'notes' },
+      { label: 'Description', key: 'description' },
+    ],
+  };
 
-const formatFieldValue = (field: { label: string; key: string; type?: 'bool' | 'array' }, raw: any): string | null => {
+const formatFieldValue = (
+  field: { label: string; key: string; type?: 'bool' | 'array' },
+  raw: any,
+): string | null => {
   if (raw === undefined || raw === null || raw === '') return null;
   if (Array.isArray(raw)) return raw.length === 0 ? null : raw.join(', ');
   if (field.type === 'bool') return raw ? 'Yes' : 'No';
@@ -136,7 +139,11 @@ const submissionTitle = (sub: Submission): string => {
   }
 };
 
-const SubmissionDataBlock: React.FC<{ type: string; data: Record<string, any>; d: any }> = ({ type, data, d }) => {
+const SubmissionDataBlock: React.FC<{ type: string; data: Record<string, any>; d: any }> = ({
+  type,
+  data,
+  d,
+}) => {
   const fields = SUBMISSION_FIELDS[type];
   const rows: { label: string; value: string }[] = [];
   if (fields) {
@@ -174,9 +181,9 @@ const SubmissionDataBlock: React.FC<{ type: string; data: Record<string, any>; d
 };
 
 const getStatusColor = (status: string) => {
-  if (status === 'approved') return '#2DD4A0';
-  if (status === 'rejected') return '#FF6B35';
-  return '#F5A623';
+  if (status === 'approved') return '#3DD68C';
+  if (status === 'rejected') return '#FF5A5F';
+  return '#FFC23D';
 };
 
 export const AdminReviewScreen = () => {
@@ -208,7 +215,10 @@ export const AdminReviewScreen = () => {
   async function handleReview(sub: Submission, status: 'approved' | 'rejected') {
     const notes = adminNotes[sub.id];
     if (status === 'rejected' && !(notes ?? '').trim()) {
-      Alert.alert('Notes required', 'Add a note explaining why before rejecting — the submitter sees this as their rejection reason.');
+      Alert.alert(
+        'Notes required',
+        'Add a note explaining why before rejecting — the submitter sees this as their rejection reason.',
+      );
       return;
     }
     Alert.alert(
@@ -347,7 +357,11 @@ export const AdminReviewScreen = () => {
                 {expanded && (
                   <View style={styles.expandedContent}>
                     <Text style={[styles.dataLabel, { color: d.textMuted }]}>Submitted Data</Text>
-                    <SubmissionDataBlock type={sub.submission_type} data={sub.submitted_data} d={d} />
+                    <SubmissionDataBlock
+                      type={sub.submission_type}
+                      data={sub.submitted_data}
+                      d={d}
+                    />
 
                     {sub.status === 'pending' && (
                       <>
@@ -397,7 +411,7 @@ export const AdminReviewScreen = () => {
                           <TouchableOpacity
                             style={[
                               styles.rejectBtn,
-                              { backgroundColor: 'rgba(255,107,53,0.12)', borderColor: d.error },
+                              { backgroundColor: 'rgba(255,90,95,0.12)', borderColor: d.error },
                             ]}
                             onPress={() => handleReview(sub, 'rejected')}
                             disabled={reviewing === sub.id}
@@ -457,7 +471,14 @@ const styles = StyleSheet.create({
   dataLabel: { fontSize: 11, fontWeight: '600' },
   dataBlock: { borderRadius: 10, borderWidth: 1, overflow: 'hidden' },
   dataRow: { flexDirection: 'row', gap: 12, paddingHorizontal: 12, paddingVertical: 9 },
-  dataRowLabel: { flexBasis: 110, fontSize: 11, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.4, paddingTop: 1 },
+  dataRowLabel: {
+    flexBasis: 110,
+    fontSize: 11,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+    paddingTop: 1,
+  },
   dataRowValue: { flex: 1, fontSize: 13, lineHeight: 18 },
   dataEmpty: { fontSize: 12, fontStyle: 'italic', paddingVertical: 4 },
   applyNote: { borderRadius: 10, borderWidth: 1, padding: 12 },

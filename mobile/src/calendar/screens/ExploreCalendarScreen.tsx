@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   ActivityIndicator,
   ScrollView,
   StyleSheet,
   Platform,
 } from 'react-native';
+import { Text } from '../../components/ui/AppText';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../theme';
 import { AppIcon } from '../../components/icons';
@@ -102,7 +102,9 @@ const ModeToggle: React.FC<{ mode: Mode; onChange: (m: Mode) => void }> = ({ mod
   const { theme } = useTheme();
   const d = theme.derived;
   return (
-    <View style={[styles.modeToggleWrap, { borderColor: d.border, backgroundColor: d.cardBackground }]}>
+    <View
+      style={[styles.modeToggleWrap, { borderColor: d.border, backgroundColor: d.cardBackground }]}
+    >
       {(['events', 'hh'] as Mode[]).map((m) => {
         const active = mode === m;
         const label = m === 'events' ? 'Events' : 'Happy Hours';
@@ -112,7 +114,10 @@ const ModeToggle: React.FC<{ mode: Mode; onChange: (m: Mode) => void }> = ({ mod
             key={m}
             style={[
               styles.modeToggleBtn,
-              active && { backgroundColor: m === 'events' ? 'rgba(167,139,250,0.12)' : 'rgba(245,166,35,0.12)' },
+              active && {
+                backgroundColor:
+                  m === 'events' ? 'rgba(167,139,250,0.12)' : 'rgba(255,194,61,0.12)',
+              },
             ]}
             onPress={() => onChange(m)}
             activeOpacity={0.7}

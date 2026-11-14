@@ -1,11 +1,6 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-} from 'react-native';
+import { View, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { Text } from '../components/ui/AppText';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { useCalendar } from './CalendarContext';
@@ -41,9 +36,7 @@ export const MonthView: React.FC = () => {
     navigation.navigate('HappyHour', { venue: ev.venue });
   };
 
-  const total = weeks
-    .flat()
-    .reduce((sum: number, dt: Date) => sum + eventsForDay(dt).length, 0);
+  const total = weeks.flat().reduce((sum: number, dt: Date) => sum + eventsForDay(dt).length, 0);
 
   if (total === 0) {
     return (

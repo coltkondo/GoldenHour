@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text } from '../../components/ui/AppText';
 import { useTheme } from '../../theme';
 import { AppIcon } from '../../components/icons';
 import { useEventsCalendar } from '../EventsCalendarContext';
@@ -30,8 +31,7 @@ export const EventsCalendarHeader: React.FC = () => {
   const shift = (dir: number) => {
     if (view === 'day') setSelectedDate(addDays(selectedDate, dir));
     else if (view === 'week') setSelectedDate(addDays(selectedDate, dir * 7));
-    else
-      setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() + dir, 1));
+    else setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() + dir, 1));
   };
 
   let label: string;
@@ -90,12 +90,7 @@ export const EventsCalendarHeader: React.FC = () => {
                 onPress={() => setView(v.key)}
                 style={[styles.tab, active && { backgroundColor: EVENT_COLOR }]}
               >
-                <Text
-                  style={[
-                    styles.tabText,
-                    { color: active ? '#fff' : d.textSecondary },
-                  ]}
-                >
+                <Text style={[styles.tabText, { color: active ? '#fff' : d.textSecondary }]}>
                   {v.label}
                 </Text>
               </TouchableOpacity>
@@ -111,12 +106,20 @@ const styles = StyleSheet.create({
   container: { paddingHorizontal: 12, paddingTop: 8, paddingBottom: 8, gap: 8 },
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   navBtn: {
-    width: 36, height: 36, borderRadius: 10, borderWidth: 1,
-    alignItems: 'center', justifyContent: 'center',
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   todayBtn: {
-    height: 36, paddingHorizontal: 16, borderRadius: 10, borderWidth: 1,
-    alignItems: 'center', justifyContent: 'center',
+    height: 36,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   todayText: { fontSize: 13, fontWeight: '700' },
   labelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },

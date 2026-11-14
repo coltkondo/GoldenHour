@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { Text } from '../components/ui/AppText';
 import { useNavigation } from '@react-navigation/native';
 
 type Nav = any;
@@ -24,8 +25,7 @@ export const WeekView: React.FC<WeekViewProps> = ({ onClusterPress }) => {
 
   const allEvents = dates.flatMap((dt: Date) => eventsForDay(dt));
   const total = allEvents.length;
-  const onEventPress = (ev: CalendarEvent) =>
-    navigation.navigate('HappyHour', { venue: ev.venue });
+  const onEventPress = (ev: CalendarEvent) => navigation.navigate('HappyHour', { venue: ev.venue });
 
   return (
     <View style={styles.flex}>
@@ -57,12 +57,11 @@ export const WeekView: React.FC<WeekViewProps> = ({ onClusterPress }) => {
       {total === 0 ? (
         <EmptyState />
       ) : (
-        <ScrollView showsVerticalScrollIndicator={false} contentOffset={{ x: 0, y: scrollOffsetForEvents(allEvents) }}>
-          <TimelineGrid
-            dates={dates}
-            onEventPress={onEventPress}
-            onClusterPress={onClusterPress}
-          />
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentOffset={{ x: 0, y: scrollOffsetForEvents(allEvents) }}
+        >
+          <TimelineGrid dates={dates} onEventPress={onEventPress} onClusterPress={onClusterPress} />
           <View style={{ height: 24 }} />
         </ScrollView>
       )}

@@ -1,5 +1,15 @@
 import React, { useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Linking, Alert, Share } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Switch,
+  Linking,
+  Alert,
+  Share,
+} from 'react-native';
+import { Text } from '../components/ui/AppText';
 import { useNavigation } from '@react-navigation/native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../theme';
@@ -18,7 +28,8 @@ export const ProfileScreen = () => {
   useFocusEffect(
     useCallback(() => {
       if (!user) return;
-      authAPI.me()
+      authAPI
+        .me()
         .then((freshUser) => refreshUser(freshUser))
         .catch(() => {}); // network failure: keep showing stale balance
     }, [user?.id]),
@@ -32,28 +43,53 @@ export const ProfileScreen = () => {
     if (canOpen) {
       Linking.openURL(url);
     } else {
-      Alert.alert(
-        'Contact Support',
-        `Email us at ${SUPPORT_EMAIL}`,
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Share Email', onPress: () => Share.share({ message: SUPPORT_EMAIL }) },
-        ],
-      );
+      Alert.alert('Contact Support', `Email us at ${SUPPORT_EMAIL}`, [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Share Email', onPress: () => Share.share({ message: SUPPORT_EMAIL }) },
+      ]);
     }
   };
 
   if (!user) {
     return (
-      <View style={[styles.container, { backgroundColor: d.background, justifyContent: 'center', alignItems: 'center', padding: 32 }]}>
+      <View
+        style={[
+          styles.container,
+          {
+            backgroundColor: d.background,
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: 32,
+          },
+        ]}
+      >
         <Text style={[styles.userName, { color: d.text, textAlign: 'center', marginBottom: 8 }]}>
           Sign In to Your Account
         </Text>
-        <Text style={[{ color: d.textMuted, textAlign: 'center', fontSize: 13, marginBottom: 32, lineHeight: 20 }]}>
+        <Text
+          style={[
+            {
+              color: d.textMuted,
+              textAlign: 'center',
+              fontSize: 13,
+              marginBottom: 32,
+              lineHeight: 20,
+            },
+          ]}
+        >
           Track your submissions and contribute to the map.
         </Text>
         <TouchableOpacity
-          style={[{ borderRadius: 14, height: 48, justifyContent: 'center', alignItems: 'center', width: '100%', backgroundColor: d.primary }]}
+          style={[
+            {
+              borderRadius: 14,
+              height: 48,
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: '100%',
+              backgroundColor: d.primary,
+            },
+          ]}
           onPress={() => navigation.navigate('Signup')}
           activeOpacity={0.85}
         >
@@ -88,11 +124,15 @@ export const ProfileScreen = () => {
           </View>
           <View style={styles.guestLinks}>
             <TouchableOpacity onPress={handleContactSupport}>
-              <Text style={[{ fontSize: 12, fontWeight: '500', color: d.textMuted }]}>Contact Support</Text>
+              <Text style={[{ fontSize: 12, fontWeight: '500', color: d.textMuted }]}>
+                Contact Support
+              </Text>
             </TouchableOpacity>
             <Text style={[{ color: d.border }]}>·</Text>
             <TouchableOpacity onPress={() => Linking.openURL(PRIVACY_URL)}>
-              <Text style={[{ fontSize: 12, fontWeight: '500', color: d.textMuted }]}>Privacy Policy</Text>
+              <Text style={[{ fontSize: 12, fontWeight: '500', color: d.textMuted }]}>
+                Privacy Policy
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -115,7 +155,10 @@ export const ProfileScreen = () => {
               await logout();
               navigation.navigate('HomeTab');
             } catch {
-              Alert.alert('Error', 'Could not delete your account. Please try again or contact support.');
+              Alert.alert(
+                'Error',
+                'Could not delete your account. Please try again or contact support.',
+              );
             }
           },
         },
@@ -149,7 +192,7 @@ export const ProfileScreen = () => {
             <View
               style={[
                 styles.adminBadge,
-                { backgroundColor: 'rgba(45,212,160,0.12)', borderColor: d.live },
+                { backgroundColor: 'rgba(61,214,140,0.12)', borderColor: d.live },
               ]}
             >
               <Text style={[styles.adminBadgeText, { color: d.live }]}>Admin</Text>
@@ -262,7 +305,7 @@ export const ProfileScreen = () => {
 
             <TouchableOpacity style={styles.row} activeOpacity={0.7} onPress={logout}>
               <View style={styles.rowLeft}>
-                <View style={[styles.rowIcon, { backgroundColor: 'rgba(255,107,53,0.12)' }]}>
+                <View style={[styles.rowIcon, { backgroundColor: 'rgba(255,90,95,0.12)' }]}>
                   <AppIcon name="logout" size={18} role="urgent" />
                 </View>
                 <Text style={[styles.logoutLabel, { color: d.error }]}>Sign Out</Text>
@@ -291,11 +334,7 @@ export const ProfileScreen = () => {
 
             <View style={[styles.separator, { backgroundColor: d.divider }]} />
 
-            <TouchableOpacity
-              style={styles.row}
-              activeOpacity={0.7}
-              onPress={handleContactSupport}
-            >
+            <TouchableOpacity style={styles.row} activeOpacity={0.7} onPress={handleContactSupport}>
               <View style={styles.rowLeft}>
                 <View style={[styles.rowIcon, { backgroundColor: d.filterInactive }]}>
                   <AppIcon name="phone" size={18} role="brand" />
