@@ -31,6 +31,8 @@ class User(Base, TimestampMixin):
     # Password reset — populated only during an active reset flow
     reset_token_hash = Column(String(64), nullable=True)
     reset_token_expires = Column(DateTime(timezone=True), nullable=True)
+    # Wrong codes entered against the current reset code; the code is burned at the limit.
+    reset_attempts = Column(Integer, nullable=False, default=0, server_default="0")
 
     market = relationship("Market", back_populates="users")
     submissions = relationship(
