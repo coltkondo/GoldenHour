@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 from typing import Literal
 from datetime import datetime
 from uuid import UUID
@@ -13,8 +13,20 @@ class UserCreate(BaseModel):
     # max_length=128: bcrypt silently truncates at 72 bytes; very long passwords
     # are a DoS vector because hashing them is intentionally slow.
     password: str = Field(..., min_length=8, max_length=128)
-    latitude: float = Field(..., ge=-90, le=90)
-    longitude: float = Field(..., ge=-180, le=180)
+    # Either device coordinates (matched to a market by radius) or an explicit
+    # market_slug from the city picker, for people who decline location or
+    # live outside every market's radius (App Review 5.1.1: don't make
+    # location mandatory to create an account).
+    latitude: float | None = Field(None, ge=-90, le=90)
+    longitude: float | None = Field(None, ge=-180, le=180)
+    market_slug: str | None = Field(None, min_length=1, max_length=100)
+
+    @model_validator(mode="after")
+    def location_or_market(self) -> "UserCreate":
+        has_coords = self.latitude is not None and self.longitude is not None
+        if not has_coords and not self.market_slug:
+            raise ValueError("Choose a city or allow location to sign up")
+        return self
 
     @field_validator("username")
     @classmethod

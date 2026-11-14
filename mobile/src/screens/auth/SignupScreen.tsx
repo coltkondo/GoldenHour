@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View,
   TouchableOpacity,
@@ -17,6 +17,17 @@ import { useLocationPermission } from '../../context/LocationPermissionContext';
 import { authAPI } from '../../api/endpoints';
 import { AppIcon } from '../../components/icons';
 import { apiErrorMessage } from '../../utils/apiError';
+import { GuestMarketPicker } from '../../components/GuestMarketPicker';
+
+// Backend's OUTSIDE_AREA_DETAIL (backend/app/api/v1/auth.py); keep in sync.
+function isOutsideAreaError(err: any): boolean {
+  const detail = err?.response?.data?.detail;
+  return (
+    err?.response?.status === 422 &&
+    typeof detail === 'string' &&
+    /available in your area/i.test(detail)
+  );
+}
 
 export const SignupScreen = () => {
   const { theme } = useTheme();
@@ -32,6 +43,10 @@ export const SignupScreen = () => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  // Location is optional (App Review 5.1.1): if it's declined, unavailable, or
+  // outside every market, ask which city instead of blocking sign-up.
+  const [cityPickerVisible, setCityPickerVisible] = useState(false);
+  const coordsRef = useRef<{ latitude: number; longitude: number } | null>(null);
 
   async function handleSignup() {
     setError('');
@@ -68,26 +83,48 @@ export const SignupScreen = () => {
       setError('Passwords do not match');
       return;
     }
+    await register();
+  }
+
+  async function register(marketSlug?: string) {
+    setError('');
     setLoading(true);
     try {
-      const { status: permStatus } = await ensureLocationPermission();
-      if (permStatus !== 'granted') {
-        setError(
-          'Location access is required to find your local market. Please allow it and try again.',
-        );
-        return;
+      if (!marketSlug) {
+        coordsRef.current = null;
+        const { status: permStatus } = await ensureLocationPermission();
+        if (permStatus === 'granted') {
+          try {
+            const loc = await Location.getCurrentPositionAsync({
+              accuracy: Location.Accuracy.Balanced,
+            });
+            coordsRef.current = {
+              latitude: loc.coords.latitude,
+              longitude: loc.coords.longitude,
+            };
+          } catch {
+            // GPS unavailable: fall through to the city picker
+          }
+        }
+        if (!coordsRef.current) {
+          setCityPickerVisible(true);
+          return;
+        }
       }
-      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
       const data = await authAPI.register({
         username: username.trim(),
         email: email.trim(),
         password,
-        latitude: loc.coords.latitude,
-        longitude: loc.coords.longitude,
+        ...(coordsRef.current ?? {}),
+        ...(marketSlug ? { market_slug: marketSlug } : {}),
       });
       await login(data.access_token, data.user);
       navigation.navigate('Main');
     } catch (err: any) {
+      if (!marketSlug && isOutsideAreaError(err)) {
+        setCityPickerVisible(true);
+        return;
+      }
       setError(apiErrorMessage(err, 'Sign up failed — try again'));
     } finally {
       setLoading(false);
@@ -223,6 +260,20 @@ export const SignupScreen = () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      <GuestMarketPicker
+        visible={cityPickerVisible}
+        title="Which city are you in?"
+        subtitle="We'll show you happy hours and events there. You can switch cities anytime."
+        showUseLocation={false}
+        onSelect={(slug) => {
+          setCityPickerVisible(false);
+          register(slug);
+        }}
+        onDismiss={() => {
+          setCityPickerVisible(false);
+          setError('Choose a city to finish signing up.');
+        }}
+      />
     </KeyboardAvoidingView>
   );
 };

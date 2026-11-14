@@ -49,6 +49,9 @@ def _generate_reset_code() -> str:
     return f"{secrets.randbelow(10**6):06d}"
 
 
+# Keep in sync with mobile/src/screens/auth/SignupScreen.tsx (isOutsideAreaError).
+OUTSIDE_AREA_DETAIL = "Golden Hour isn't available in your area yet — stay tuned!"
+
 # Wrong-code guesses allowed per reset code, per account (not per IP).
 RESET_MAX_ATTEMPTS = 5
 
@@ -66,29 +69,37 @@ def register(request: Request, data: UserCreate, db: Session = Depends(get_db)):
     if db.query(User).filter(func.lower(User.username) == data.username.lower()).first():
         raise HTTPException(status_code=409, detail="Username already taken")
 
-    markets = db.query(Market).filter(Market.active == True).all()
     matched = None
-    best_dist = float("inf")
-    for m in markets:
-        dist = _haversine_m(
-            data.latitude, data.longitude, m.region_center_lat, m.region_center_lng
+    if data.market_slug:
+        # Explicit choice from the city picker wins over coordinates.
+        matched = (
+            db.query(Market)
+            .filter(Market.slug == data.market_slug, Market.active == True)
+            .first()
         )
-        if dist <= m.region_radius_meters and dist < best_dist:
-            matched = m
-            best_dist = dist
-    if matched is None:
-        raise HTTPException(
-            status_code=422,
-            detail="Golden Hour isn't available in your area yet — stay tuned!",
-        )
+        if matched is None:
+            raise HTTPException(status_code=422, detail="That city isn't available")
+    else:
+        best_dist = float("inf")
+        for m in db.query(Market).filter(Market.active == True).all():
+            dist = _haversine_m(
+                data.latitude, data.longitude, m.region_center_lat, m.region_center_lng
+            )
+            if dist <= m.region_radius_meters and dist < best_dist:
+                matched = m
+                best_dist = dist
+        if matched is None:
+            # The mobile app matches on OUTSIDE_AREA_DETAIL to offer the city picker.
+            raise HTTPException(status_code=422, detail=OUTSIDE_AREA_DETAIL)
 
     user = User(
         market_id=matched.id,
         username=data.username,
         email=data.email,
         password_hash=hash_password(data.password),
-        signup_latitude=data.latitude,
-        signup_longitude=data.longitude,
+        # Columns are NOT NULL; fall back to the chosen market's center.
+        signup_latitude=data.latitude if data.latitude is not None else matched.region_center_lat,
+        signup_longitude=data.longitude if data.longitude is not None else matched.region_center_lng,
         role="user",
     )
     db.add(user)
