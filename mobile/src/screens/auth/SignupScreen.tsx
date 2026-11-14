@@ -14,6 +14,7 @@ import * as Location from 'expo-location';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../theme';
 import { useAuth } from '../../context/AuthContext';
+import { useLocationPermission } from '../../context/LocationPermissionContext';
 import { authAPI } from '../../api/endpoints';
 import { AppIcon } from '../../components/icons';
 
@@ -21,6 +22,7 @@ export const SignupScreen = () => {
   const { theme } = useTheme();
   const d = theme.derived;
   const { login } = useAuth();
+  const { ensureLocationPermission } = useLocationPermission();
   const navigation = useNavigation<any>();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -63,9 +65,11 @@ export const SignupScreen = () => {
     }
     setLoading(true);
     try {
-      const { status: permStatus } = await Location.requestForegroundPermissionsAsync();
+      const { status: permStatus } = await ensureLocationPermission();
       if (permStatus !== 'granted') {
-        setError('Location access is required to find your local market. Please allow it and try again.');
+        setError(
+          'Location access is required to find your local market. Please allow it and try again.',
+        );
         return;
       }
       const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
@@ -206,10 +210,11 @@ export const SignupScreen = () => {
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.guestBtn} onPress={() => navigation.navigate('Main', { screen: 'HomeTab' })}>
-            <Text style={[styles.guestText, { color: d.textMuted }]}>
-              Continue as guest
-            </Text>
+          <TouchableOpacity
+            style={styles.guestBtn}
+            onPress={() => navigation.navigate('Main', { screen: 'HomeTab' })}
+          >
+            <Text style={[styles.guestText, { color: d.textMuted }]}>Continue as guest</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -229,7 +234,12 @@ const styles = StyleSheet.create({
   errorBox: { borderWidth: 0.5, borderRadius: 12, padding: 12, marginBottom: 16 },
   errorText: { fontSize: 13, textAlign: 'center', fontWeight: '500' },
   form: { gap: 12 },
-  inputContainer: { borderRadius: 14, borderWidth: 0.5, flexDirection: 'row', alignItems: 'center' },
+  inputContainer: {
+    borderRadius: 14,
+    borderWidth: 0.5,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   input: { flex: 1, padding: 16, fontSize: 15 },
   eyeBtn: { paddingHorizontal: 14, paddingVertical: 12 },
   signupBtn: {

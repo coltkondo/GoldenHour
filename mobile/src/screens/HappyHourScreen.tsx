@@ -11,6 +11,7 @@ import {
   Platform,
 } from 'react-native';
 import * as Location from 'expo-location';
+import { useLocationPermission } from '../context/LocationPermissionContext';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { dealsAPI, venuesAPI, submissionsAPI } from '../api/endpoints';
@@ -55,6 +56,7 @@ const ALL_DAYS = DAY_NAMES.map((name, i) => ({ db: i, label: name.slice(0, 3).to
 export const HappyHourScreen = () => {
   const navigation = useNavigation();
   const route = useRoute<RouteProp<HappyHourRouteParams, 'HappyHour'>>();
+  const { ensureLocationPermission } = useLocationPermission();
   const { theme } = useTheme();
   const d = theme.derived;
   const venue = route.params?.venue;
@@ -66,12 +68,17 @@ export const HappyHourScreen = () => {
   const [loadError, setLoadError] = useState(false);
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [selectedDay, setSelectedDay] = useState(todayDb);
-  const [corrState, setCorrState] = useState<Record<string, 'idle' | 'loading' | 'done' | 'already'>>({});
+  const [corrState, setCorrState] = useState<
+    Record<string, 'idle' | 'loading' | 'done' | 'already'>
+  >({});
   // null = still checking; false = not nearby or no permission; true = within range
   const [isNearby, setIsNearby] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (!venue) { navigation.goBack(); return; }
+    if (!venue) {
+      navigation.goBack();
+      return;
+    }
     (async () => {
       try {
         const [venueDeals, venueSchedules] = await Promise.all([
@@ -93,13 +100,24 @@ export const HappyHourScreen = () => {
     if (!venue) return;
     try {
       const { status } = await Location.getForegroundPermissionsAsync();
-      if (status !== 'granted') { setIsNearby(false); return; }
+      if (status !== 'granted') {
+        setIsNearby(false);
+        return;
+      }
       // getLastKnownPositionAsync is instant; fall back to a fresh fix only if needed
       const pos =
         (await Location.getLastKnownPositionAsync()) ??
         (await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }));
-      if (!pos) { setIsNearby(false); return; }
-      const dist = haversineMeters(pos.coords.latitude, pos.coords.longitude, venue.latitude, venue.longitude);
+      if (!pos) {
+        setIsNearby(false);
+        return;
+      }
+      const dist = haversineMeters(
+        pos.coords.latitude,
+        pos.coords.longitude,
+        venue.latitude,
+        venue.longitude,
+      );
       setIsNearby(dist <= CORROBORATE_RADIUS_M);
     } catch {
       setIsNearby(false);
@@ -126,16 +144,24 @@ export const HappyHourScreen = () => {
     if (!user) return;
     setCorrState((s) => ({ ...s, [dealId]: 'loading' }));
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
+      const { status } = await ensureLocationPermission();
       if (status !== 'granted') {
         Alert.alert('Location required', "Enable location access to confirm you're at this bar.");
         setCorrState((s) => ({ ...s, [dealId]: 'idle' }));
         return;
       }
       const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-      const dist = haversineMeters(pos.coords.latitude, pos.coords.longitude, venue.latitude, venue.longitude);
+      const dist = haversineMeters(
+        pos.coords.latitude,
+        pos.coords.longitude,
+        venue.latitude,
+        venue.longitude,
+      );
       if (dist > CORROBORATE_RADIUS_M) {
-        Alert.alert("You're not at the bar", 'You need to be at the bar to confirm a deal is still accurate.');
+        Alert.alert(
+          "You're not at the bar",
+          'You need to be at the bar to confirm a deal is still accurate.',
+        );
         setCorrState((s) => ({ ...s, [dealId]: 'idle' }));
         return;
       }
@@ -153,12 +179,19 @@ export const HappyHourScreen = () => {
   return (
     <View style={[styles.container, { backgroundColor: d.background }]}>
       {/* Floating back button */}
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} activeOpacity={0.7}>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+        activeOpacity={0.7}
+      >
         <AppIcon name="back" size={22} role="default" />
       </TouchableOpacity>
 
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Hero — centered logo + name */}
         <View style={styles.hero}>
           <VenueLogo logoUrl={venue.logo_url} name={venue.nickname ?? venue.name} size={88} />
@@ -166,7 +199,9 @@ export const HappyHourScreen = () => {
           {venue.neighborhood && (
             <View style={styles.neighborhoodRow}>
               <AppIcon name="location" size={12} role="muted" />
-              <Text style={[styles.heroNeighborhood, { color: d.textMuted }]}>{venue.neighborhood}</Text>
+              <Text style={[styles.heroNeighborhood, { color: d.textMuted }]}>
+                {venue.neighborhood}
+              </Text>
             </View>
           )}
           {venue.active && <LiveBadge label="Happy hour active" size="sm" />}
@@ -175,8 +210,15 @@ export const HappyHourScreen = () => {
         {/* Quick Actions */}
         <View style={styles.actionsRow}>
           <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: d.cardBackground, borderColor: d.border }]}
-            onPress={() => Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${venue.latitude},${venue.longitude}`)}
+            style={[
+              styles.actionButton,
+              { backgroundColor: d.cardBackground, borderColor: d.border },
+            ]}
+            onPress={() =>
+              Linking.openURL(
+                `https://www.google.com/maps/dir/?api=1&destination=${venue.latitude},${venue.longitude}`,
+              )
+            }
             activeOpacity={0.8}
           >
             <AppIcon name="directions" size={16} role="brand" />
@@ -184,7 +226,10 @@ export const HappyHourScreen = () => {
           </TouchableOpacity>
           {venue.phone && (
             <TouchableOpacity
-              style={[styles.actionButton, { backgroundColor: d.cardBackground, borderColor: d.border }]}
+              style={[
+                styles.actionButton,
+                { backgroundColor: d.cardBackground, borderColor: d.border },
+              ]}
               onPress={() => Linking.openURL(`tel:${venue.phone}`)}
               activeOpacity={0.8}
             >
@@ -194,7 +239,10 @@ export const HappyHourScreen = () => {
           )}
           {venue.website && (
             <TouchableOpacity
-              style={[styles.actionButton, { backgroundColor: d.cardBackground, borderColor: d.border }]}
+              style={[
+                styles.actionButton,
+                { backgroundColor: d.cardBackground, borderColor: d.border },
+              ]}
               onPress={() => Linking.openURL(venue.website!)}
               activeOpacity={0.8}
             >
@@ -203,7 +251,10 @@ export const HappyHourScreen = () => {
             </TouchableOpacity>
           )}
           <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: d.cardBackground, borderColor: d.border }]}
+            style={[
+              styles.actionButton,
+              { backgroundColor: d.cardBackground, borderColor: d.border },
+            ]}
             onPress={() => setReportModalVisible(true)}
             activeOpacity={0.8}
           >
@@ -212,7 +263,11 @@ export const HappyHourScreen = () => {
           </TouchableOpacity>
         </View>
 
-        <FlagReportModal visible={reportModalVisible} onClose={() => setReportModalVisible(false)} venue={venue} />
+        <FlagReportModal
+          visible={reportModalVisible}
+          onClose={() => setReportModalVisible(false)}
+          venue={venue}
+        />
 
         {/* Day selector */}
         <ScrollView
@@ -246,7 +301,12 @@ export const HappyHourScreen = () => {
         {/* Deals for selected day */}
         <View style={styles.body}>
           {loadError ? (
-            <View style={[styles.emptyCard, { backgroundColor: d.cardBackground, borderColor: d.error }]}>
+            <View
+              style={[
+                styles.emptyCard,
+                { backgroundColor: d.cardBackground, borderColor: d.error },
+              ]}
+            >
               <Text style={[styles.emptyText, { color: d.error }]}>Couldn't load deals</Text>
             </View>
           ) : loading ? (
@@ -254,14 +314,24 @@ export const HappyHourScreen = () => {
               <ActivityIndicator size="small" color={d.primary} />
             </View>
           ) : !hasScheduleToday ? (
-            <View style={[styles.emptyCard, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+            <View
+              style={[
+                styles.emptyCard,
+                { backgroundColor: d.cardBackground, borderColor: d.border },
+              ]}
+            >
               <AppIcon name="clock" size={28} role="muted" />
               <Text style={[styles.emptyText, { color: d.text }]}>
                 No happy hour on {DAY_NAMES[selectedDay]}
               </Text>
             </View>
           ) : selectedDayDeals.length === 0 ? (
-            <View style={[styles.emptyCard, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+            <View
+              style={[
+                styles.emptyCard,
+                { backgroundColor: d.cardBackground, borderColor: d.border },
+              ]}
+            >
               <AppIcon name="clock" size={28} role="muted" />
               <Text style={[styles.emptyText, { color: d.text }]}>No deals listed yet</Text>
             </View>
@@ -269,7 +339,9 @@ export const HappyHourScreen = () => {
             <>
               {daySchedules.length > 0 && (
                 <Text style={[styles.scheduleHint, { color: d.textMuted }]}>
-                  {daySchedules.map((s) => `${formatTime(s.start_time)} – ${formatTime(s.end_time)}`).join(' · ')}
+                  {daySchedules
+                    .map((s) => `${formatTime(s.start_time)} – ${formatTime(s.end_time)}`)
+                    .join(' · ')}
                 </Text>
               )}
               {selectedDayDeals.map((deal) => {
@@ -278,26 +350,43 @@ export const HappyHourScreen = () => {
                 return (
                   <View
                     key={deal.id}
-                    style={[styles.dealCard, { backgroundColor: d.cardBackground, borderColor: d.border }]}
+                    style={[
+                      styles.dealCard,
+                      { backgroundColor: d.cardBackground, borderColor: d.border },
+                    ]}
                   >
                     <View style={[styles.dealThumb, { backgroundColor: d.filterInactive }]}>
                       <AppIcon name={getDealIconName(deal.category)} size={20} role="brand" />
                     </View>
                     <View style={styles.dealContent}>
-                      <Text style={[styles.dealName, { color: d.text }]} numberOfLines={1}>{deal.title}</Text>
+                      <Text style={[styles.dealName, { color: d.text }]} numberOfLines={1}>
+                        {deal.title}
+                      </Text>
                       {deal.description && (
-                        <Text style={[styles.dealDesc, { color: d.textMuted }]} numberOfLines={2}>{deal.description}</Text>
+                        <Text style={[styles.dealDesc, { color: d.textMuted }]} numberOfLines={2}>
+                          {deal.description}
+                        </Text>
                       )}
                       <View style={styles.dealPricing}>
-                        {deal.deal_price != null && deal.original_price != null && deal.original_price > deal.deal_price ? (
+                        {deal.deal_price != null &&
+                        deal.original_price != null &&
+                        deal.original_price > deal.deal_price ? (
                           <>
-                            <Text style={[styles.dealPrice, { color: d.primary }]}>${deal.deal_price.toFixed(0)}</Text>
-                            <Text style={[styles.dealOriginal, { color: d.textMuted }]}>${deal.original_price.toFixed(0)}</Text>
+                            <Text style={[styles.dealPrice, { color: d.primary }]}>
+                              ${deal.deal_price.toFixed(0)}
+                            </Text>
+                            <Text style={[styles.dealOriginal, { color: d.textMuted }]}>
+                              ${deal.original_price.toFixed(0)}
+                            </Text>
                           </>
                         ) : deal.deal_price != null ? (
-                          <Text style={[styles.dealPrice, { color: d.primary }]}>${deal.deal_price.toFixed(0)}</Text>
+                          <Text style={[styles.dealPrice, { color: d.primary }]}>
+                            ${deal.deal_price.toFixed(0)}
+                          </Text>
                         ) : deal.discount_percentage ? (
-                          <Text style={[styles.dealPrice, { color: d.primary }]}>{deal.discount_percentage}% OFF</Text>
+                          <Text style={[styles.dealPrice, { color: d.primary }]}>
+                            {deal.discount_percentage}% OFF
+                          </Text>
                         ) : null}
                       </View>
                       {user && isNearby === true && (
@@ -312,12 +401,25 @@ export const HappyHourScreen = () => {
                           disabled={cs !== 'idle'}
                           activeOpacity={0.7}
                         >
-                          <AppIcon name="upvote" size={12} role={confirmed ? 'positive' : 'muted'} weight="fill" />
-                          <Text style={[styles.corrButtonText, { color: confirmed ? d.live : d.textMuted }]}>
-                            {cs === 'done' ? '+2 pts · Still accurate'
-                              : cs === 'already' ? 'Confirmed today'
-                              : cs === 'loading' ? 'Confirming…'
-                              : 'Still accurate? +2 pts'}
+                          <AppIcon
+                            name="upvote"
+                            size={12}
+                            role={confirmed ? 'positive' : 'muted'}
+                            weight="fill"
+                          />
+                          <Text
+                            style={[
+                              styles.corrButtonText,
+                              { color: confirmed ? d.live : d.textMuted },
+                            ]}
+                          >
+                            {cs === 'done'
+                              ? '+2 pts · Still accurate'
+                              : cs === 'already'
+                                ? 'Confirmed today'
+                                : cs === 'loading'
+                                  ? 'Confirming…'
+                                  : 'Still accurate? +2 pts'}
                           </Text>
                         </TouchableOpacity>
                       )}
@@ -331,7 +433,12 @@ export const HappyHourScreen = () => {
           {/* Info */}
           <View style={styles.section}>
             <Text style={[styles.sectionLabel, { color: d.text }]}>INFO</Text>
-            <View style={[styles.infoCard, { backgroundColor: d.cardBackground, borderColor: d.border }]}>
+            <View
+              style={[
+                styles.infoCard,
+                { backgroundColor: d.cardBackground, borderColor: d.border },
+              ]}
+            >
               <View style={styles.infoRow}>
                 <AppIcon name="location" size={16} role="brand" />
                 <Text style={[styles.infoText, { color: d.text }]}>{venue.address}</Text>
@@ -350,7 +457,9 @@ export const HappyHourScreen = () => {
                   <View style={[styles.infoDivider, { backgroundColor: d.divider }]} />
                   <View style={styles.infoRow}>
                     <AppIcon name="globe" size={16} role="brand" />
-                    <Text style={[styles.infoText, { color: d.primary }]}>{venue.website.replace(/^https?:\/\//, '')}</Text>
+                    <Text style={[styles.infoText, { color: d.primary }]}>
+                      {venue.website.replace(/^https?:\/\//, '')}
+                    </Text>
                   </View>
                 </>
               )}
@@ -427,7 +536,14 @@ const styles = StyleSheet.create({
 
   loadingCenter: { alignItems: 'center', paddingVertical: 40 },
 
-  emptyCard: { borderRadius: 16, borderWidth: 1, padding: 28, alignItems: 'center', gap: 8, marginBottom: 24 },
+  emptyCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 28,
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 24,
+  },
   emptyText: { fontSize: 15, fontWeight: '600', textAlign: 'center' },
 
   dealCard: {
@@ -439,8 +555,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   dealThumb: {
-    width: 44, height: 44, borderRadius: 12,
-    justifyContent: 'center', alignItems: 'center', marginRight: 12,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
   dealContent: { flex: 1, minWidth: 0 },
   dealName: { fontSize: 14, fontWeight: '600', letterSpacing: -0.2 },
@@ -449,10 +569,15 @@ const styles = StyleSheet.create({
   dealPrice: { fontSize: 16, fontWeight: '800', letterSpacing: -0.3 },
   dealOriginal: { fontSize: 12, fontWeight: '500', textDecorationLine: 'line-through' },
   corrButton: {
-    flexDirection: 'row', alignItems: 'center', gap: 5,
-    alignSelf: 'flex-start', marginTop: 8,
-    paddingHorizontal: 10, paddingVertical: 5,
-    borderRadius: 8, borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    alignSelf: 'flex-start',
+    marginTop: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    borderWidth: 1,
   },
   corrButtonText: { fontSize: 11, fontWeight: '600' },
 

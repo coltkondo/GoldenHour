@@ -13,6 +13,8 @@ import {
 import * as Location from 'expo-location';
 import { useTheme } from '../theme';
 import { AppIcon } from './icons';
+import { LocationExplainer } from './LocationExplainer';
+import { ensurePermission } from '../utils/locationPermission';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -33,7 +35,7 @@ export const MARKETS = [
   },
 ] as const;
 
-export type MarketSlug = typeof MARKETS[number]['slug'];
+export type MarketSlug = (typeof MARKETS)[number]['slug'];
 
 function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371;
@@ -50,7 +52,10 @@ function nearestMarket(lat: number, lng: number): MarketSlug {
   let bestDist = Infinity;
   for (const m of MARKETS) {
     const d = haversineKm(lat, lng, m.lat, m.lng);
-    if (d < bestDist) { bestDist = d; best = m; }
+    if (d < bestDist) {
+      bestDist = d;
+      best = m;
+    }
   }
   return best.slug;
 }
@@ -72,6 +77,10 @@ export const GuestMarketPicker: React.FC<MarketPickerProps> = ({
   const d = theme.derived;
   const translateY = useRef(new Animated.Value(500)).current;
   const [locLoading, setLocLoading] = useState(false);
+  // This picker is itself a <Modal>, and iOS can't present the app-wide
+  // explainer modal on top of it, so the explainer renders inside this sheet.
+  const [explaining, setExplaining] = useState(false);
+  const explainerDone = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     Animated.spring(translateY, {
@@ -85,7 +94,15 @@ export const GuestMarketPicker: React.FC<MarketPickerProps> = ({
   const handleUseLocation = async () => {
     setLocLoading(true);
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
+      const { status } = await ensurePermission({
+        getStatus: () => Location.getForegroundPermissionsAsync(),
+        request: () => Location.requestForegroundPermissionsAsync(),
+        showExplainer: () =>
+          new Promise<void>((resolve) => {
+            explainerDone.current = resolve;
+            setExplaining(true);
+          }),
+      });
       if (status !== 'granted') {
         setLocLoading(false);
         return;
@@ -100,84 +117,110 @@ export const GuestMarketPicker: React.FC<MarketPickerProps> = ({
     }
   };
 
+  const continueFromExplainer = () => {
+    setExplaining(false);
+    explainerDone.current?.();
+    explainerDone.current = null;
+  };
+
   return (
     <Modal visible={visible} transparent animationType="none" statusBarTranslucent>
       <TouchableOpacity
         style={styles.overlay}
         activeOpacity={1}
-        onPress={onDismiss}
+        // While the explainer is up, its Continue button is the only way forward.
+        onPress={explaining ? undefined : onDismiss}
       >
         <Animated.View
           style={[styles.sheet, { backgroundColor: d.cardBackground, transform: [{ translateY }] }]}
         >
           <TouchableOpacity activeOpacity={1} onPress={() => {}}>
             <View style={[styles.handle, { backgroundColor: d.border }]} />
-
-            <View style={styles.titleRow}>
-              <Text style={[styles.title, { color: d.text }]}>Choose a city</Text>
-              {onDismiss && (
-                <TouchableOpacity onPress={onDismiss} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                  <AppIcon name="close" size={18} role="muted" />
-                </TouchableOpacity>
-              )}
-            </View>
-            <Text style={[styles.sub, { color: d.textMuted }]}>
-              Browse happy hours and events in any market.
-            </Text>
-
-            <View style={styles.options}>
-              {/* Current Location */}
-              <TouchableOpacity
-                style={[styles.option, { backgroundColor: d.filterInactive, borderColor: d.border }]}
-                activeOpacity={0.75}
-                onPress={handleUseLocation}
-                disabled={locLoading}
-              >
-                {locLoading
-                  ? <ActivityIndicator size="small" color={d.primary} />
-                  : <AppIcon name="location" size={18} role="brand" />}
-                <View style={styles.optionText}>
-                  <Text style={[styles.optionLabel, { color: d.primary }]}>
-                    {locLoading ? 'Detecting location...' : 'Use Current Location'}
-                  </Text>
-                  <Text style={[styles.optionSub, { color: d.textMuted }]}>
-                    Find the nearest market automatically
-                  </Text>
+            {explaining ? (
+              <LocationExplainer onContinue={continueFromExplainer} />
+            ) : (
+              <>
+                <View style={styles.titleRow}>
+                  <Text style={[styles.title, { color: d.text }]}>Choose a city</Text>
+                  {onDismiss && (
+                    <TouchableOpacity
+                      onPress={onDismiss}
+                      hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                    >
+                      <AppIcon name="close" size={18} role="muted" />
+                    </TouchableOpacity>
+                  )}
                 </View>
-                {!locLoading && <AppIcon name="chevronRight" size={16} role="muted" />}
-              </TouchableOpacity>
+                <Text style={[styles.sub, { color: d.textMuted }]}>
+                  Browse happy hours and events in any market.
+                </Text>
 
-              {/* Market list */}
-              {MARKETS.map((market) => {
-                const active = currentSlug === market.slug;
-                return (
+                <View style={styles.options}>
+                  {/* Current Location */}
                   <TouchableOpacity
-                    key={market.slug}
                     style={[
                       styles.option,
-                      {
-                        backgroundColor: active ? 'rgba(245,166,35,0.10)' : d.filterInactive,
-                        borderColor: active ? d.primary : d.border,
-                        borderWidth: active ? 1.5 : 1,
-                      },
+                      { backgroundColor: d.filterInactive, borderColor: d.border },
                     ]}
                     activeOpacity={0.75}
-                    onPress={() => onSelect(market.slug)}
+                    onPress={handleUseLocation}
+                    disabled={locLoading}
                   >
-                    <AppIcon name="location" size={18} role={active ? 'brand' : 'muted'} />
+                    {locLoading ? (
+                      <ActivityIndicator size="small" color={d.primary} />
+                    ) : (
+                      <AppIcon name="location" size={18} role="brand" />
+                    )}
                     <View style={styles.optionText}>
-                      <Text style={[styles.optionLabel, { color: active ? d.primary : d.text }]}>
-                        {market.label}
+                      <Text style={[styles.optionLabel, { color: d.primary }]}>
+                        {locLoading ? 'Detecting location...' : 'Use Current Location'}
                       </Text>
-                      <Text style={[styles.optionSub, { color: d.textMuted }]}>{market.sub}</Text>
+                      <Text style={[styles.optionSub, { color: d.textMuted }]}>
+                        Find the nearest market automatically
+                      </Text>
                     </View>
-                    {active
-                      ? <AppIcon name="correct" size={16} role="brand" />
-                      : <AppIcon name="chevronRight" size={16} role="muted" />}
+                    {!locLoading && <AppIcon name="chevronRight" size={16} role="muted" />}
                   </TouchableOpacity>
-                );
-              })}
-            </View>
+
+                  {/* Market list */}
+                  {MARKETS.map((market) => {
+                    const active = currentSlug === market.slug;
+                    return (
+                      <TouchableOpacity
+                        key={market.slug}
+                        style={[
+                          styles.option,
+                          {
+                            backgroundColor: active ? 'rgba(245,166,35,0.10)' : d.filterInactive,
+                            borderColor: active ? d.primary : d.border,
+                            borderWidth: active ? 1.5 : 1,
+                          },
+                        ]}
+                        activeOpacity={0.75}
+                        onPress={() => onSelect(market.slug)}
+                      >
+                        <AppIcon name="location" size={18} role={active ? 'brand' : 'muted'} />
+                        <View style={styles.optionText}>
+                          <Text
+                            style={[styles.optionLabel, { color: active ? d.primary : d.text }]}
+                          >
+                            {market.label}
+                          </Text>
+                          <Text style={[styles.optionSub, { color: d.textMuted }]}>
+                            {market.sub}
+                          </Text>
+                        </View>
+                        {active ? (
+                          <AppIcon name="correct" size={16} role="brand" />
+                        ) : (
+                          <AppIcon name="chevronRight" size={16} role="muted" />
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </>
+            )}
           </TouchableOpacity>
         </Animated.View>
       </TouchableOpacity>

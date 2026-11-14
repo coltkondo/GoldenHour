@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider } from './src/theme';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
+import { LocationPermissionProvider } from './src/context/LocationPermissionContext';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { LoadingScreen } from './src/screens/LoadingScreen';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
@@ -58,9 +59,11 @@ export default function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider>
-        <AuthProvider>
-          <AppContent />
-        </AuthProvider>
+        <LocationPermissionProvider>
+          <AuthProvider>
+            <AppContent />
+          </AuthProvider>
+        </LocationPermissionProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );
