@@ -113,6 +113,7 @@ Assignees: bugs tagged _(Colt)_ are assigned to Colt. Untagged = Andes.
 
 - [x] [Approving-Submissions] — **P0** — Could not approve a New Deal submission — "Failed to Fetch" error. Root cause: mobile sends `bar_id` but backend expected `venue_id`; `bar_id` was silently dropped leaving `venue_id=null`, failing DB constraint. Fixed in 1b58ec3.
 - [x] [Approving-Submissions-Screen] — **P2** — When reviewing a submission, no way to see existing deals at the same bar for comparison. Added active deals table to review detail page. Fixed in 1b58ec3.
+- [x] [Admin-Build-Broken] — **P0** — `npm run build` in `admin-web/` failed on `main`, so **every Vercel deploy since the logo feature landed was failing** and the live admin portal was serving a stale bundle. Root cause: `VenueForm.tsx` reads `venue.logo_url`, but the `Venue` interface in `admin-web/src/types.ts` never gained the field — the backend has it on both the model and the schema, and `scripts/seed_logos.py` populates it. `build` is `tsc && vite build`, so the type error hard-failed the build; `npm run dev` (Vite only, no `tsc`) still worked, which is why it went unnoticed locally. Fixed: added `logo_url: string | null` to the interface. **Worth confirming the Vercel dashboard shows a green deploy after this lands.** _(found during 2026-08-08 doc pass)_
 
 ---
 
