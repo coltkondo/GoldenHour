@@ -6,7 +6,7 @@ Primary fraud-response tool during beta.
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from typing import List, Optional
+from typing import List
 from uuid import UUID
 
 from app.core.database import get_db
@@ -15,7 +15,6 @@ from app.core.logging import logger
 from app.models.user import User
 from app.models.submission import Submission
 from app.models.point_transaction import PointTransaction
-from app.schemas.user import UserResponse
 
 from pydantic import BaseModel
 from datetime import datetime

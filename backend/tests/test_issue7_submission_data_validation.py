@@ -155,7 +155,6 @@ def _make_user(db, *, username, role="user"):
     import uuid
 
     from app.models.market import Market
-    from app.models.user import User
 
     market = db.query(Market).first()
     if market is None:

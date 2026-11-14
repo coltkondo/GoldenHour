@@ -13,7 +13,6 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 from unittest.mock import patch
 
-import pytest
 
 from app.api.v1.deals import _now_eastern
 from app.core.config import settings
@@ -98,6 +97,7 @@ class TestNaiveDatetimeBugDemonstration:
 
         # UTC offset is always 0. Eastern is -4 or -5 hours — never 0.
         from datetime import timedelta
+        assert utc_offset == timedelta(0)
         assert eastern_utc_offset != timedelta(0), (
             "Eastern timezone must have a non-zero UTC offset. "
             "Got 0, which would mean APP_TIMEZONE is set to UTC."

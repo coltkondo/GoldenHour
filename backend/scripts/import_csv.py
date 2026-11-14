@@ -302,7 +302,7 @@ def main() -> None:
     data_dir = REPO_ROOT / "data" / args.market
     if not data_dir.is_dir():
         print(f"Error: data directory not found: {data_dir}")
-        print(f"  Create it and add venues.csv, deals.csv, schedules.csv.")
+        print("  Create it and add venues.csv, deals.csv, schedules.csv.")
         sys.exit(1)
 
     db = SessionLocal()

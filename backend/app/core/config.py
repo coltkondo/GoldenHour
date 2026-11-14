@@ -66,8 +66,8 @@ class Settings(BaseSettings):
     def validate_secret_key(cls, v: str) -> str:
         if v in _PLACEHOLDER_SECRETS:
             raise ValueError(
-                f"SECRET_KEY is set to a placeholder value. "
-                f'Generate one: python3 -c "import secrets; print(secrets.token_hex(32))"'
+                "SECRET_KEY is set to a placeholder value. "
+                'Generate one: python3 -c "import secrets; print(secrets.token_hex(32))"'
             )
         if len(v) < 32:
             raise ValueError(

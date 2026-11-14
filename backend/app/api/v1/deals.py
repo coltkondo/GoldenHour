@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_, func, or_
 from typing import List, Optional
 from uuid import UUID
-from datetime import datetime, time
+from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from app.core.config import settings

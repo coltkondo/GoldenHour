@@ -14,8 +14,6 @@ Test strategy:
   - Verify that DEBUG=true via env still works (opt-in still supported).
   - Verify that database engine echo=True only fires when DEBUG is True.
 """
-import os
-import pytest
 from app.core.config import Settings
 
 

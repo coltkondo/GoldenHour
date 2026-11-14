@@ -11,11 +11,9 @@ Ties are now broken alphabetically by username — deterministic and stable.
 
 import uuid
 
-import pytest
 
 from app.models.market import Market
 from app.models.user import User
-from app.models.submission import Submission
 
 
 def _make_user(db, *, username, points):
@@ -53,7 +51,6 @@ class TestLeaderboardOrdering:
         high = _make_user(db, username="abel", points=100)
         db.commit()
 
-        from sqlalchemy import func
 
         rows = (
             db.query(User.id, User.username, User.points_balance)
