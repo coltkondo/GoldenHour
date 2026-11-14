@@ -1764,9 +1764,9 @@ const NewEventForm: React.FC<VenueFormProps> = ({
         activeOpacity={0.85}
       >
         {submitting ? (
-          <ActivityIndicator color="#fff" />
+          <ActivityIndicator color={d.buttonPrimaryText} />
         ) : (
-          <Text style={[styles.btnText, { color: '#fff' }]}>
+          <Text style={[styles.btnText, { color: d.buttonPrimaryText }]}>
             {REWARDS_ENABLED ? `Submit — Earn ${POINTS_CONFIG.new_event} pts` : 'Submit Event'}
           </Text>
         )}

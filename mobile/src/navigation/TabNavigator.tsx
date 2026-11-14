@@ -55,7 +55,7 @@ const ThemedTabBar = ({ state, descriptors, navigation }: any) => {
           return (
             <Pressable key={route.key} onPress={onPress} style={styles.tabItem}>
               <View style={[styles.submitButton, { backgroundColor: d.primary }]}>
-                <AppIcon name="plus" size={24} color="#fff" weight="bold" />
+                <AppIcon name="plus" size={24} color={d.buttonPrimaryText} weight="bold" />
               </View>
             </Pressable>
           );
