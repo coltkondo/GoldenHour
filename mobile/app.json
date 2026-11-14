@@ -43,7 +43,9 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Allow Golden Hour to use your location to find nearby happy hours."
+          "locationWhenInUsePermission": "Golden Hour uses your location while you're in the app to find happy hours around you, like starting the map where you are and showing the closest deals first. It also sets your city when you sign up, fills in a bar's address when you add one, and checks you're actually at the bar when you tap \"Still accurate\" on a deal.",
+          "locationAlwaysAndWhenInUsePermission": false,
+          "locationAlwaysPermission": false
         }
       ]
     ],
