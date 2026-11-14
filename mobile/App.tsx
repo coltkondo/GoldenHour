@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { ThemeProvider } from './src/theme';
+import { ThemeProvider, useTheme } from './src/theme';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { LocationPermissionProvider } from './src/context/LocationPermissionContext';
 import { RootNavigator } from './src/navigation/RootNavigator';
@@ -11,6 +11,7 @@ type Destination = 'Main' | 'Login' | 'Signup';
 
 function AppContent() {
   const { user, loading } = useAuth();
+  const { mode } = useTheme();
   const [destination, setDestination] = useState<Destination | null>(null);
   const [splashComplete, setSplashComplete] = useState(false);
 
@@ -50,7 +51,8 @@ function AppContent() {
   return (
     <>
       <RootNavigator initialRoute={destination} />
-      <StatusBar style="dark" />
+      {/* Light icons on the dark theme, dark icons on the light theme. */}
+      <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
     </>
   );
 }
