@@ -9,6 +9,14 @@ jest.mock('react-native', () => ({
   Platform: { OS: 'ios' },
 }));
 
+// expo-constants ships untranspiled ESM, which ts-jest won't transform out of
+// node_modules. config/constants.ts only reads a few optional fields, so a stub
+// with no expo config exercises the plain localhost fallback.
+jest.mock('expo-constants', () => ({
+  __esModule: true,
+  default: { expoConfig: null, manifest: null },
+}));
+
 jest.mock('axios', () => {
   const mockInstance = {
     interceptors: {
