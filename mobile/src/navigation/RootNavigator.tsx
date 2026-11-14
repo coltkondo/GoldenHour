@@ -3,6 +3,7 @@ import { View, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../theme';
 import { TabNavigator } from './TabNavigator';
 import { HappyHourScreen } from '../screens/HappyHourScreen';
 
@@ -19,18 +20,19 @@ type InitialRoute = 'Main' | 'Login' | 'Signup' | 'ForgotPassword';
 
 function AppNavigator({ initialRoute }: { initialRoute: InitialRoute }) {
   const { loading } = useAuth();
+  const { theme } = useTheme();
 
   if (loading) {
     return (
       <View
         style={{
           flex: 1,
-          backgroundColor: '#0f1117',
+          backgroundColor: theme.derived.background,
           justifyContent: 'center',
           alignItems: 'center',
         }}
       >
-        <ActivityIndicator size="large" color="#FFC23D" />
+        <ActivityIndicator size="large" color={theme.derived.primary} />
       </View>
     );
   }
