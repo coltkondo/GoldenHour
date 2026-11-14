@@ -12,6 +12,7 @@ import { Text, TextInput } from '../../components/ui/AppText';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../theme';
 import { authAPI } from '../../api/endpoints';
+import { apiErrorMessage } from '../../utils/apiError';
 
 type Stage = 'email' | 'code' | 'done';
 
@@ -98,7 +99,7 @@ export const ForgotPasswordScreen = () => {
       });
       setStage('done');
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Invalid or expired code — try again');
+      setError(apiErrorMessage(err, 'Invalid or expired code — try again'));
     } finally {
       setLoading(false);
     }

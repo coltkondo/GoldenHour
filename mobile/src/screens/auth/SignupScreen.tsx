@@ -16,6 +16,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useLocationPermission } from '../../context/LocationPermissionContext';
 import { authAPI } from '../../api/endpoints';
 import { AppIcon } from '../../components/icons';
+import { apiErrorMessage } from '../../utils/apiError';
 
 export const SignupScreen = () => {
   const { theme } = useTheme();
@@ -58,6 +59,11 @@ export const SignupScreen = () => {
       setError('Password must contain at least one digit');
       return;
     }
+    // Must match backend/app/schemas/user.py, or the server rejects it with a 422.
+    if (!/[!@#$%^&*()\-_=+\[\]{}|;:',.<>?/\\`~]/.test(password)) {
+      setError('Password must contain at least one special character');
+      return;
+    }
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -82,7 +88,7 @@ export const SignupScreen = () => {
       await login(data.access_token, data.user);
       navigation.navigate('Main');
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Sign up failed — try again');
+      setError(apiErrorMessage(err, 'Sign up failed — try again'));
     } finally {
       setLoading(false);
     }

@@ -15,6 +15,7 @@ import { useAuth } from '../context/AuthContext';
 import { submissionsAPI } from '../api/endpoints';
 import { POINTS_CONFIG } from '../config/constants';
 import { AppIcon } from '../components/icons';
+import { apiErrorMessage } from '../utils/apiError';
 
 type SubmissionType =
   | 'new_bar'
@@ -62,7 +63,7 @@ export const QuickSubmitScreen = () => {
       if (err.response?.status === 401) {
         setError('Your session expired — please log out and log back in.');
       } else {
-        setError(err.response?.data?.detail || 'Submission failed — please try again');
+        setError(apiErrorMessage(err, 'Submission failed — please try again'));
       }
     } finally {
       setLoading(false);

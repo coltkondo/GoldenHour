@@ -14,6 +14,7 @@ import { useTheme } from '../../theme';
 import { useAuth } from '../../context/AuthContext';
 import { authAPI } from '../../api/endpoints';
 import { AppIcon } from '../../components/icons';
+import { apiErrorMessage } from '../../utils/apiError';
 
 export const LoginScreen = () => {
   const { theme } = useTheme();
@@ -34,7 +35,7 @@ export const LoginScreen = () => {
       await login(data.access_token, data.user);
       navigation.navigate('Main');
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Invalid email or password');
+      setError(apiErrorMessage(err, 'Invalid email or password'));
     } finally {
       setLoading(false);
     }
