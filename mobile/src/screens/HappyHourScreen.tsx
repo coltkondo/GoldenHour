@@ -173,7 +173,7 @@ export const HappyHourScreen = () => {
     }
   };
 
-  const getDealIconName = (category: string): 'martini' | 'food' =>
+  const getDealIconName = (category: string | null): 'martini' | 'food' =>
     category === 'food' ? 'food' : 'martini';
 
   return (
