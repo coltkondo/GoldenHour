@@ -48,7 +48,7 @@ function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): nu
 }
 
 function nearestMarket(lat: number, lng: number): MarketSlug {
-  let best = MARKETS[0];
+  let best: (typeof MARKETS)[number] = MARKETS[0];
   let bestDist = Infinity;
   for (const m of MARKETS) {
     const d = haversineKm(lat, lng, m.lat, m.lng);
@@ -147,7 +147,7 @@ export const GuestMarketPicker: React.FC<MarketPickerProps> = ({
                       onPress={onDismiss}
                       hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                     >
-                      <AppIcon name="close" size={18} role="muted" />
+                      <AppIcon name="x" size={18} role="muted" />
                     </TouchableOpacity>
                   )}
                 </View>
