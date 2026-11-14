@@ -115,6 +115,14 @@ def login(request: Request, data: UserLogin, db: Session = Depends(get_db)):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
         )
+    # Checked only after the password matches, so this can't be used to probe
+    # which emails belong to deactivated accounts. Mirrors get_current_user,
+    # which would 403 every request made with a token issued here anyway.
+    if not user.active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account has been deactivated",
+        )
     token = create_access_token({"sub": str(user.id)})
     return Token(access_token=token, user=UserResponse.model_validate(user))
 
