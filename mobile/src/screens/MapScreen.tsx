@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -12,11 +12,12 @@ import MapView, { Region } from 'react-native-maps';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { useLocation } from '../hooks/useLocation';
-import { useLiveVenueStatus } from '../hooks/useLiveVenueStatus';
+import { useVenueDealStatus } from '../hooks/useVenueDealStatus';
 import { venuesAPI } from '../api/endpoints';
 import { Venue } from '../types/api';
 import { VenueBottomSheet } from '../components/VenueBottomSheet';
 import { VenueMarker } from '../components/Map/VenueMarker';
+import { pinGeometry } from '../components/Map/pinAssets';
 import { AppIcon } from '../components/icons';
 
 const darkMapStyle = [
@@ -87,7 +88,6 @@ const lightMapStyle = [
 
 const VIEWPORT_PADDING = 0.5;
 const REGION_DEBOUNCE_MS = 200;
-const PIN_IMAGE_HEIGHT = 25;
 const LABEL_GAP = 3;
 const LABEL_DEFAULT_WIDTH = 120;
 const LABEL_DEFAULT_HEIGHT = 26;
@@ -114,7 +114,11 @@ export const MapScreen = () => {
   const lastLabelUpdate = useRef(0);
   const lastLabelVenueId = useRef<string | null>(null);
 
-  const liveVenueIds = useLiveVenueStatus(visibleVenues);
+  const dealStatus = useVenueDealStatus(visibleVenues);
+  const liveVenueIds = useMemo(
+    () => new Set([...dealStatus].filter(([, s]) => s === 'live').map(([id]) => id)),
+    [dealStatus],
+  );
 
   useEffect(() => {
     isMounted.current = true;
@@ -334,6 +338,7 @@ export const MapScreen = () => {
           <VenueMarker
             key={venue.id}
             venue={venue}
+            status={dealStatus.get(venue.id) ?? 'none'}
             isSelected={selectedVenueId === venue.id}
             onPress={handleMarkerPress}
           />
@@ -354,7 +359,7 @@ export const MapScreen = () => {
             {
               top:
                 labelPoint.y -
-                PIN_IMAGE_HEIGHT -
+                pinGeometry[dealStatus.get(selectedVenue.id) ?? 'none'].selected.topAboveAnchor -
                 LABEL_GAP -
                 (labelSize?.height ?? LABEL_DEFAULT_HEIGHT),
               left: labelPoint.x - (labelSize?.width ?? LABEL_DEFAULT_WIDTH) / 2,
