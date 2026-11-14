@@ -10,13 +10,13 @@ cap is checked, serializing concurrent corroborations for the same deal so
 exactly CORROBORATION_DAILY_CAP can commit per day.
 """
 
-from datetime import date, datetime, timezone
 from uuid import UUID
 
 from fastapi import HTTPException
 from sqlalchemy import func as sa_func, update as sa_update
 from sqlalchemy.orm import Session
 
+from app.core.local_time import local_day_start, local_today
 from app.core.points_config import CORROBORATION_DAILY_CAP, POINTS_CONFIG
 from app.models.corroboration import Corroboration
 from app.models.deal import Deal
@@ -56,7 +56,7 @@ def corroborate_deal(db: Session, current_user: User, deal_id: UUID) -> int:
             status_code=403, detail="You cannot corroborate a deal you submitted"
         )
 
-    today = date.today()
+    today = local_today()
     existing = (
         db.query(Corroboration)
         .filter(
@@ -87,9 +87,7 @@ def corroborate_deal(db: Session, current_user: User, deal_id: UUID) -> int:
 
     # Award points subject to daily cap
     points = POINTS_CONFIG.get("corroborate", 2)
-    today_start = datetime.now(timezone.utc).replace(
-        hour=0, minute=0, second=0, microsecond=0
-    )
+    today_start = local_day_start()
     earned_today = (
         db.query(sa_func.coalesce(sa_func.sum(PointTransaction.points), 0))
         .filter(

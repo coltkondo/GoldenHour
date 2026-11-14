@@ -13,6 +13,7 @@ from sqlalchemy import update as sa_update, func as sa_func
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.core.local_time import local_day_start
 from app.core.points_config import POINTS_CONFIG
 
 from app.models.market import Market
@@ -31,10 +32,8 @@ from app.services.geocoding import geocode
 
 
 def _points_earned_today(user_id, db: Session) -> int:
-    """Sum points awarded to a user since midnight UTC today."""
-    today_start = datetime.now(timezone.utc).replace(
-        hour=0, minute=0, second=0, microsecond=0
-    )
+    """Sum points awarded to a user since local (APP_TIMEZONE) midnight today."""
+    today_start = local_day_start()
     total = (
         db.query(sa_func.coalesce(sa_func.sum(PointTransaction.points), 0))
         .filter(
