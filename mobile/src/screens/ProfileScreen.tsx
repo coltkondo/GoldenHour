@@ -26,6 +26,23 @@ export const ProfileScreen = () => {
 
   const d = theme.derived;
 
+  const handleContactSupport = async () => {
+    const url = `mailto:${SUPPORT_EMAIL}`;
+    const canOpen = await Linking.canOpenURL(url);
+    if (canOpen) {
+      Linking.openURL(url);
+    } else {
+      Alert.alert(
+        'Contact Support',
+        `Email us at ${SUPPORT_EMAIL}`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Share Email', onPress: () => Share.share({ message: SUPPORT_EMAIL }) },
+        ],
+      );
+    }
+  };
+
   if (!user) {
     return (
       <View style={[styles.container, { backgroundColor: d.background, justifyContent: 'center', alignItems: 'center', padding: 32 }]}>
@@ -82,23 +99,6 @@ export const ProfileScreen = () => {
       </View>
     );
   }
-
-  const handleContactSupport = async () => {
-    const url = `mailto:${SUPPORT_EMAIL}`;
-    const canOpen = await Linking.canOpenURL(url);
-    if (canOpen) {
-      Linking.openURL(url);
-    } else {
-      Alert.alert(
-        'Contact Support',
-        `Email us at ${SUPPORT_EMAIL}`,
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Share Email', onPress: () => Share.share({ message: SUPPORT_EMAIL }) },
-        ],
-      );
-    }
-  };
 
   const handleDeleteAccount = () => {
     Alert.alert(

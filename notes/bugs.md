@@ -86,6 +86,7 @@ Assignees: bugs tagged _(Colt)_ are assigned to Colt. Untagged = Andes.
 - [x] [My-Submissions] — **P2** — Does not specify what the submission is. Simply says "New Deal". Should be more descriptive. _(Colt)_
 - [x] [My-Submissions-Show-Rejected] — **P2** — Submission history shows rejected submissions. Rejected entries aren't useful to users and could feel discouraging. Should only show pending, approved, and corroborated submissions. _(Colt)_
 - [x] [Contact-Support] — **P1** — Only works if native Mail app is set up. Fixed: checks if mailto can open; if not, shows Alert with email + native Share sheet (includes Copy).
+- [x] [Guest-Contact-Support-Dead] — **P1** — The "Contact Support" link in the guest (signed-out) Profile footer referenced `handleContactSupport` before its `const` declaration, which sat *after* the guest early-return. Depending on how the bundle is compiled that's either a TDZ `ReferenceError` (crashing the guest Profile tab) or `onPress={undefined}` (link silently does nothing) — the signed-in link worked fine, which is why it went unnoticed. Fixed: moved `handleContactSupport` above the `if (!user)` branch in `ProfileScreen.tsx`; no behavior change for signed-in users. _(found 2026-11-13 via `tsc --noEmit`)_
 
 ---
 
