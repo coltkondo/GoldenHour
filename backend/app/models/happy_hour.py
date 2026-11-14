@@ -16,7 +16,9 @@ from .base import Base, TimestampMixin
 class HappyHourSchedule(Base, TimestampMixin):
     __tablename__ = "happy_hour_schedules"
     __table_args__ = (
-        CheckConstraint("end_time > start_time", name="ck_schedules_time_order"),
+        # end <= start means the window runs past midnight into the next day
+        # (see app/services/schedule_window.py). Equal times are ambiguous.
+        CheckConstraint("end_time <> start_time", name="ck_schedules_time_distinct"),
         CheckConstraint(
             "day_of_week >= 0 AND day_of_week <= 6", name="ck_schedules_day_of_week"
         ),

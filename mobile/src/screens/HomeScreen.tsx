@@ -19,8 +19,10 @@ import { Venue, Deal, HappyHourSchedule, Event, DAY_NAMES } from '../types/api';
 import {
   formatScheduleRange,
   parseTimeString,
-  isCurrentlyLive,
-  isAlreadyEnded,
+  isLiveAt,
+  hasEndedAt,
+  isRelevantToday,
+  scheduleForNow,
   todayDbIndex,
 } from '../utils/scheduleUtils';
 import { AppIcon } from '../components/icons';
@@ -195,15 +197,21 @@ export const HomeScreen = () => {
       );
       if (!isMounted.current) return;
 
-      const todayDb = todayDbIndex(now);
-      const newMap = new Map<string, HappyHourSchedule>();
+      // Today's schedules plus last night's overnight ones still running
+      // (e.g. Fri 10pm–1am is live at 12:30am Sat); pick the right one per deal.
+      const byDeal = new Map<string, HappyHourSchedule[]>();
       for (const scheds of scheduleSets) {
         for (const s of scheds) {
-          if (s.day_of_week !== todayDb) continue;
+          if (!isRelevantToday(s, now)) continue;
           for (const dealId of s.deal_ids ?? []) {
-            newMap.set(dealId, s);
+            byDeal.set(dealId, [...(byDeal.get(dealId) ?? []), s]);
           }
         }
+      }
+      const newMap = new Map<string, HappyHourSchedule>();
+      for (const [dealId, list] of byDeal) {
+        const chosen = scheduleForNow(list, now);
+        if (chosen) newMap.set(dealId, chosen);
       }
       setSchedules(newMap);
     } catch (err) {
@@ -231,7 +239,7 @@ export const HomeScreen = () => {
         schedule,
         venueName: venue?.nickname || venue?.name || 'Unknown',
         logoUrl: venue?.logo_url ?? null,
-        isLiveNow: isCurrentlyLive(schedule),
+        isLiveNow: isLiveAt(schedule),
       };
     });
   }, [todayDeals, venueMap, schedules]);
@@ -244,7 +252,7 @@ export const HomeScreen = () => {
   const happeningNow = useMemo(() => filteredDeals.filter((d) => d.isLiveNow), [filteredDeals]);
 
   const comingUp = useMemo(() => {
-    const upcoming = filteredDeals.filter((d) => !d.isLiveNow && !isAlreadyEnded(d.schedule));
+    const upcoming = filteredDeals.filter((d) => !d.isLiveNow && !hasEndedAt(d.schedule));
     return upcoming.sort((a, b) => {
       const aStart = a.schedule
         ? parseTimeString(a.schedule.start_time).hour * 60 +
@@ -261,7 +269,7 @@ export const HomeScreen = () => {
   // True when the market has deals today but every scheduled slot has already ended
   const allDealsEndedToday = useMemo(() => {
     if (enrichedDeals.length === 0) return false;
-    return enrichedDeals.every((d) => !d.isLiveNow && isAlreadyEnded(d.schedule));
+    return enrichedDeals.every((d) => !d.isLiveNow && hasEndedAt(d.schedule));
   }, [enrichedDeals]);
 
   const happeningNowGroups = useMemo(

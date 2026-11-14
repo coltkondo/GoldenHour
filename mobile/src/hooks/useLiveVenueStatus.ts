@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { venuesAPI } from '../api/endpoints';
 import { HappyHourSchedule, Venue } from '../types/api';
-import { isCurrentlyLive, todayDbIndex } from '../utils/scheduleUtils';
+import { isLiveAt } from '../utils/scheduleUtils';
 
 const SCHEDULE_FETCH_CONCURRENCY = 8;
 
@@ -9,8 +9,8 @@ const SCHEDULE_FETCH_CONCURRENCY = 8;
  * Returns the set of venue ids currently serving happy hour.
  *
  * Fetches each venue's weekly schedule once (cached per venue id across
- * renders), then filters to today's day-of-week and evaluates the current
- * time against each window using the same rules as the Home feed.
+ * renders), then evaluates the current time against each window with the
+ * day-aware rules the Home feed uses (overnight windows count after midnight).
  */
 export function useLiveVenueStatus(venues: Venue[]): Set<string> {
   const [liveIds, setLiveIds] = useState<Set<string>>(() => new Set());
@@ -49,14 +49,12 @@ export function useLiveVenueStatus(venues: Venue[]): Set<string> {
 
 function computeLiveIds(venues: Venue[], cache: Map<string, HappyHourSchedule[]>): Set<string> {
   const now = new Date();
-  const todayDb = todayDbIndex(now);
   const live = new Set<string>();
   for (const venue of venues) {
     if (!venue.active) continue;
     const schedules = cache.get(venue.id) ?? [];
-    const isLive = schedules.some(
-      (s) => s.active && s.day_of_week === todayDb && isCurrentlyLive(s, now),
-    );
+    // Day-aware, so last night's overnight happy hour still counts after midnight.
+    const isLive = schedules.some((s) => s.active && isLiveAt(s, now));
     if (isLive) live.add(venue.id);
   }
   return live;
