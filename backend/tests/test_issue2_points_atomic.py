@@ -134,7 +134,7 @@ class TestSingleApproval:
         sub = _make_submission(db, user_id=submitter.id)
         db.commit()
 
-        review_submission(sub.id, ReviewAction(status="rejected"), admin, db)
+        review_submission(sub.id, ReviewAction(status="rejected", admin_notes="Duplicate of an existing deal"), admin, db)
 
         db.expire(submitter)
         updated = db.query(User).filter(User.id == submitter.id).first()
